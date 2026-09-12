@@ -1,28 +1,48 @@
-# Gym log — install as an app
+# Gym log
 
-This folder is a small web app. Hosted anywhere, it installs to your phone's
-home screen and opens full-screen like a native app. Free hosting via GitHub
-Pages, about 5 minutes:
+A small personal gym tracker. It's a single-file PWA: install it to your phone's
+home screen, it works offline, and it stores everything locally.
 
-1. Go to github.com and log in (or create a free account).
-2. Click the "+" in the top right, then "New repository". Name it
-   `gym-log`, keep it public, click "Create repository".
-3. On the new repo page, click "uploading an existing file" (or
-   Add file → Upload files).
-4. Drag in all 5 files from this folder: `index.html`, `manifest.json`,
-   `service-worker.js`, `icon-192.png`, `icon-512.png`. Commit.
-5. Go to Settings → Pages (left sidebar). Under "Build and deployment",
-   set Source to "Deploy from a branch", branch `main`, folder `/ (root)`.
-   Save.
-6. Wait about a minute, then your app is live at:
-   `https://<your-github-username>.github.io/gym-log/`
+Live: `https://gianlucagrillo.github.io/gymlog/`
+
+## What it does
+
+- **Multi-day routine** — editable from inside the app: add, rename, reorder or
+  delete exercises and days without touching the code.
+- **Per-set logging** — weight and reps for every single set, with the inputs
+  pre-filled from your last session so you only change what moved.
+- **Progression** — delta against the previous session, a sparkline of the last
+  8 sessions, and an automatic nudge when you hit the top of the rep range on
+  every set (or when you tick "too easy").
+- **Records** — best weight, estimated 1RM (Epley formula) and session volume,
+  with a `PR` badge when you beat your best estimated 1RM.
+- **Rest timer** — anchored to the clock, so it stays accurate even if you lock
+  the screen or switch views. Vibration and a beep when the rest is over.
+- **Backup** — JSON export/import, via file download or copy-paste.
+
+## Where the data lives
+
+All in `localStorage`, in that one browser. No account, no server, no sync
+between devices.
+
+Which means **if you switch phone or the browser clears its storage, the data is
+gone**: every so often use Data → "Download .json backup".
+
+## Deploy
+
+Five files get published: `index.html`, `manifest.json`, `service-worker.js`,
+`icon-192.png`, `icon-512.png`.
+
+On GitHub Pages: Settings → Pages → Source "Deploy from a branch", branch `main`,
+folder `/ (root)`. It's live about a minute later.
 
 On your phone:
-- **Android (Chrome)**: open that link, tap the ⋮ menu, "Add to Home
-  screen" / "Install app".
-- **iPhone (Safari)**: open the link, tap the Share icon, "Add to Home
-  Screen".
 
-Either way you get an app icon that opens full-screen, no browser bar.
-Your logged weights are saved on that phone only (not synced between
-devices) — the app works offline after the first load.
+- **Android (Chrome)**: open the link, ⋮ menu → "Add to Home screen".
+- **iPhone (Safari)**: open the link, Share icon → "Add to Home Screen".
+
+## Data migration
+
+Sessions saved by earlier versions (`gymlog-entries-v3`) are converted
+automatically on first launch, adding the reps field (left empty for existing
+history). The v3 key is not deleted, so it stays around as a fallback.

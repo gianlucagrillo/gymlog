@@ -1,7 +1,7 @@
 {
   "name": "Gym log",
   "short_name": "Gym log",
-  "description": "Weekly gym weight tracker",
+  "description": "Gym weight tracker with history, records and rest timer",
   "start_url": "./index.html",
   "scope": "./",
   "display": "standalone",

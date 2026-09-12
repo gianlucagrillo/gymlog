@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Gym log</title>
 <meta name="theme-color" content="#16181B">
 <meta name="mobile-web-app-capable" content="yes">
@@ -12,27 +12,28 @@
 <link rel="manifest" href="manifest.json">
 <link rel="apple-touch-icon" href="icon-192.png">
 <link rel="icon" href="icon-192.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700&family=Inter:wght@400;500;600&display=swap">
 <style>
   html, body { margin: 0; padding: 0; background: #0F1113; min-height: 100vh; }
   body { padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left); padding-top: max(20px, env(safe-area-inset-top)); padding-bottom: max(20px, env(safe-area-inset-bottom)); }
-</style>
-</head>
-<body>
-<style>
-  @import url('https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700&family=Inter:wght@400;500;600&display=swap');
-  #gymlog * { box-sizing: border-box; font-family: 'Inter', sans-serif; }
-  #gymlog h1, #gymlog .num { font-family: 'Barlow Condensed', sans-serif; }
+
+  #gymlog * { box-sizing: border-box; font-family: 'Inter', system-ui, sans-serif; }
+  #gymlog h1, #gymlog .num, #gymlog .weight-badge { font-family: 'Barlow Condensed', 'Inter', sans-serif; }
   #gymlog { color: #EDEBE3; background: #16181B; border-radius: 14px; padding: 20px; max-width: 480px; margin: 0 auto; }
-  #gymlog select, #gymlog input { background: #21242A; border: 1px solid #3A3E46; color: #EDEBE3; border-radius: 8px; padding: 10px 12px; font-size: 15px; width: 100%; }
-  #gymlog select:focus, #gymlog input:focus { outline: none; border-color: #E8A33D; }
+  #gymlog select, #gymlog input, #gymlog textarea { background: #21242A; border: 1px solid #3A3E46; color: #EDEBE3; border-radius: 8px; padding: 10px 12px; font-size: 15px; width: 100%; }
+  #gymlog select:focus, #gymlog input:focus, #gymlog textarea:focus { outline: none; border-color: #E8A33D; }
   #gymlog button { background: #E8A33D; color: #16181B; border: none; border-radius: 8px; padding: 11px 16px; font-weight: 600; font-size: 14px; cursor: pointer; }
   #gymlog button:active { transform: scale(0.98); }
   #gymlog button.ghost { background: transparent; border: 1px solid #3A3E46; color: #B7B4A9; }
+  #gymlog button.danger { background: transparent; border: 1px solid #D97757; color: #D97757; }
+  #gymlog button.mini { padding: 6px 10px; font-size: 12px; }
   #gymlog .card { background: #1D2024; border: 1px solid #2C3036; border-radius: 12px; padding: 14px 16px; margin-bottom: 10px; }
   #gymlog .row { display: flex; gap: 10px; align-items: center; }
   #gymlog .ex-name { font-weight: 600; font-size: 15px; }
   #gymlog .ex-meta { color: #8C8A82; font-size: 12px; margin-top: 2px; }
-  #gymlog .weight-badge { font-family: 'Barlow Condensed', sans-serif; font-size: 26px; font-weight: 700; color: #E8A33D; min-width: 64px; text-align: right; }
+  #gymlog .weight-badge { font-size: 26px; font-weight: 700; color: #E8A33D; min-width: 64px; text-align: right; }
   #gymlog .delta { font-size: 12px; margin-top: 2px; text-align: right; }
   #gymlog .delta.up { color: #7FBF7F; }
   #gymlog .delta.down { color: #D97757; }
@@ -41,7 +42,7 @@
   #gymlog .history.open { display: block; }
   #gymlog .hist-row { display: flex; justify-content: space-between; font-size: 13px; color: #B7B4A9; padding: 3px 0; }
   #gymlog .spark { display: flex; align-items: flex-end; gap: 3px; height: 32px; margin-top: 8px; }
-  #gymlog .bar { flex: 1; background: #E8A33D; border-radius: 2px 2px 0 0; min-height: 2px; }
+  #gymlog .bar { flex: 1; max-width: 28px; background: #E8A33D; border-radius: 2px 2px 0 0; min-height: 2px; }
   #gymlog .toggle { cursor: pointer; color: #8C8A82; font-size: 12px; text-decoration: underline; margin-top: 6px; }
   #gymlog .hist-row .del { color: #D97757; cursor: pointer; font-size: 12px; margin-left: 10px; }
   #gymlog .tabs { display: flex; gap: 6px; overflow-x: auto; margin: 14px 0 18px; padding-bottom: 2px; }
@@ -49,7 +50,7 @@
   #gymlog .tab.active { background: #E8A33D; color: #16181B; border-color: #E8A33D; }
   #gymlog .set-row { display: flex; gap: 8px; align-items: center; margin-bottom: 8px; }
   #gymlog .set-label { width: 46px; font-size: 13px; color: #8C8A82; flex-shrink: 0; }
-  #gymlog .set-row input { flex: 1; }
+  #gymlog .set-row input { flex: 1; min-width: 0; }
   #gymlog .easy-check { display: flex; align-items: center; gap: 5px; font-size: 11px; color: #8C8A82; flex-shrink: 0; width: 62px; }
   #gymlog .easy-check input { width: auto; accent-color: #E8A33D; }
   #gymlog .session { padding: 8px 0; border-bottom: 1px solid #2C3036; }
@@ -59,330 +60,793 @@
   #gymlog .set-chip { background: #21242A; border-radius: 6px; padding: 3px 9px; font-size: 12px; color: #EDEBE3; border: 1px solid transparent; }
   #gymlog .set-chip.easy { color: #7FBF7F; border-color: #7FBF7F; }
   #gymlog .easy-note { font-size: 11px; color: #7FBF7F; margin-top: 2px; text-align: right; }
+  #gymlog .toolbar { display: flex; gap: 6px; margin-top: 12px; }
+  #gymlog .toolbar button { flex: 1; }
+  #gymlog .pr-badge { display: inline-block; background: #E8A33D; color: #16181B; border-radius: 5px; padding: 1px 6px; font-size: 10px; font-weight: 700; letter-spacing: .04em; vertical-align: middle; }
+  #gymlog .stats { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 10px; }
+  #gymlog .stat { background: #21242A; border: 1px solid #2C3036; border-radius: 8px; padding: 6px 10px; font-size: 11px; color: #8C8A82; flex: 1; min-width: 92px; }
+  #gymlog .stat b { display: block; color: #EDEBE3; font-size: 15px; font-weight: 600; margin-top: 2px; }
+  #gymlog .ed-ex { background: #1D2024; border: 1px solid #2C3036; border-radius: 10px; padding: 10px 12px; margin-bottom: 8px; }
+  #gymlog .ed-grid { display: flex; gap: 6px; margin-top: 8px; }
+  #gymlog .ed-grid label { flex: 1; font-size: 10px; color: #8C8A82; }
+  #gymlog .ed-grid input { margin-top: 3px; padding: 7px 8px; font-size: 14px; text-align: center; }
+  #gymlog .ed-actions { display: flex; gap: 6px; margin-top: 8px; justify-content: flex-end; }
+  #gymlog .hint { color: #5C5A52; font-size: 11px; line-height: 1.5; }
+  #gymlog textarea { font-family: ui-monospace, monospace; font-size: 11px; height: 120px; resize: vertical; }
+  #gymlog .timer-btn.running { color: #E8A33D; border-color: #E8A33D; }
+  #gymlog .timer-btn.done { color: #7FBF7F; border-color: #7FBF7F; }
 </style>
+</head>
+<body>
 
 <div id="gymlog">
-  <h1 style="font-size:28px;font-weight:700;margin:0 0 2px;">Gym log</h1>
-  <p style="color:#8C8A82;font-size:13px;margin:0;">Tap an exercise to log this week's weight</p>
-  <div class="tabs" id="tabs"></div>
-  <div id="ex-list"></div>
-  <p style="color:#5C5A52;font-size:11px;margin:18px 0 0;">Saved on this device only</p>
+  <div class="row" style="justify-content:space-between;align-items:flex-start;">
+    <div>
+      <h1 style="font-size:28px;font-weight:700;margin:0 0 2px;">Gym log</h1>
+      <p id="subtitle" style="color:#8C8A82;font-size:13px;margin:0;">Tap an exercise to log this week's weight</p>
+    </div>
+  </div>
+  <div class="toolbar">
+    <button class="ghost mini" id="nav-log">Workout</button>
+    <button class="ghost mini" id="nav-edit">Routine</button>
+    <button class="ghost mini" id="nav-data">Data</button>
+  </div>
+  <div id="view"></div>
+  <p class="hint" style="margin:18px 0 0;">Saved on this device only — export a backup now and then.</p>
 </div>
 
 <script>
 (function() {
-  const DAYS = [
-    { id: 'day1', label: 'Day 1', exercises: [
-      { name: 'Dumbbell lateral raise', meta: '3 × 6–10', rest: '90 sec', restSec: 90 },
-      { name: 'Incline dumbbell press', meta: '3 × 6–10', rest: '3 min', restSec: 180 },
-      { name: 'Flat machine/chest press', meta: '3 × 8–12', rest: '2 min', restSec: 120 },
-      { name: 'Cable fly', meta: '2 × 12–15', rest: '90 sec', restSec: 90 },
-      { name: 'Seated dumbbell shoulder press', meta: '2 × 8–12', rest: '2 min', restSec: 120 },
-      { name: 'Cable lateral raise', meta: '4 × 12–20', rest: '90 sec', restSec: 90 },
-      { name: 'Overhead cable triceps extension', meta: '3 × 10–15', rest: '90 sec', restSec: 90 },
-      { name: 'Triceps pushdown', meta: '2 × 10–15', rest: '90 sec', restSec: 90 }
-    ]},
-    { id: 'day2', label: 'Day 2', exercises: [
-      { name: 'Dumbbell shoulder press', meta: '3 × 6–10', rest: '90 sec', restSec: 90 },
-      { name: 'Pull-ups / lat pulldown', meta: '3 × 6–10', rest: '3 min', restSec: 180 },
-      { name: 'Chest-supported row', meta: '3 × 8–12', rest: '2 min', restSec: 120 },
-      { name: 'Single-arm lat pulldown', meta: '2 × 10–15', rest: '90 sec', restSec: 90 },
-      { name: 'Cable row', meta: '2 × 8–12', rest: '2 min', restSec: 120 },
-      { name: 'Reverse pec deck', meta: '3 × 12–20', rest: '90 sec', restSec: 90 },
-      { name: 'Cable rear-delt raise', meta: '2 × 12–20', rest: '90 sec', restSec: 90 },
-      { name: 'Incline dumbbell curl', meta: '3 × 8–12', rest: '90 sec', restSec: 90 },
-      { name: 'Cable curl', meta: '2 × 10–15', rest: '90 sec', restSec: 90 }
-    ]},
-    { id: 'day3', label: 'Day 3', exercises: [
-      { name: 'Dumbbell lateral raise', meta: '3 × 6–10', rest: '90 sec', restSec: 90 },
-      { name: 'Squat / hack squat', meta: '3 × 6–10', rest: '3 min', restSec: 180 },
-      { name: 'Romanian deadlift', meta: '3 × 8–12', rest: '3 min', restSec: 180 },
-      { name: 'Leg press', meta: '3 × 10–15', rest: '2 min', restSec: 120 },
-      { name: 'Leg curl', meta: '3 × 10–15', rest: '90 sec', restSec: 90 },
-      { name: 'Leg extension', meta: '2 × 12–15', rest: '90 sec', restSec: 90 },
-      { name: 'Standing calf raise', meta: '3 × 8–15', rest: '90 sec', restSec: 90 },
-      { name: 'Seated calf raise', meta: '2 × 12–20', rest: '90 sec', restSec: 90 },
-      { name: 'Cable crunch', meta: '3 × 10–15', rest: '90 sec', restSec: 90 },
-      { name: 'Hanging leg raise', meta: '2 × 10–15', rest: '90 sec', restSec: 90 }
-    ]},
-    { id: 'day4', label: 'Day 4', exercises: [
-      { name: 'Dumbbell shoulder press', meta: '3 × 6–10', rest: '90 sec', restSec: 90 },
-      { name: 'Cable lateral raise', meta: '4 × 12–20', rest: '90 sec', restSec: 90 },
-      { name: 'Reverse pec deck', meta: '3 × 12–20', rest: '90 sec', restSec: 90 },
-      { name: 'Seated dumbbell shoulder press', meta: '2–3 × 8–12', rest: '2 min', restSec: 120 },
-      { name: 'EZ-bar curl', meta: '3 × 8–12', rest: '90 sec', restSec: 90 },
-      { name: 'Incline dumbbell curl', meta: '2 × 10–15', rest: '90 sec', restSec: 90 },
-      { name: 'Cable pushdown', meta: '3 × 10–15', rest: '90 sec', restSec: 90 },
-      { name: 'Overhead cable triceps extension', meta: '2 × 10–15', rest: '90 sec', restSec: 90 }
-    ]},
-    { id: 'day5', label: 'Day 5', exercises: [
-      { name: 'Dumbbell lateral raise', meta: '3 × 6–10', rest: '690 sec', restSec: 90 },
-      { name: 'Incline Smith/machine press', meta: '3 × 6–10', rest: '3 min', restSec: 180 },
-      { name: 'Lat pulldown', meta: '3 × 8–12', rest: '2 min', restSec: 120 },
-      { name: 'Chest-supported row', meta: '2 × 8–12', rest: '2 min', restSec: 120 },
-      { name: 'Cable fly', meta: '2 × 12–15', rest: '90 sec', restSec: 90 },
-      { name: 'Cable lateral raise', meta: '4 × 12–20', rest: '90 sec', restSec: 90 },
-      { name: 'Reverse pec deck', meta: '2 × 12–20', rest: '90 sec', restSec: 90 },
-      { name: 'EZ-bar curl', meta: '2 × 8–12', rest: '90 sec', restSec: 90 },
-      { name: 'Rope triceps pushdown', meta: '2 × 10–15', rest: '90 sec', restSec: 90 }
-    ]}
-  ];
+  'use strict';
 
-  function slug(dayId, name) {
-    return dayId + '_' + name.toLowerCase().replace(/[^a-z0-9]+/g, '_');
+  // ---------- default routine ----------
+  function defaultRoutine() {
+    return [
+      { id: 'day1', label: 'Day 1', exercises: [
+        { name: 'Dumbbell lateral raise', sets: 3, repMin: 6, repMax: 10, restSec: 90 },
+        { name: 'Incline dumbbell press', sets: 3, repMin: 6, repMax: 10, restSec: 180 },
+        { name: 'Flat machine/chest press', sets: 3, repMin: 8, repMax: 12, restSec: 120 },
+        { name: 'Cable fly', sets: 2, repMin: 12, repMax: 15, restSec: 90 },
+        { name: 'Seated dumbbell shoulder press', sets: 2, repMin: 8, repMax: 12, restSec: 120 },
+        { name: 'Cable lateral raise', sets: 4, repMin: 12, repMax: 20, restSec: 90 },
+        { name: 'Overhead cable triceps extension', sets: 3, repMin: 10, repMax: 15, restSec: 90 },
+        { name: 'Triceps pushdown', sets: 2, repMin: 10, repMax: 15, restSec: 90 }
+      ]},
+      { id: 'day2', label: 'Day 2', exercises: [
+        { name: 'Dumbbell shoulder press', sets: 3, repMin: 6, repMax: 10, restSec: 90 },
+        { name: 'Pull-ups / lat pulldown', sets: 3, repMin: 6, repMax: 10, restSec: 180 },
+        { name: 'Chest-supported row', sets: 3, repMin: 8, repMax: 12, restSec: 120 },
+        { name: 'Single-arm lat pulldown', sets: 2, repMin: 10, repMax: 15, restSec: 90 },
+        { name: 'Cable row', sets: 2, repMin: 8, repMax: 12, restSec: 120 },
+        { name: 'Reverse pec deck', sets: 3, repMin: 12, repMax: 20, restSec: 90 },
+        { name: 'Cable rear-delt raise', sets: 2, repMin: 12, repMax: 20, restSec: 90 },
+        { name: 'Incline dumbbell curl', sets: 3, repMin: 8, repMax: 12, restSec: 90 },
+        { name: 'Cable curl', sets: 2, repMin: 10, repMax: 15, restSec: 90 }
+      ]},
+      { id: 'day3', label: 'Day 3', exercises: [
+        { name: 'Dumbbell lateral raise', sets: 3, repMin: 6, repMax: 10, restSec: 90 },
+        { name: 'Squat / hack squat', sets: 3, repMin: 6, repMax: 10, restSec: 180 },
+        { name: 'Romanian deadlift', sets: 3, repMin: 8, repMax: 12, restSec: 180 },
+        { name: 'Leg press', sets: 3, repMin: 10, repMax: 15, restSec: 120 },
+        { name: 'Leg curl', sets: 3, repMin: 10, repMax: 15, restSec: 90 },
+        { name: 'Leg extension', sets: 2, repMin: 12, repMax: 15, restSec: 90 },
+        { name: 'Standing calf raise', sets: 3, repMin: 8, repMax: 15, restSec: 90 },
+        { name: 'Seated calf raise', sets: 2, repMin: 12, repMax: 20, restSec: 90 },
+        { name: 'Cable crunch', sets: 3, repMin: 10, repMax: 15, restSec: 90 },
+        { name: 'Hanging leg raise', sets: 2, repMin: 10, repMax: 15, restSec: 90 }
+      ]},
+      { id: 'day4', label: 'Day 4', exercises: [
+        { name: 'Dumbbell shoulder press', sets: 3, repMin: 6, repMax: 10, restSec: 90 },
+        { name: 'Cable lateral raise', sets: 4, repMin: 12, repMax: 20, restSec: 90 },
+        { name: 'Reverse pec deck', sets: 3, repMin: 12, repMax: 20, restSec: 90 },
+        { name: 'Seated dumbbell shoulder press', sets: 3, repMin: 8, repMax: 12, restSec: 120 },
+        { name: 'EZ-bar curl', sets: 3, repMin: 8, repMax: 12, restSec: 90 },
+        { name: 'Incline dumbbell curl', sets: 2, repMin: 10, repMax: 15, restSec: 90 },
+        { name: 'Cable pushdown', sets: 3, repMin: 10, repMax: 15, restSec: 90 },
+        { name: 'Overhead cable triceps extension', sets: 2, repMin: 10, repMax: 15, restSec: 90 }
+      ]},
+      { id: 'day5', label: 'Day 5', exercises: [
+        { name: 'Dumbbell lateral raise', sets: 3, repMin: 6, repMax: 10, restSec: 90 },
+        { name: 'Incline Smith/machine press', sets: 3, repMin: 6, repMax: 10, restSec: 180 },
+        { name: 'Lat pulldown', sets: 3, repMin: 8, repMax: 12, restSec: 120 },
+        { name: 'Chest-supported row', sets: 2, repMin: 8, repMax: 12, restSec: 120 },
+        { name: 'Cable fly', sets: 2, repMin: 12, repMax: 15, restSec: 90 },
+        { name: 'Cable lateral raise', sets: 4, repMin: 12, repMax: 20, restSec: 90 },
+        { name: 'Reverse pec deck', sets: 2, repMin: 12, repMax: 20, restSec: 90 },
+        { name: 'EZ-bar curl', sets: 2, repMin: 8, repMax: 12, restSec: 90 },
+        { name: 'Rope triceps pushdown', sets: 2, repMin: 10, repMax: 15, restSec: 90 }
+      ]}
+    ].map(function(d) {
+      d.exercises = d.exercises.map(function(ex) {
+        // Legacy id = same slug the v3 store used, so existing history stays attached.
+        ex.id = d.id + '_' + ex.name.toLowerCase().replace(/[^a-z0-9]+/g, '_');
+        return ex;
+      });
+      return d;
+    });
   }
 
-  function parseSetCount(meta) {
-    const m = meta.match(/^(\d+)(?:[–-](\d+))?\s*×/);
-    if (!m) return 3;
-    return m[2] ? parseInt(m[2], 10) : parseInt(m[1], 10);
-  }
+  // ---------- storage ----------
+  var STORE_KEY = 'gymlog-entries-v4';
+  var LEGACY_KEY = 'gymlog-entries-v3';
+  var ROUTINE_KEY = 'gymlog-routine-v1';
+  var TIMER_KEY = 'gymlog-timer-v1';
 
-  const STORE_KEY = 'gymlog-entries-v3';
-  let entries = {};
-  let activeDay = DAYS[0].id;
-  const timers = {};
+  var entries = {};
+  var routine = [];
+  var activeDay = null;
+  var view = 'log';
+  var openCards = {};
 
-  async function load() {
+  function readJSON(key, fallback) {
     try {
-      const raw = localStorage.getItem(STORE_KEY);
-      entries = raw ? JSON.parse(raw) : {};
-    } catch (e) { entries = {}; }
-    renderTabs();
-    renderExercises();
+      var raw = localStorage.getItem(key);
+      return raw ? JSON.parse(raw) : fallback;
+    } catch (e) { return fallback; }
   }
 
-  async function save() {
+  function saveEntries() {
     try { localStorage.setItem(STORE_KEY, JSON.stringify(entries)); }
-    catch (e) { console.error('save failed', e); }
+    catch (e) { alert('Save failed: browser storage is full or unavailable.'); }
   }
 
+  function saveRoutine() {
+    try { localStorage.setItem(ROUTINE_KEY, JSON.stringify(routine)); }
+    catch (e) { alert('Could not save the routine.'); }
+  }
+
+  // v3 -> v4: sets become { weight, reps }. The v3 key is left untouched as a fallback.
+  function migrate() {
+    var v4 = readJSON(STORE_KEY, null);
+    if (v4) return v4;
+    var v3 = readJSON(LEGACY_KEY, null);
+    if (!v3) return {};
+    var out = {};
+    Object.keys(v3).forEach(function(key) {
+      out[key] = (v3[key] || []).map(function(s) {
+        return {
+          date: s.date,
+          easy: !!s.easy,
+          sets: (s.sets || []).map(function(x) { return { weight: x.weight, reps: null }; })
+        };
+      });
+    });
+    localStorage.setItem(STORE_KEY, JSON.stringify(out));
+    return out;
+  }
+
+  // ---------- helpers ----------
+  function esc(s) {
+    return String(s).replace(/[&<>"']/g, function(c) {
+      return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c];
+    });
+  }
   function todayStr() {
-    return new Date().toISOString().slice(0, 10);
+    var d = new Date();
+    return new Date(d.getTime() - d.getTimezoneOffset() * 60000).toISOString().slice(0, 10);
   }
-
   function fmtDate(iso) {
-    const d = new Date(iso + 'T00:00:00');
-    return d.toLocaleDateString(undefined, { day: 'numeric', month: 'short' });
+    var d = new Date(iso + 'T00:00:00');
+    return d.toLocaleDateString('en-GB', { day: 'numeric', month: 'short' });
   }
-
   function fmtClock(sec) {
-    const m = Math.floor(sec / 60);
-    const s = sec % 60;
-    return `${m}:${s.toString().padStart(2, '0')}`;
+    var m = Math.floor(sec / 60), s = sec % 60;
+    return m + ':' + String(s).padStart(2, '0');
+  }
+  function fmtRest(sec) {
+    return (sec >= 120 && sec % 60 === 0) ? (sec / 60) + ' min' : sec + ' sec';
+  }
+  function metaOf(ex) { return ex.sets + ' × ' + ex.repMin + '–' + ex.repMax; }
+  function avg(nums) { return nums.reduce(function(a, b) { return a + b; }, 0) / nums.length; }
+  function round1(n) { return Math.round(n * 10) / 10; }
+  function uid(prefix) { return prefix + '_' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6); }
+  function sortedHist(key) {
+    return (entries[key] || []).slice().sort(function(a, b) { return a.date.localeCompare(b.date); });
+  }
+  // Estimated 1RM, Epley formula. Not computable without reps.
+  function e1rm(set) {
+    if (!set.reps || set.reps < 1) return null;
+    return set.weight * (1 + set.reps / 30);
+  }
+  function bestOf(hist) {
+    var best = { weight: 0, e1rm: 0, e1rmDate: null, weightDate: null };
+    hist.forEach(function(s) {
+      s.sets.forEach(function(set) {
+        if (set.weight > best.weight) { best.weight = set.weight; best.weightDate = s.date; }
+        var e = e1rm(set);
+        if (e && e > best.e1rm) { best.e1rm = e; best.e1rmDate = s.date; }
+      });
+    });
+    return best;
+  }
+  function volumeOf(session) {
+    var v = 0, any = false;
+    session.sets.forEach(function(s) {
+      if (s.reps && s.reps > 0) { v += s.weight * s.reps; any = true; }
+    });
+    return any ? v : null;
+  }
+  function progressionHint(ex, last) {
+    if (!last) return '';
+    if (last.easy) return '↑ try adding weight';
+    var withReps = last.sets.filter(function(s) { return s.reps && s.reps > 0; });
+    if (withReps.length === last.sets.length && withReps.length > 0 &&
+        withReps.every(function(s) { return s.reps >= ex.repMax; })) {
+      return '↑ top of the range, add weight';
+    }
+    return '';
   }
 
-  function avg(nums) {
-    return nums.reduce((a, b) => a + b, 0) / nums.length;
+  // ---------- rest timer (clock-anchored, survives re-renders) ----------
+  var timer = readJSON(TIMER_KEY, null); // { key, endAt, restSec }
+  // A rest that ran out ages ago belongs to a past session: don't resurrect it on launch.
+  if (timer && (!timer.endAt || timer.endAt < Date.now() - 10 * 60 * 1000)) {
+    timer = null;
+    localStorage.removeItem(TIMER_KEY);
+  }
+  var ticker = null;
+
+  function timerRemaining() {
+    if (!timer) return 0;
+    return Math.max(0, Math.ceil((timer.endAt - Date.now()) / 1000));
+  }
+  function startTimer(key, restSec) {
+    timer = { key: key, endAt: Date.now() + restSec * 1000, restSec: restSec, alerted: false };
+    localStorage.setItem(TIMER_KEY, JSON.stringify(timer));
+    ensureTicker();
+    paintTimers();
+  }
+  function stopTimer() {
+    timer = null;
+    localStorage.removeItem(TIMER_KEY);
+    paintTimers();
+  }
+  function ensureTicker() {
+    if (ticker) return;
+    ticker = setInterval(paintTimers, 250);
+  }
+  function stopTicker() {
+    if (ticker) { clearInterval(ticker); ticker = null; }
+  }
+  function beep() {
+    try {
+      var Ctx = window.AudioContext || window.webkitAudioContext;
+      if (!Ctx) return;
+      var ctx = new Ctx(), o = ctx.createOscillator(), g = ctx.createGain();
+      o.connect(g); g.connect(ctx.destination);
+      o.frequency.value = 880; g.gain.value = 0.15;
+      o.start();
+      setTimeout(function() { o.stop(); ctx.close(); }, 350);
+    } catch (e) {}
+  }
+  function paintTimers() {
+    var btns = document.querySelectorAll('[data-timer]');
+    var remaining = timerRemaining();
+    if (timer && remaining <= 0 && !timer.alerted) {
+      timer.alerted = true;
+      if (navigator.vibrate) navigator.vibrate([250, 100, 250]);
+      beep();
+    }
+    btns.forEach(function(btn) {
+      var key = btn.getAttribute('data-timer');
+      btn.classList.remove('running', 'done');
+      if (timer && timer.key === key) {
+        if (remaining > 0) {
+          btn.textContent = fmtClock(remaining);
+          btn.classList.add('running');
+        } else {
+          btn.textContent = "Time's up — tap to restart";
+          btn.classList.add('done');
+        }
+      } else {
+        btn.textContent = 'Start rest timer (' + fmtRest(parseInt(btn.getAttribute('data-rest'), 10)) + ')';
+      }
+    });
+    // Nothing left to count down: stop ticking instead of spinning forever.
+    if (!timer || remaining <= 0) stopTicker();
   }
 
-  function clearAllTimers() {
-    Object.values(timers).forEach(t => clearInterval(t));
-    for (const k in timers) delete timers[k];
+  // ---------- render ----------
+  function render() {
+    document.getElementById('nav-log').classList.toggle('ghost', view !== 'log');
+    document.getElementById('nav-edit').classList.toggle('ghost', view !== 'edit');
+    document.getElementById('nav-data').classList.toggle('ghost', view !== 'data');
+    var sub = document.getElementById('subtitle');
+    sub.textContent = view === 'log' ? "Tap an exercise to log this week's weight"
+      : view === 'edit' ? 'Add, edit or reorder your exercises'
+      : 'Backup, restore and stats';
+    if (view === 'log') renderLog();
+    else if (view === 'edit') renderEdit();
+    else renderData();
   }
 
-  function renderTabs() {
-    const tabs = document.getElementById('tabs');
-    tabs.innerHTML = DAYS.map(d =>
-      `<div class="tab ${d.id === activeDay ? 'active' : ''}" data-day="${d.id}">${d.label}</div>`
-    ).join('');
-    tabs.querySelectorAll('.tab').forEach(t => {
-      t.addEventListener('click', () => {
+  function tabsHtml() {
+    return '<div class="tabs">' + routine.map(function(d) {
+      return '<div class="tab ' + (d.id === activeDay ? 'active' : '') + '" data-day="' + d.id + '">' + esc(d.label) + '</div>';
+    }).join('') + '</div>';
+  }
+
+  function bindTabs(root) {
+    root.querySelectorAll('[data-day]').forEach(function(t) {
+      t.addEventListener('click', function() {
         activeDay = t.getAttribute('data-day');
-        renderTabs();
-        renderExercises();
+        render();
       });
     });
   }
 
-  function renderExercises() {
-    clearAllTimers();
-    const day = DAYS.find(d => d.id === activeDay);
-    const list = document.getElementById('ex-list');
-    list.innerHTML = '';
-    day.exercises.forEach(ex => {
-      const key = slug(day.id, ex.name);
-      const setCount = parseSetCount(ex.meta);
-      const hist = (entries[key] || []).slice().sort((a, b) => a.date.localeCompare(b.date));
-      const last = hist[hist.length - 1];
-      const prev = hist[hist.length - 2];
+  function renderLog() {
+    var root = document.getElementById('view');
+    var day = routine.find(function(d) { return d.id === activeDay; }) || routine[0];
+    if (!day) { root.innerHTML = '<p class="hint">No days in your routine. Open “Routine” and add one.</p>'; return; }
+    activeDay = day.id;
 
-      const lastWeights = last ? last.sets.map(s => s.weight) : [];
-      const lastLabel = lastWeights.length
-        ? (lastWeights.every(w => w === lastWeights[0]) ? `${lastWeights[0]}kg` : lastWeights.join('/') + 'kg')
+    var html = tabsHtml();
+
+    day.exercises.forEach(function(ex) {
+      var key = ex.id;
+      var hist = sortedHist(key);
+      var last = hist[hist.length - 1];
+      var prev = hist[hist.length - 2];
+
+      var lastWeights = last ? last.sets.map(function(s) { return s.weight; }) : [];
+      var lastLabel = lastWeights.length
+        ? (lastWeights.every(function(w) { return w === lastWeights[0]; }) ? lastWeights[0] + 'kg' : lastWeights.join('/') + 'kg')
         : '—';
-      const lastEasy = last ? !!last.easy : false;
 
-      let deltaHtml = '';
+      // --- delta vs last: kept exactly as in the original version, do not refactor ---
+      var deltaHtml = '';
       if (last && prev) {
-        const diff = Math.round((avg(lastWeights) - avg(prev.sets.map(s => s.weight))) * 10) / 10;
-        const cls = diff > 0 ? 'up' : diff < 0 ? 'down' : 'flat';
-        const sign = diff > 0 ? '+' : '';
-        deltaHtml = `<div class="delta ${cls}">${sign}${diff}kg vs last</div>`;
+        var diff = Math.round((avg(lastWeights) - avg(prev.sets.map(function(s) { return s.weight; }))) * 10) / 10;
+        var cls = diff > 0 ? 'up' : diff < 0 ? 'down' : 'flat';
+        var sign = diff > 0 ? '+' : '';
+        deltaHtml = '<div class="delta ' + cls + '">' + sign + diff + 'kg vs last</div>';
       }
-      const easyNoteHtml = lastEasy ? `<div class="easy-note">↑ prova ad aumentare</div>` : '';
+      // --- end of untouched block ---
 
-      const maxW = Math.max(...hist.map(h => Math.max(...h.sets.map(s => s.weight))), 1);
-      const sparkBars = hist.slice(-8).map(h => {
-        const a = avg(h.sets.map(s => s.weight));
-        return `<div class="bar" style="height:${Math.max(8, (a / maxW) * 32)}px" title="${fmtDate(h.date)}: ${a}kg"></div>`;
+      var hint = progressionHint(ex, last);
+      var hintHtml = hint ? '<div class="easy-note">' + hint + '</div>' : '';
+
+      var best = bestOf(hist);
+      var isPr = !!(last && best.e1rmDate && best.e1rmDate === last.date && hist.length > 1);
+      var prHtml = isPr ? ' <span class="pr-badge">PR</span>' : '';
+
+      var maxW = Math.max.apply(null, hist.map(function(h) {
+        return Math.max.apply(null, h.sets.map(function(s) { return s.weight; }));
+      }).concat([1]));
+      var sparkBars = hist.slice(-8).map(function(h) {
+        var a = round1(avg(h.sets.map(function(s) { return s.weight; })));
+        return '<div class="bar" style="height:' + Math.max(8, (a / maxW) * 32) + 'px" title="' + fmtDate(h.date) + ': ' + a + 'kg"></div>';
       }).join('');
 
-      let setInputsHtml = '';
-      for (let i = 1; i <= setCount; i++) {
-        setInputsHtml += `
-          <div class="set-row">
-            <div class="set-label">Serie ${i}</div>
-            <input type="number" step="0.5" placeholder="kg" id="input-${key}-${i}" />
-          </div>`;
+      // Inputs are pre-filled with the last session so you only edit what changed.
+      var setInputs = '';
+      for (var i = 1; i <= ex.sets; i++) {
+        var pre = last && last.sets[i - 1] ? last.sets[i - 1] : null;
+        var pw = pre && pre.weight != null ? pre.weight : '';
+        var pr = pre && pre.reps != null ? pre.reps : '';
+        setInputs +=
+          '<div class="set-row">' +
+            '<div class="set-label">Set ' + i + '</div>' +
+            '<input type="number" inputmode="decimal" step="0.5" min="0" placeholder="kg" value="' + pw + '" id="w-' + key + '-' + i + '">' +
+            '<input type="number" inputmode="numeric" step="1" min="0" placeholder="reps" value="' + pr + '" id="r-' + key + '-' + i + '">' +
+          '</div>';
       }
-      setInputsHtml += `
-        <label class="easy-check" style="width:auto;margin:2px 0 10px;">
-          <input type="checkbox" id="easy-${key}" /> too easy, add weight next time
-        </label>`;
+      setInputs +=
+        '<label class="easy-check" style="width:auto;margin:2px 0 10px;">' +
+          '<input type="checkbox" id="easy-' + key + '"> too easy, add weight next time' +
+        '</label>';
 
-      const sessionsHtml = hist.slice().reverse().map(h => {
-        const chips = h.sets.map((s, idx) =>
-          `<span class="set-chip">S${idx + 1}: ${s.weight}kg</span>`
-        ).join('');
-        return `
-          <div class="session">
-            <div class="session-head">
-              <span>${fmtDate(h.date)}${h.easy ? ' <span style="color:#7FBF7F;">↑ easy</span>' : ''}</span>
-              <span class="del" data-del-key="${key}" data-del-date="${h.date}">Delete</span>
-            </div>
-            <div class="session-sets">${chips}</div>
-          </div>`;
+      var statsHtml = '';
+      if (hist.length) {
+        var lastVol = last ? volumeOf(last) : null;
+        statsHtml = '<div class="stats">' +
+          '<div class="stat">Best weight<b>' + (best.weight ? best.weight + ' kg' : '—') + '</b></div>' +
+          '<div class="stat">Est. 1RM<b>' + (best.e1rm ? round1(best.e1rm) + ' kg' : '—') + '</b></div>' +
+          '<div class="stat">Last volume<b>' + (lastVol ? round1(lastVol) + ' kg' : '—') + '</b></div>' +
+        '</div>';
+      }
+
+      var sessionsHtml = hist.slice().reverse().map(function(h) {
+        var chips = h.sets.map(function(s, idx) {
+          var reps = (s.reps && s.reps > 0) ? ' × ' + s.reps : '';
+          return '<span class="set-chip">S' + (idx + 1) + ': ' + s.weight + 'kg' + reps + '</span>';
+        }).join('');
+        var vol = volumeOf(h);
+        var volTxt = vol ? ' · ' + round1(vol) + 'kg vol' : '';
+        return '<div class="session">' +
+            '<div class="session-head">' +
+              '<span>' + fmtDate(h.date) + (h.easy ? ' <span style="color:#7FBF7F;">↑ easy</span>' : '') + volTxt + '</span>' +
+              '<span class="del" data-del-key="' + key + '" data-del-date="' + h.date + '">Delete</span>' +
+            '</div>' +
+            '<div class="session-sets">' + chips + '</div>' +
+          '</div>';
       }).join('') || '<div class="hist-row" style="color:#5C5A52;">No entries yet</div>';
 
-      const card = document.createElement('div');
-      card.className = 'card';
-      card.innerHTML = `
-        <div class="row" style="justify-content:space-between;cursor:pointer;" data-toggle="${key}">
-          <div>
-            <div class="ex-name">${ex.name}</div>
-            <div class="ex-meta">${ex.meta} · rest ${ex.rest}</div>
-          </div>
-          <div>
-            <div class="weight-badge">${lastLabel}</div>
-            ${deltaHtml}
-            ${easyNoteHtml}
-          </div>
-        </div>
-        ${hist.length ? `<div class="spark">${sparkBars}</div>` : ''}
-        <div class="row" style="margin-top:10px;gap:8px;">
-          <button class="ghost" data-timer="${key}" data-rest="${ex.restSec}" style="flex:1;">Start rest timer</button>
-        </div>
-        <div class="history" id="hist-${key}">
-          ${setInputsHtml}
-          <button data-log="${key}" data-setcount="${setCount}" style="width:100%;margin-top:4px;">Registra sessione</button>
-          <div style="margin-top:12px;padding-top:10px;border-top:1px solid #2C3036;">${sessionsHtml}</div>
-        </div>
-        <div class="toggle" data-toggle="${key}">View history / log new weight</div>
-      `;
-      list.appendChild(card);
+      var isOpen = !!openCards[key];
+
+      html +=
+        '<div class="card">' +
+          '<div class="row" style="justify-content:space-between;cursor:pointer;" data-toggle="' + key + '">' +
+            '<div>' +
+              '<div class="ex-name">' + esc(ex.name) + prHtml + '</div>' +
+              '<div class="ex-meta">' + metaOf(ex) + ' · rest ' + fmtRest(ex.restSec) + '</div>' +
+            '</div>' +
+            '<div>' +
+              '<div class="weight-badge">' + lastLabel + '</div>' +
+              deltaHtml +
+              hintHtml +
+            '</div>' +
+          '</div>' +
+          (hist.length ? '<div class="spark">' + sparkBars + '</div>' : '') +
+          '<div class="row" style="margin-top:10px;gap:8px;">' +
+            '<button class="ghost timer-btn" data-timer="' + key + '" data-rest="' + ex.restSec + '" style="flex:1;"></button>' +
+          '</div>' +
+          '<div class="history' + (isOpen ? ' open' : '') + '" id="hist-' + key + '">' +
+            setInputs +
+            '<button data-log="' + key + '" data-setcount="' + ex.sets + '" style="width:100%;margin-top:4px;">Log session</button>' +
+            '<div style="margin-top:12px;padding-top:10px;border-top:1px solid #2C3036;">' + statsHtml + sessionsHtml + '</div>' +
+          '</div>' +
+          '<div class="toggle" data-toggle="' + key + '">' + (isOpen ? 'Hide history' : 'View history / log new weight') + '</div>' +
+        '</div>';
     });
 
-    list.querySelectorAll('[data-toggle]').forEach(el => {
-      el.addEventListener('click', () => {
-        const key = el.getAttribute('data-toggle');
-        const h = document.getElementById('hist-' + key);
-        h.classList.toggle('open');
-        const isOpen = h.classList.contains('open');
-        list.querySelectorAll(`[data-toggle="${key}"].toggle`).forEach(t => {
-          t.textContent = isOpen ? 'Hide history' : 'View history / log new weight';
+    root.innerHTML = html;
+    bindTabs(root);
+
+    root.querySelectorAll('[data-toggle]').forEach(function(el) {
+      el.addEventListener('click', function() {
+        var key = el.getAttribute('data-toggle');
+        openCards[key] = !openCards[key];
+        var h = document.getElementById('hist-' + key);
+        h.classList.toggle('open', openCards[key]);
+        root.querySelectorAll('[data-toggle="' + key + '"].toggle').forEach(function(t) {
+          t.textContent = openCards[key] ? 'Hide history' : 'View history / log new weight';
         });
       });
     });
 
-    list.querySelectorAll('[data-log]').forEach(btn => {
-      btn.addEventListener('click', async (e) => {
+    root.querySelectorAll('[data-log]').forEach(function(btn) {
+      btn.addEventListener('click', function(e) {
         e.stopPropagation();
-        const key = btn.getAttribute('data-log');
-        const setCount = parseInt(btn.getAttribute('data-setcount'), 10);
-        const sets = [];
-        let hasError = false;
-        for (let i = 1; i <= setCount; i++) {
-          const input = document.getElementById(`input-${key}-${i}`);
-          const val = parseFloat(input.value);
-          if (val && val > 0) {
-            sets.push({ weight: val });
-            input.style.borderColor = '';
-          }
+        var key = btn.getAttribute('data-log');
+        var setCount = parseInt(btn.getAttribute('data-setcount'), 10);
+        var sets = [];
+        for (var i = 1; i <= setCount; i++) {
+          var wi = document.getElementById('w-' + key + '-' + i);
+          var ri = document.getElementById('r-' + key + '-' + i);
+          var w = parseFloat(wi.value);
+          var r = parseInt(ri.value, 10);
+          wi.style.borderColor = '';
+          if (w && w > 0) sets.push({ weight: w, reps: (r && r > 0) ? r : null });
         }
         if (sets.length === 0) {
-          const firstInput = document.getElementById(`input-${key}-1`);
-          firstInput.style.borderColor = '#D97757';
-          hasError = true;
-        }
-        if (hasError) return;
-        const easy = document.getElementById(`easy-${key}`).checked;
-        if (!entries[key]) entries[key] = [];
-        const today = todayStr();
-        const existingIdx = entries[key].findIndex(h => h.date === today);
-        if (existingIdx >= 0) { entries[key][existingIdx].sets = sets; entries[key][existingIdx].easy = easy; }
-        else entries[key].push({ date: today, sets, easy });
-        await save();
-        renderExercises();
-      });
-    });
-
-    list.querySelectorAll('[data-del-key]').forEach(del => {
-      del.addEventListener('click', async (e) => {
-        e.stopPropagation();
-        const key = del.getAttribute('data-del-key');
-        const date = del.getAttribute('data-del-date');
-        if (!confirm('Eliminare questa sessione?')) return;
-        entries[key] = (entries[key] || []).filter(h => h.date !== date);
-        await save();
-        renderExercises();
-      });
-    });
-
-    list.querySelectorAll('[data-timer]').forEach(btn => {
-      btn.addEventListener('click', (e) => {
-        e.stopPropagation();
-        const key = btn.getAttribute('data-timer');
-        const restSec = parseInt(btn.getAttribute('data-rest'), 10);
-
-        if (timers[key]) {
-          clearInterval(timers[key]);
-          delete timers[key];
-          btn.textContent = 'Start rest timer';
-          btn.style.color = '';
+          document.getElementById('w-' + key + '-1').style.borderColor = '#D97757';
           return;
         }
-
-        let remaining = restSec;
-        btn.textContent = fmtClock(remaining);
-        btn.style.color = '#E8A33D';
-        timers[key] = setInterval(() => {
-          remaining -= 1;
-          if (remaining <= 0) {
-            clearInterval(timers[key]);
-            delete timers[key];
-            btn.textContent = "Time's up — start again";
-            btn.style.color = '#7FBF7F';
-            if (navigator.vibrate) navigator.vibrate([250, 100, 250]);
-            return;
-          }
-          btn.textContent = fmtClock(remaining);
-        }, 1000);
+        var easy = document.getElementById('easy-' + key).checked;
+        if (!entries[key]) entries[key] = [];
+        var today = todayStr();
+        var idx = entries[key].findIndex(function(h) { return h.date === today; });
+        if (idx >= 0) { entries[key][idx].sets = sets; entries[key][idx].easy = easy; }
+        else entries[key].push({ date: today, sets: sets, easy: easy });
+        saveEntries();
+        render();
       });
+    });
+
+    root.querySelectorAll('[data-del-key]').forEach(function(del) {
+      del.addEventListener('click', function(e) {
+        e.stopPropagation();
+        var key = del.getAttribute('data-del-key');
+        var date = del.getAttribute('data-del-date');
+        if (!confirm('Delete this entry?')) return;
+        entries[key] = (entries[key] || []).filter(function(h) { return h.date !== date; });
+        saveEntries();
+        render();
+      });
+    });
+
+    root.querySelectorAll('[data-timer]').forEach(function(btn) {
+      btn.addEventListener('click', function(e) {
+        e.stopPropagation();
+        var key = btn.getAttribute('data-timer');
+        var restSec = parseInt(btn.getAttribute('data-rest'), 10);
+        if (timer && timer.key === key && timerRemaining() > 0) stopTimer();
+        else startTimer(key, restSec);
+      });
+    });
+
+    ensureTicker();
+    paintTimers();
+  }
+
+  // ---------- routine editor ----------
+  function renderEdit() {
+    var root = document.getElementById('view');
+    var day = routine.find(function(d) { return d.id === activeDay; }) || routine[0];
+    var html = tabsHtml();
+
+    if (day) {
+      activeDay = day.id;
+      html +=
+        '<div class="card">' +
+          '<label class="hint">Day name</label>' +
+          '<input id="day-label" value="' + esc(day.label) + '" style="margin-top:6px;">' +
+          '<div class="ed-actions">' +
+            '<button class="ghost mini" id="day-save">Save name</button>' +
+            '<button class="danger mini" id="day-del">Delete day</button>' +
+          '</div>' +
+        '</div>';
+
+      day.exercises.forEach(function(ex, i) {
+        html +=
+          '<div class="ed-ex">' +
+            '<input data-f="name" data-i="' + i + '" value="' + esc(ex.name) + '">' +
+            '<div class="ed-grid">' +
+              '<label>Sets<input type="number" min="1" max="12" data-f="sets" data-i="' + i + '" value="' + ex.sets + '"></label>' +
+              '<label>Rep min<input type="number" min="1" data-f="repMin" data-i="' + i + '" value="' + ex.repMin + '"></label>' +
+              '<label>Rep max<input type="number" min="1" data-f="repMax" data-i="' + i + '" value="' + ex.repMax + '"></label>' +
+              '<label>Rest sec<input type="number" min="0" step="15" data-f="restSec" data-i="' + i + '" value="' + ex.restSec + '"></label>' +
+            '</div>' +
+            '<div class="ed-actions">' +
+              '<button class="ghost mini" data-move="' + i + '" data-dir="-1"' + (i === 0 ? ' disabled' : '') + '>↑</button>' +
+              '<button class="ghost mini" data-move="' + i + '" data-dir="1"' + (i === day.exercises.length - 1 ? ' disabled' : '') + '>↓</button>' +
+              '<button class="danger mini" data-rm="' + i + '">Delete</button>' +
+            '</div>' +
+          '</div>';
+      });
+
+      html +=
+        '<button id="add-ex" style="width:100%;margin-top:6px;">+ Add exercise</button>';
+    }
+
+    html +=
+      '<div class="toolbar" style="margin-top:14px;">' +
+        '<button class="ghost mini" id="add-day">+ New day</button>' +
+        '<button class="ghost mini" id="reset-routine">Reset routine</button>' +
+      '</div>' +
+      '<p class="hint" style="margin-top:10px;">Field edits are saved as soon as you leave the field. Deleting an exercise keeps its history: recreate it with the same name on the same day and the history comes back.</p>';
+
+    root.innerHTML = html;
+    bindTabs(root);
+
+    if (!day) return;
+
+    root.querySelectorAll('[data-f]').forEach(function(inp) {
+      inp.addEventListener('change', function() {
+        var i = parseInt(inp.getAttribute('data-i'), 10);
+        var f = inp.getAttribute('data-f');
+        var ex = day.exercises[i];
+        if (f === 'name') {
+          var v = inp.value.trim();
+          if (!v) { inp.value = ex.name; return; }
+          ex.name = v;
+        } else {
+          var n = parseInt(inp.value, 10);
+          if (isNaN(n) || n < 0) { inp.value = ex[f]; return; }
+          ex[f] = n;
+        }
+        if (ex.repMax < ex.repMin) ex.repMax = ex.repMin;
+        saveRoutine();
+        renderEdit();
+      });
+    });
+
+    document.getElementById('day-save').addEventListener('click', function() {
+      var v = document.getElementById('day-label').value.trim();
+      if (v) { day.label = v; saveRoutine(); render(); }
+    });
+
+    document.getElementById('day-del').addEventListener('click', function() {
+      if (routine.length <= 1) { alert('You need to keep at least one day.'); return; }
+      if (!confirm('Delete "' + day.label + '"? Exercise history is kept.')) return;
+      routine = routine.filter(function(d) { return d.id !== day.id; });
+      activeDay = routine[0].id;
+      saveRoutine();
+      render();
+    });
+
+    root.querySelectorAll('[data-move]').forEach(function(b) {
+      b.addEventListener('click', function() {
+        var i = parseInt(b.getAttribute('data-move'), 10);
+        var dir = parseInt(b.getAttribute('data-dir'), 10);
+        var j = i + dir;
+        if (j < 0 || j >= day.exercises.length) return;
+        var tmp = day.exercises[i];
+        day.exercises[i] = day.exercises[j];
+        day.exercises[j] = tmp;
+        saveRoutine();
+        renderEdit();
+      });
+    });
+
+    root.querySelectorAll('[data-rm]').forEach(function(b) {
+      b.addEventListener('click', function() {
+        var i = parseInt(b.getAttribute('data-rm'), 10);
+        if (!confirm('Remove "' + day.exercises[i].name + '" from the routine? Its history is kept.')) return;
+        day.exercises.splice(i, 1);
+        saveRoutine();
+        renderEdit();
+      });
+    });
+
+    document.getElementById('add-ex').addEventListener('click', function() {
+      var name = prompt('New exercise name:');
+      if (!name || !name.trim()) return;
+      name = name.trim();
+      var legacyId = day.id + '_' + name.toLowerCase().replace(/[^a-z0-9]+/g, '_');
+      var taken = routine.some(function(d) {
+        return d.exercises.some(function(e) { return e.id === legacyId; });
+      });
+      day.exercises.push({
+        id: taken ? uid('ex') : legacyId,
+        name: name, sets: 3, repMin: 8, repMax: 12, restSec: 90
+      });
+      saveRoutine();
+      renderEdit();
+    });
+
+    document.getElementById('add-day').addEventListener('click', function() {
+      var label = prompt('New day name:', 'Day ' + (routine.length + 1));
+      if (!label || !label.trim()) return;
+      var d = { id: uid('day'), label: label.trim(), exercises: [] };
+      routine.push(d);
+      activeDay = d.id;
+      saveRoutine();
+      render();
+    });
+
+    document.getElementById('reset-routine').addEventListener('click', function() {
+      if (!confirm('Reset to the original routine? Your logged weights are NOT affected.')) return;
+      routine = defaultRoutine();
+      activeDay = routine[0].id;
+      saveRoutine();
+      render();
     });
   }
 
-  load();
+  // ---------- data / backup ----------
+  function exportPayload() {
+    return {
+      app: 'gymlog',
+      version: 4,
+      exportedAt: new Date().toISOString(),
+      routine: routine,
+      entries: entries
+    };
+  }
+
+  function renderData() {
+    var root = document.getElementById('view');
+    var keys = Object.keys(entries).filter(function(k) { return (entries[k] || []).length; });
+    var totalSessions = 0, allDates = [];
+    keys.forEach(function(k) {
+      totalSessions += entries[k].length;
+      entries[k].forEach(function(s) { allDates.push(s.date); });
+    });
+    allDates.sort();
+    var uniqueDays = allDates.filter(function(d, i) { return allDates.indexOf(d) === i; }).length;
+
+    root.innerHTML =
+      '<div class="stats" style="margin-top:4px;">' +
+        '<div class="stat">Exercises tracked<b>' + keys.length + '</b></div>' +
+        '<div class="stat">Total sessions<b>' + totalSessions + '</b></div>' +
+        '<div class="stat">Gym days<b>' + uniqueDays + '</b></div>' +
+      '</div>' +
+      '<div class="card">' +
+        '<div class="ex-name">Backup</div>' +
+        '<p class="hint" style="margin:4px 0 10px;">Your data lives in this browser only. Download a file every so often: if you switch phone or the browser clears its storage, without a backup it is gone.</p>' +
+        '<button id="do-export" style="width:100%;">Download .json backup</button>' +
+        '<button class="ghost" id="do-copy" style="width:100%;margin-top:8px;">Copy to clipboard</button>' +
+      '</div>' +
+      '<div class="card">' +
+        '<div class="ex-name">Restore</div>' +
+        '<p class="hint" style="margin:4px 0 10px;">Load a backup file, or paste its contents below and hit Import. This replaces all current data.</p>' +
+        '<input type="file" accept="application/json,.json" id="file-in" style="padding:8px;">' +
+        '<textarea id="paste-in" placeholder="...or paste the JSON here" style="margin-top:8px;"></textarea>' +
+        '<button class="ghost" id="do-import" style="width:100%;margin-top:8px;">Import from pasted text</button>' +
+      '</div>' +
+      '<div class="card">' +
+        '<div class="ex-name" style="color:#D97757;">Danger zone</div>' +
+        '<p class="hint" style="margin:4px 0 10px;">Wipes every logged session. Your routine stays.</p>' +
+        '<button class="danger" id="do-wipe" style="width:100%;">Delete all history</button>' +
+      '</div>';
+
+    document.getElementById('do-export').addEventListener('click', function() {
+      var blob = new Blob([JSON.stringify(exportPayload(), null, 2)], { type: 'application/json' });
+      var url = URL.createObjectURL(blob);
+      var a = document.createElement('a');
+      a.href = url;
+      a.download = 'gymlog-backup-' + todayStr() + '.json';
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      setTimeout(function() { URL.revokeObjectURL(url); }, 1000);
+    });
+
+    document.getElementById('do-copy').addEventListener('click', function() {
+      var txt = JSON.stringify(exportPayload());
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(txt).then(function() { alert('Backup copied to clipboard.'); },
+          function() { document.getElementById('paste-in').value = txt; });
+      } else {
+        document.getElementById('paste-in').value = txt;
+        alert('Copy the text from the box below manually.');
+      }
+    });
+
+    document.getElementById('file-in').addEventListener('change', function(e) {
+      var f = e.target.files && e.target.files[0];
+      if (!f) return;
+      var reader = new FileReader();
+      reader.onload = function() { applyImport(reader.result); };
+      reader.readAsText(f);
+    });
+
+    document.getElementById('do-import').addEventListener('click', function() {
+      applyImport(document.getElementById('paste-in').value);
+    });
+
+    document.getElementById('do-wipe').addEventListener('click', function() {
+      if (!confirm('Delete ALL logged history?')) return;
+      if (!confirm("Are you sure? This can't be undone without a backup.")) return;
+      entries = {};
+      saveEntries();
+      alert('History deleted.');
+      render();
+    });
+  }
+
+  function applyImport(text) {
+    var data;
+    try { data = JSON.parse(text); }
+    catch (e) { alert('Invalid file: that is not readable JSON.'); return; }
+
+    var newEntries = data && data.entries ? data.entries : data;
+    if (!newEntries || typeof newEntries !== 'object' || Array.isArray(newEntries)) {
+      alert('Invalid file: no history found inside.');
+      return;
+    }
+    var count = 0;
+    for (var k in newEntries) {
+      if (!Array.isArray(newEntries[k])) { alert('Invalid file: unexpected history structure.'); return; }
+      count += newEntries[k].length;
+    }
+    if (!confirm('Import ' + count + ' sessions? Your current data will be replaced.')) return;
+
+    entries = newEntries;
+    saveEntries();
+    if (data && Array.isArray(data.routine) && data.routine.length) {
+      routine = data.routine;
+      saveRoutine();
+      activeDay = routine[0].id;
+    }
+    alert('Import complete.');
+    view = 'log';
+    render();
+  }
+
+  // ---------- bootstrap ----------
+  entries = migrate();
+  routine = readJSON(ROUTINE_KEY, null);
+  if (!Array.isArray(routine) || !routine.length) routine = defaultRoutine();
+  activeDay = routine[0].id;
+
+  document.getElementById('nav-log').addEventListener('click', function() { view = 'log'; render(); });
+  document.getElementById('nav-edit').addEventListener('click', function() { view = 'edit'; render(); });
+  document.getElementById('nav-data').addEventListener('click', function() { view = 'data'; render(); });
+
+  render();
 })();
 </script>
 
 <script>
 if ('serviceWorker' in navigator) {
-  window.addEventListener('load', () => {
-    navigator.serviceWorker.register('service-worker.js').catch(() => {});
+  window.addEventListener('load', function() {
+    navigator.serviceWorker.register('service-worker.js').catch(function() {});
   });
 }
 </script>
 </body>
 </html>
-
