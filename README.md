@@ -9,6 +9,15 @@ Live: `https://gianlucagrillo.github.io/gymlog/`
 
 - **Multi-day routine** — editable from inside the app: add, rename, reorder or
   delete exercises and days without touching the code.
+- **Several saved routines** — e.g. a specialisation block and the plan that
+  follows it. Duplicate one to start the next; exercises you keep share their
+  history with the original.
+- **Training cycle** — set a start date and length per routine and the header
+  shows "Week 3 / 6", turning red once the planned block is over.
+- **Priority exercises** — flag the lifts that matter most in the block; they
+  are highlighted in the workout view.
+- **Sets per muscle** — each exercise has a target muscle, and the Data view
+  shows sets logged since Monday against the weekly plan.
 - **Per-set logging** — weight and reps for every single set, with the inputs
   pre-filled from your last session so you only change what moved.
 - **Progression** — delta against the previous session, a sparkline of the last

@@ -26,6 +26,7 @@
   #gymlog select:focus, #gymlog input:focus, #gymlog textarea:focus { outline: none; border-color: #E8A33D; }
   #gymlog button { background: #E8A33D; color: #16181B; border: none; border-radius: 8px; padding: 11px 16px; font-weight: 600; font-size: 14px; cursor: pointer; }
   #gymlog button:active { transform: scale(0.98); }
+  #gymlog button:disabled { opacity: .35; cursor: default; }
   #gymlog button.ghost { background: transparent; border: 1px solid #3A3E46; color: #B7B4A9; }
   #gymlog button.danger { background: transparent; border: 1px solid #D97757; color: #D97757; }
   #gymlog button.mini { padding: 6px 10px; font-size: 12px; }
@@ -77,6 +78,19 @@
   #gymlog .timer-btn.done { color: #7FBF7F; border-color: #7FBF7F; }
   #gymlog .draft-note { font-size: 11px; color: #E8A33D; margin-top: 6px; text-align: center; }
   #gymlog [hidden] { display: none !important; }
+  #gymlog .cycle-line { color: #E8A33D; font-size: 12px; font-weight: 600; margin: 4px 0 0; }
+  #gymlog .cycle-line.over { color: #D97757; }
+  #gymlog .card.priority { box-shadow: inset 3px 0 0 #E8A33D; }
+  #gymlog .prio-tag { display: inline-block; border: 1px solid #E8A33D; color: #E8A33D; border-radius: 5px; padding: 0 5px; font-size: 9px; font-weight: 700; letter-spacing: .05em; vertical-align: middle; margin-left: 4px; }
+  #gymlog .ed-grid select { margin-top: 3px; padding: 7px 8px; font-size: 13px; }
+  #gymlog .prio-check { display: flex; align-items: flex-end; gap: 6px; padding-bottom: 8px; }
+  #gymlog .prio-check input { width: auto; accent-color: #E8A33D; margin: 0; }
+  #gymlog .vol-row { display: flex; align-items: center; gap: 8px; font-size: 12px; color: #B7B4A9; padding: 4px 0; }
+  #gymlog .vol-name { width: 88px; flex-shrink: 0; }
+  #gymlog .vol-track { flex: 1; height: 8px; background: #21242A; border-radius: 4px; overflow: hidden; }
+  #gymlog .vol-fill { height: 100%; background: #E8A33D; }
+  #gymlog .vol-fill.full { background: #7FBF7F; }
+  #gymlog .vol-num { width: 44px; text-align: right; flex-shrink: 0; color: #EDEBE3; }
 </style>
 </head>
 <body>
@@ -86,6 +100,7 @@
     <div>
       <h1 style="font-size:28px;font-weight:700;margin:0 0 2px;">Gym log</h1>
       <p id="subtitle" style="color:#8C8A82;font-size:13px;margin:0;">Tap an exercise to log this week's weight</p>
+      <p id="cycle-line" class="cycle-line" hidden></p>
     </div>
   </div>
   <div class="toolbar">
@@ -102,48 +117,51 @@
   'use strict';
 
   // ---------- default routine ----------
+  var MUSCLES = ['Side delts', 'Front delts', 'Rear delts', 'Chest', 'Back', 'Biceps', 'Triceps',
+                 'Quads', 'Hamstrings', 'Glutes', 'Calves', 'Abs', 'Other'];
+
   function defaultRoutine() {
     return [
       { id: 'day1', label: 'Day 1', exercises: [
-        { name: 'Dumbbell lateral raise', sets: 3, repMin: 6, repMax: 10, restSec: 90 },
-        { name: 'Incline dumbbell press', sets: 3, repMin: 6, repMax: 10, restSec: 180 },
-        { name: 'Flat machine/chest press', sets: 3, repMin: 8, repMax: 12, restSec: 120 },
-        { name: 'Seated dumbbell shoulder press', sets: 3, repMin: 8, repMax: 12, restSec: 120 },
-        { name: 'Seated dumbbell lateral raise', sets: 4, repMin: 12, repMax: 20, restSec: 90 },
-        { name: 'Overhead dumbbell triceps extension', sets: 3, repMin: 10, repMax: 15, restSec: 90 }
+        { name: 'Dumbbell lateral raise', muscle: 'Side delts', priority: true, sets: 3, repMin: 6, repMax: 10, restSec: 90 },
+        { name: 'Incline dumbbell press', muscle: 'Chest', sets: 3, repMin: 6, repMax: 10, restSec: 180 },
+        { name: 'Flat machine/chest press', muscle: 'Chest', sets: 3, repMin: 8, repMax: 12, restSec: 120 },
+        { name: 'Seated dumbbell shoulder press', muscle: 'Front delts', sets: 3, repMin: 8, repMax: 12, restSec: 120 },
+        { name: 'Seated dumbbell lateral raise', muscle: 'Side delts', sets: 4, repMin: 12, repMax: 20, restSec: 90 },
+        { name: 'Overhead dumbbell triceps extension', muscle: 'Triceps', sets: 3, repMin: 10, repMax: 15, restSec: 90 }
       ]},
       { id: 'day2', label: 'Day 2', exercises: [
-        { name: 'Dumbbell shoulder press', sets: 3, repMin: 6, repMax: 10, restSec: 90 },
-        { name: 'Pull-ups / lat pulldown', sets: 3, repMin: 6, repMax: 10, restSec: 180 },
-        { name: 'Chest-supported row', sets: 3, repMin: 8, repMax: 12, restSec: 120 },
-        { name: 'Reverse pec deck', sets: 4, repMin: 12, repMax: 20, restSec: 90 },
-        { name: 'Incline dumbbell curl', sets: 3, repMin: 8, repMax: 12, restSec: 90 },
-        { name: 'Dumbbell hammer curl', sets: 2, repMin: 10, repMax: 15, restSec: 90 }
+        { name: 'Dumbbell shoulder press', muscle: 'Front delts', priority: true, sets: 3, repMin: 6, repMax: 10, restSec: 120 },
+        { name: 'Pull-ups / lat pulldown', muscle: 'Back', sets: 3, repMin: 6, repMax: 10, restSec: 180 },
+        { name: 'Chest-supported row', muscle: 'Back', sets: 3, repMin: 8, repMax: 12, restSec: 120 },
+        { name: 'Reverse pec deck', muscle: 'Rear delts', sets: 4, repMin: 12, repMax: 20, restSec: 90 },
+        { name: 'Incline dumbbell curl', muscle: 'Biceps', sets: 3, repMin: 8, repMax: 12, restSec: 90 },
+        { name: 'Dumbbell hammer curl', muscle: 'Biceps', sets: 2, repMin: 10, repMax: 15, restSec: 90 }
       ]},
       { id: 'day3', label: 'Day 3', exercises: [
-        { name: 'Dumbbell lateral raise', sets: 3, repMin: 6, repMax: 10, restSec: 90 },
-        { name: 'Squat / hack squat', sets: 3, repMin: 6, repMax: 10, restSec: 180 },
-        { name: 'Romanian deadlift', sets: 3, repMin: 8, repMax: 12, restSec: 180 },
-        { name: 'Leg press', sets: 3, repMin: 10, repMax: 15, restSec: 120 },
-        { name: 'Leg curl', sets: 3, repMin: 10, repMax: 15, restSec: 90 },
-        { name: 'Standing calf raise', sets: 4, repMin: 8, repMax: 15, restSec: 90 }
+        { name: 'Dumbbell lateral raise', muscle: 'Side delts', priority: true, sets: 3, repMin: 6, repMax: 10, restSec: 90 },
+        { name: 'Squat / hack squat', muscle: 'Quads', sets: 3, repMin: 6, repMax: 10, restSec: 180 },
+        { name: 'Romanian deadlift', muscle: 'Hamstrings', sets: 3, repMin: 8, repMax: 12, restSec: 180 },
+        { name: 'Leg press', muscle: 'Quads', sets: 3, repMin: 10, repMax: 15, restSec: 120 },
+        { name: 'Leg curl', muscle: 'Hamstrings', sets: 3, repMin: 10, repMax: 15, restSec: 90 },
+        { name: 'Standing calf raise', muscle: 'Calves', sets: 4, repMin: 8, repMax: 15, restSec: 90 }
       ]},
       { id: 'day4', label: 'Day 4', exercises: [
-        { name: 'Dumbbell shoulder press', sets: 3, repMin: 6, repMax: 10, restSec: 90 },
-        { name: 'Seated dumbbell lateral raise', sets: 4, repMin: 12, repMax: 20, restSec: 90 },
-        { name: 'Reverse pec deck', sets: 3, repMin: 12, repMax: 20, restSec: 90 },
-        { name: 'EZ-bar curl', sets: 3, repMin: 8, repMax: 12, restSec: 90 },
-        { name: 'Dumbbell skull crusher', sets: 3, repMin: 10, repMax: 15, restSec: 90 },
-        { name: 'Overhead dumbbell triceps extension', sets: 2, repMin: 10, repMax: 15, restSec: 90 }
+        { name: 'Dumbbell shoulder press', muscle: 'Front delts', priority: true, sets: 3, repMin: 6, repMax: 10, restSec: 120 },
+        { name: 'Seated dumbbell lateral raise', muscle: 'Side delts', sets: 4, repMin: 12, repMax: 20, restSec: 90 },
+        { name: 'Reverse pec deck', muscle: 'Rear delts', sets: 3, repMin: 12, repMax: 20, restSec: 90 },
+        { name: 'EZ-bar curl', muscle: 'Biceps', sets: 3, repMin: 8, repMax: 12, restSec: 90 },
+        { name: 'Dumbbell skull crusher', muscle: 'Triceps', sets: 3, repMin: 10, repMax: 15, restSec: 90 },
+        { name: 'Overhead dumbbell triceps extension', muscle: 'Triceps', sets: 2, repMin: 10, repMax: 15, restSec: 90 }
       ]},
       { id: 'day5', label: 'Day 5', exercises: [
-        { name: 'Dumbbell lateral raise', sets: 3, repMin: 6, repMax: 10, restSec: 90 },
-        { name: 'Incline Smith/machine press', sets: 3, repMin: 6, repMax: 10, restSec: 180 },
-        { name: 'Lat pulldown', sets: 3, repMin: 8, repMax: 12, restSec: 120 },
+        { name: 'Dumbbell lateral raise', muscle: 'Side delts', priority: true, sets: 3, repMin: 6, repMax: 10, restSec: 90 },
+        { name: 'Incline Smith/machine press', muscle: 'Chest', sets: 3, repMin: 6, repMax: 10, restSec: 180 },
+        { name: 'Lat pulldown', muscle: 'Back', sets: 3, repMin: 8, repMax: 12, restSec: 120 },
         // Moved here from Day 2: keeps the Day 2 id so its history stays attached.
-        { id: 'day2_cable_row', name: 'Cable row', sets: 3, repMin: 8, repMax: 12, restSec: 120 },
-        { name: 'Seated dumbbell lateral raise', sets: 4, repMin: 12, repMax: 20, restSec: 90 },
-        { name: 'Reverse pec deck', sets: 2, repMin: 12, repMax: 20, restSec: 90 }
+        { id: 'day2_cable_row', name: 'Cable row', muscle: 'Back', sets: 3, repMin: 8, repMax: 12, restSec: 120 },
+        { name: 'Seated dumbbell lateral raise', muscle: 'Side delts', sets: 4, repMin: 12, repMax: 20, restSec: 90 },
+        { name: 'Reverse pec deck', muscle: 'Rear delts', sets: 2, repMin: 12, repMax: 20, restSec: 90 }
       ]}
     ].map(function(d) {
       d.exercises = d.exercises.map(function(ex) {
@@ -155,10 +173,28 @@
     });
   }
 
+  // Routines saved before muscles/priority existed get them from the default routine
+  // (matched by exercise id, then by name). Unknown exercises fall back to 'Other'.
+  function fillMeta(days) {
+    var byId = {}, byName = {};
+    defaultRoutine().forEach(function(d) {
+      d.exercises.forEach(function(e) { byId[e.id] = e; byName[e.name.toLowerCase()] = e; });
+    });
+    days.forEach(function(d) {
+      d.exercises.forEach(function(e) {
+        var ref = byId[e.id] || byName[e.name.toLowerCase()];
+        if (!e.muscle) e.muscle = ref ? ref.muscle : 'Other';
+        if (e.priority === undefined) e.priority = !!(ref && ref.priority);
+      });
+    });
+    return days;
+  }
+
   // ---------- storage ----------
   var STORE_KEY = 'gymlog-entries-v4';
   var LEGACY_KEY = 'gymlog-entries-v3';
   var ROUTINE_KEY = 'gymlog-routine-v1';
+  var ROUTINES_KEY = 'gymlog-routines-v1';
   var TIMER_KEY = 'gymlog-timer-v1';
   var BACKUP_KEY = 'gymlog-lastbackup-v1';
 
@@ -181,9 +217,90 @@
     catch (e) { alert('Save failed: browser storage is full or unavailable.'); }
   }
 
+  // ---------- routines: several saved plans, one active; `routine` is the active plan's days ----------
+  // store = { active: id, list: [{ id, name, days, cycle: { start: 'YYYY-MM-DD', weeks: n } | null }] }
+  var store = null;
+
+  function activePlan() {
+    return store.list.find(function(p) { return p.id === store.active; }) || store.list[0];
+  }
   function saveRoutine() {
-    try { localStorage.setItem(ROUTINE_KEY, JSON.stringify(routine)); }
+    activePlan().days = routine;
+    try { localStorage.setItem(ROUTINES_KEY, JSON.stringify(store)); }
     catch (e) { alert('Could not save the routine.'); }
+  }
+  function loadRoutines() {
+    var s = readJSON(ROUTINES_KEY, null);
+    if (!s || !Array.isArray(s.list) || !s.list.length) {
+      // First run with multi-routine support: the single saved routine (or the default) becomes plan #1.
+      var old = readJSON(ROUTINE_KEY, null);
+      var days = Array.isArray(old) && old.length ? old : defaultRoutine();
+      s = { active: 'plan1', list: [{ id: 'plan1', name: 'Shoulder specialization', days: days, cycle: null }] };
+    }
+    s.list.forEach(function(p) { fillMeta(p.days); });
+    store = s;
+    routine = activePlan().days;
+    try { localStorage.setItem(ROUTINES_KEY, JSON.stringify(store)); } catch (e) {}
+  }
+  function switchPlan(id) {
+    store.active = id;
+    routine = activePlan().days;
+    saveRoutine();
+    activeDay = pickStartDay();
+  }
+
+  // ---------- training cycle ----------
+  function cycleInfo() {
+    var c = activePlan().cycle;
+    if (!c || !c.start || !c.weeks) return null;
+    var start = new Date(c.start + 'T00:00:00');
+    var today = new Date(todayStr() + 'T00:00:00');
+    var days = Math.round((today - start) / 86400000);
+    if (days < 0) return { text: 'Cycle starts in ' + (-days) + (days === -1 ? ' day' : ' days'), over: false };
+    var week = Math.floor(days / 7) + 1;
+    if (week > c.weeks) return { text: 'Week ' + week + ' — cycle planned for ' + c.weeks + ' weeks is over', over: true };
+    return { text: 'Week ' + week + ' / ' + c.weeks + (week === c.weeks ? ' — last week' : ''), over: false };
+  }
+  function paintCycle() {
+    var el = document.getElementById('cycle-line');
+    var info = cycleInfo();
+    var name = activePlan().name;
+    if (!info && store.list.length < 2) { el.hidden = true; return; }
+    el.hidden = false;
+    el.textContent = (store.list.length > 1 ? name : '') + (info ? (store.list.length > 1 ? ' · ' : '') + info.text : '');
+    el.classList.toggle('over', !!(info && info.over));
+  }
+
+  // ---------- weekly sets per muscle ----------
+  function mondayOf(dateStr) {
+    var d = new Date(dateStr + 'T00:00:00');
+    var dow = (d.getDay() + 6) % 7;
+    d.setDate(d.getDate() - dow);
+    return new Date(d.getTime() - d.getTimezoneOffset() * 60000).toISOString().slice(0, 10);
+  }
+  function weeklyVolume() {
+    var planned = {}, done = {}, muscleOf = {};
+    routine.forEach(function(d) {
+      d.exercises.forEach(function(e) {
+        planned[e.muscle] = (planned[e.muscle] || 0) + e.sets;
+        muscleOf[e.id] = e.muscle;
+      });
+    });
+    // Exercises from other saved routines still count if logged this week.
+    store.list.forEach(function(p) {
+      p.days.forEach(function(d) { d.exercises.forEach(function(e) { if (!muscleOf[e.id]) muscleOf[e.id] = e.muscle; }); });
+    });
+    var weekStart = mondayOf(todayStr());
+    for (var k in entries) {
+      var m = muscleOf[k];
+      if (!m) continue;
+      (entries[k] || []).forEach(function(s) {
+        if (s.date >= weekStart) done[m] = (done[m] || 0) + s.sets.length;
+      });
+    }
+    return MUSCLES.filter(function(m) { return planned[m] || done[m]; })
+      .map(function(m) { return { muscle: m, done: done[m] || 0, planned: planned[m] || 0 }; })
+      .sort(function(a, b) { return b.planned - a.planned || b.done - a.done; });
   }
 
   // ---------- drafts: typed-but-unlogged values survive the re-render after logging another exercise ----------
@@ -438,6 +555,7 @@
     else if (view === 'edit') renderEdit();
     else renderData();
     paintBackupNote();
+    paintCycle();
   }
 
   function tabsHtml() {
@@ -557,10 +675,10 @@
       if (draft) openCards[key] = true;
 
       html +=
-        '<div class="card">' +
+        '<div class="card' + (ex.priority ? ' priority' : '') + '">' +
           '<div class="row" style="justify-content:space-between;cursor:pointer;" data-toggle="' + key + '">' +
             '<div>' +
-              '<div class="ex-name">' + esc(ex.name) + prHtml + '</div>' +
+              '<div class="ex-name">' + esc(ex.name) + (ex.priority ? '<span class="prio-tag">PRIORITY</span>' : '') + prHtml + '</div>' +
               '<div class="ex-meta">' + metaOf(ex) + ' · rest ' + fmtRest(ex.restSec) + '</div>' +
             '</div>' +
             '<div>' +
@@ -671,7 +789,30 @@
   function renderEdit() {
     var root = document.getElementById('view');
     var day = routine.find(function(d) { return d.id === activeDay; }) || routine[0];
-    var html = tabsHtml();
+    var plan = activePlan();
+    var cyc = plan.cycle || {};
+
+    var html =
+      '<div class="card" style="margin-top:14px;">' +
+        '<label class="hint">Active routine</label>' +
+        '<select id="plan-select" style="margin-top:6px;">' +
+          store.list.map(function(p) {
+            return '<option value="' + p.id + '"' + (p.id === plan.id ? ' selected' : '') + '>' + esc(p.name) + '</option>';
+          }).join('') +
+        '</select>' +
+        '<div class="ed-grid">' +
+          '<label style="flex:2;">Name<input id="plan-name" value="' + esc(plan.name) + '" style="text-align:left;"></label>' +
+        '</div>' +
+        '<div class="ed-grid">' +
+          '<label style="flex:2;">Cycle start<input type="date" id="cycle-start" value="' + (cyc.start || '') + '"></label>' +
+          '<label>Weeks<input type="number" min="1" max="52" id="cycle-weeks" value="' + (cyc.weeks || '') + '"></label>' +
+        '</div>' +
+        '<div class="ed-actions">' +
+          '<button class="ghost mini" id="plan-dup">Duplicate</button>' +
+          '<button class="danger mini" id="plan-del"' + (store.list.length < 2 ? ' disabled' : '') + '>Delete routine</button>' +
+        '</div>' +
+      '</div>' +
+      tabsHtml();
 
     if (day) {
       activeDay = day.id;
@@ -695,6 +836,12 @@
               '<label>Rep max<input type="number" min="1" data-f="repMax" data-i="' + i + '" value="' + ex.repMax + '"></label>' +
               '<label>Rest sec<input type="number" min="0" step="15" data-f="restSec" data-i="' + i + '" value="' + ex.restSec + '"></label>' +
             '</div>' +
+            '<div class="ed-grid">' +
+              '<label style="flex:2;">Muscle<select data-f="muscle" data-i="' + i + '">' +
+                MUSCLES.map(function(m) { return '<option' + (m === ex.muscle ? ' selected' : '') + '>' + m + '</option>'; }).join('') +
+              '</select></label>' +
+              '<label class="prio-check"><input type="checkbox" data-f="priority" data-i="' + i + '"' + (ex.priority ? ' checked' : '') + '> Priority</label>' +
+            '</div>' +
             '<div class="ed-actions">' +
               '<button class="ghost mini" data-move="' + i + '" data-dir="-1"' + (i === 0 ? ' disabled' : '') + '>↑</button>' +
               '<button class="ghost mini" data-move="' + i + '" data-dir="1"' + (i === day.exercises.length - 1 ? ' disabled' : '') + '>↓</button>' +
@@ -712,10 +859,47 @@
         '<button class="ghost mini" id="add-day">+ New day</button>' +
         '<button class="ghost mini" id="reset-routine">Reset routine</button>' +
       '</div>' +
-      '<p class="hint" style="margin-top:10px;">Field edits are saved as soon as you leave the field. Deleting an exercise keeps its history: recreate it with the same name on the same day and the history comes back.</p>';
+      '<p class="hint" style="margin-top:10px;">Field edits are saved as soon as you leave the field. Deleting an exercise keeps its history: recreate it with the same name on the same day and the history comes back. A duplicated routine shares history with the original for every exercise you keep.</p>';
 
     root.innerHTML = html;
     bindTabs(root);
+
+    document.getElementById('plan-select').addEventListener('change', function(e) {
+      switchPlan(e.target.value);
+      render();
+    });
+    document.getElementById('plan-name').addEventListener('change', function(e) {
+      var v = e.target.value.trim();
+      if (!v) { e.target.value = plan.name; return; }
+      plan.name = v;
+      saveRoutine();
+      render();
+    });
+    function saveCycle() {
+      var s = document.getElementById('cycle-start').value;
+      var w = parseInt(document.getElementById('cycle-weeks').value, 10);
+      plan.cycle = (s && w > 0) ? { start: s, weeks: w } : null;
+      saveRoutine();
+      paintCycle();
+    }
+    document.getElementById('cycle-start').addEventListener('change', saveCycle);
+    document.getElementById('cycle-weeks').addEventListener('change', saveCycle);
+    document.getElementById('plan-dup').addEventListener('click', function() {
+      var name = prompt('Name for the copy:', plan.name + ' (copy)');
+      if (!name || !name.trim()) return;
+      // Same exercise ids as the original, so the history carries over.
+      var copy = { id: uid('plan'), name: name.trim(), days: JSON.parse(JSON.stringify(routine)), cycle: null };
+      store.list.push(copy);
+      switchPlan(copy.id);
+      render();
+    });
+    document.getElementById('plan-del').addEventListener('click', function() {
+      if (store.list.length < 2) return;
+      if (!confirm('Delete the routine "' + plan.name + '"? Logged history is kept.')) return;
+      store.list = store.list.filter(function(p) { return p.id !== plan.id; });
+      switchPlan(store.list[0].id);
+      render();
+    });
 
     if (!day) return;
 
@@ -728,6 +912,10 @@
           var v = inp.value.trim();
           if (!v) { inp.value = ex.name; return; }
           ex.name = v;
+        } else if (f === 'muscle') {
+          ex.muscle = inp.value;
+        } else if (f === 'priority') {
+          ex.priority = inp.checked;
         } else {
           var n = parseInt(inp.value, 10);
           if (isNaN(n) || n < 0) { inp.value = ex[f]; return; }
@@ -787,7 +975,7 @@
       });
       day.exercises.push({
         id: taken ? uid('ex') : legacyId,
-        name: name, sets: 3, repMin: 8, repMax: 12, restSec: 90
+        name: name, muscle: 'Other', priority: false, sets: 3, repMin: 8, repMax: 12, restSec: 90
       });
       saveRoutine();
       renderEdit();
@@ -804,7 +992,7 @@
     });
 
     document.getElementById('reset-routine').addEventListener('click', function() {
-      if (!confirm('Reset to the original routine? Your logged weights are NOT affected.')) return;
+      if (!confirm('Reset "' + plan.name + '" to the default shoulder specialization routine? Your logged weights are NOT affected.')) return;
       routine = defaultRoutine();
       activeDay = routine[0].id;
       saveRoutine();
@@ -816,11 +1004,29 @@
   function exportPayload() {
     return {
       app: 'gymlog',
-      version: 4,
+      version: 5,
       exportedAt: new Date().toISOString(),
+      routines: store,
       routine: routine,
       entries: entries
     };
+  }
+
+  function weeklyVolumeHtml() {
+    var rows = weeklyVolume();
+    if (!rows.length) return '';
+    return '<div class="card">' +
+      '<div class="ex-name">This week — sets per muscle</div>' +
+      '<p class="hint" style="margin:2px 0 8px;">Logged since Monday vs planned in “' + esc(activePlan().name) + '”.</p>' +
+      rows.map(function(r) {
+        var pct = r.planned ? Math.min(100, Math.round(r.done / r.planned * 100)) : 100;
+        return '<div class="vol-row">' +
+            '<div class="vol-name">' + r.muscle + '</div>' +
+            '<div class="vol-track"><div class="vol-fill' + (r.planned && r.done >= r.planned ? ' full' : '') + '" style="width:' + pct + '%"></div></div>' +
+            '<div class="vol-num">' + r.done + ' / ' + r.planned + '</div>' +
+          '</div>';
+      }).join('') +
+    '</div>';
   }
 
   function renderData() {
@@ -837,11 +1043,12 @@
     var backupTxt = bd == null ? 'Never backed up.' : bd === 0 ? 'Last backup: today.' : 'Last backup: ' + bd + (bd === 1 ? ' day' : ' days') + ' ago.';
 
     root.innerHTML =
-      '<div class="stats" style="margin-top:4px;">' +
+      '<div class="stats" style="margin-top:14px;">' +
         '<div class="stat">Exercises tracked<b>' + keys.length + '</b></div>' +
         '<div class="stat">Total sessions<b>' + totalSessions + '</b></div>' +
         '<div class="stat">Gym days<b>' + uniqueDays + '</b></div>' +
       '</div>' +
+      weeklyVolumeHtml() +
       '<div class="card">' +
         '<div class="ex-name">Backup</div>' +
         '<p class="hint" style="margin:4px 0 10px;">Your data lives in this browser only. Download a file every so often: if you switch phone or the browser clears its storage, without a backup it is gone.<br><b style="color:#B7B4A9;">' + backupTxt + '</b></p>' +
@@ -927,8 +1134,16 @@
 
     entries = newEntries;
     saveEntries();
-    if (data && Array.isArray(data.routine) && data.routine.length) {
-      routine = data.routine;
+    if (data && data.routines && Array.isArray(data.routines.list) && data.routines.list.length) {
+      // v5 backup: all saved routines
+      data.routines.list.forEach(function(p) { fillMeta(p.days); });
+      store = data.routines;
+      routine = activePlan().days;
+      saveRoutine();
+      activeDay = pickStartDay();
+    } else if (data && Array.isArray(data.routine) && data.routine.length) {
+      // older backup: a single routine replaces the active one
+      routine = fillMeta(data.routine);
       saveRoutine();
       activeDay = routine[0].id;
     }
@@ -939,8 +1154,7 @@
 
   // ---------- bootstrap ----------
   entries = migrate();
-  routine = readJSON(ROUTINE_KEY, null);
-  if (!Array.isArray(routine) || !routine.length) routine = defaultRoutine();
+  loadRoutines();
   activeDay = pickStartDay();
 
   document.getElementById('nav-log').addEventListener('click', function() { view = 'log'; render(); });
