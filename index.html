@@ -16,12 +16,13 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700&family=Inter:wght@400;500;600&display=swap">
 <style>
-  html, body { margin: 0; padding: 0; background: #0F1113; min-height: 100vh; }
-  body { padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left); padding-top: max(20px, env(safe-area-inset-top)); padding-bottom: max(20px, env(safe-area-inset-bottom)); }
+  html, body { margin: 0; padding: 0; background: #131518; min-height: 100vh; }
+  body { padding: env(safe-area-inset-top) env(safe-area-inset-right) 0 env(safe-area-inset-left); padding-top: max(12px, env(safe-area-inset-top)); -webkit-tap-highlight-color: transparent; }
 
   #gymlog * { box-sizing: border-box; font-family: 'Inter', system-ui, sans-serif; }
-  #gymlog h1, #gymlog .num, #gymlog .weight-badge { font-family: 'Barlow Condensed', 'Inter', sans-serif; }
-  #gymlog { color: #EDEBE3; background: #16181B; border-radius: 14px; padding: 20px; max-width: 480px; margin: 0 auto; }
+  #gymlog h1, #gymlog .num, #gymlog .weight-badge, #gymlog .timer-clock, #gymlog .stat b, #gymlog .vol-num { font-family: 'Barlow Condensed', 'Inter', sans-serif; }
+  #gymlog { color: #EDEBE3; max-width: 520px; margin: 0 auto; padding: 8px 14px calc(96px + env(safe-area-inset-bottom)); }
+  #gymlog.timer-on { padding-bottom: calc(160px + env(safe-area-inset-bottom)); }
   #gymlog select, #gymlog input, #gymlog textarea { background: #21242A; border: 1px solid #3A3E46; color: #EDEBE3; border-radius: 8px; padding: 10px 12px; font-size: 15px; width: 100%; }
   #gymlog select:focus, #gymlog input:focus, #gymlog textarea:focus { outline: none; border-color: #E8A33D; }
   #gymlog button { background: #E8A33D; color: #16181B; border: none; border-radius: 8px; padding: 11px 16px; font-weight: 600; font-size: 14px; cursor: pointer; }
@@ -30,28 +31,44 @@
   #gymlog button.ghost { background: transparent; border: 1px solid #3A3E46; color: #B7B4A9; }
   #gymlog button.danger { background: transparent; border: 1px solid #D97757; color: #D97757; }
   #gymlog button.mini { padding: 6px 10px; font-size: 12px; }
-  #gymlog .card { background: #1D2024; border: 1px solid #2C3036; border-radius: 12px; padding: 14px 16px; margin-bottom: 10px; }
+  #gymlog .card { background: #1C1F23; border: 1px solid #2A2E34; border-radius: 14px; padding: 14px 16px 12px; margin-bottom: 10px; }
   #gymlog .row { display: flex; gap: 10px; align-items: center; }
-  #gymlog .ex-name { font-weight: 600; font-size: 15px; }
-  #gymlog .ex-meta { color: #8C8A82; font-size: 12px; margin-top: 2px; }
-  #gymlog .weight-badge { font-size: 26px; font-weight: 700; color: #E8A33D; min-width: 64px; text-align: right; }
+  #gymlog .ex-name { font-weight: 600; font-size: 15px; line-height: 1.3; }
+  #gymlog .ex-meta { color: #8C8A82; font-size: 12px; margin-top: 3px; display: flex; flex-wrap: wrap; gap: 4px 8px; align-items: center; }
+  #gymlog .weight-badge { font-size: 28px; font-weight: 700; color: #E8A33D; min-width: 64px; text-align: right; line-height: 1; white-space: nowrap; }
+  #gymlog .weight-badge.empty { color: #3A3E46; }
   #gymlog .delta { font-size: 12px; margin-top: 2px; text-align: right; }
   #gymlog .delta.up { color: #7FBF7F; }
   #gymlog .delta.down { color: #D97757; }
   #gymlog .delta.flat { color: #8C8A82; }
-  #gymlog .history { margin-top: 10px; padding-top: 10px; border-top: 1px solid #2C3036; display: none; }
+  #gymlog .history { margin-top: 12px; padding-top: 12px; border-top: 1px solid #2A2E34; display: none; }
   #gymlog .history.open { display: block; }
   #gymlog .hist-row { display: flex; justify-content: space-between; font-size: 13px; color: #B7B4A9; padding: 3px 0; }
-  #gymlog .spark { display: flex; align-items: flex-end; gap: 3px; height: 32px; margin-top: 8px; }
-  #gymlog .bar { flex: 1; max-width: 28px; background: #E8A33D; border-radius: 2px 2px 0 0; min-height: 2px; }
-  #gymlog .toggle { cursor: pointer; color: #8C8A82; font-size: 12px; text-decoration: underline; margin-top: 6px; }
+  #gymlog .spark { display: flex; align-items: flex-end; gap: 4px; height: 28px; margin-top: 12px; }
+  #gymlog .bar { flex: 1; max-width: 16px; background: rgba(232,163,61,.35); border-radius: 3px 3px 1px 1px; min-height: 3px; }
+  #gymlog .bar:last-child { background: #E8A33D; }
+  #gymlog .card-foot { display: flex; justify-content: space-between; align-items: center; margin-top: 12px; gap: 8px; }
+  #gymlog .toggle { cursor: pointer; color: #B7B4A9; font-size: 13px; font-weight: 600; padding: 7px 4px 7px 12px; display: flex; align-items: center; gap: 6px; user-select: none; }
+  #gymlog .chev { width: 14px; height: 14px; transition: transform .15s; }
+  #gymlog .toggle.open .chev { transform: rotate(180deg); }
   #gymlog .hist-row .del { color: #D97757; cursor: pointer; font-size: 12px; margin-left: 10px; }
-  #gymlog .tabs { display: flex; gap: 6px; overflow-x: auto; margin: 14px 0 18px; padding-bottom: 2px; }
-  #gymlog .tab { flex: 0 0 auto; padding: 8px 14px; border-radius: 20px; border: 1px solid #3A3E46; color: #B7B4A9; font-size: 13px; font-weight: 500; cursor: pointer; white-space: nowrap; }
-  #gymlog .tab.active { background: #E8A33D; color: #16181B; border-color: #E8A33D; }
-  #gymlog .set-row { display: flex; gap: 8px; align-items: center; margin-bottom: 8px; }
-  #gymlog .set-label { width: 46px; font-size: 13px; color: #8C8A82; flex-shrink: 0; }
-  #gymlog .set-row input { flex: 1; min-width: 0; }
+  #gymlog .tabs { display: flex; gap: 6px; overflow-x: auto; margin: 14px -14px 12px; padding: 0 14px 2px; scrollbar-width: none; }
+  #gymlog .tabs::-webkit-scrollbar { display: none; }
+  #gymlog .tab { flex: 0 0 auto; padding: 8px 14px; border-radius: 20px; border: 1px solid #2A2E34; background: #1C1F23; color: #B7B4A9; font-size: 13px; font-weight: 500; cursor: pointer; white-space: nowrap; display: flex; align-items: center; gap: 6px; }
+  #gymlog .tab.active { background: #E8A33D; color: #16181B; border-color: #E8A33D; font-weight: 600; }
+  #gymlog .tab-dot { width: 6px; height: 6px; border-radius: 50%; background: #E8A33D; }
+  #gymlog .tab.active .tab-dot { background: #16181B; }
+  #gymlog .tab-check { color: #7FBF7F; font-weight: 700; font-size: 12px; }
+  #gymlog .tab.active .tab-check { color: #16181B; }
+  #gymlog .today-line { font-size: 12px; color: #8C8A82; margin: 0 0 12px; display: flex; align-items: center; gap: 8px; }
+  #gymlog .today-track { flex: 1; height: 4px; background: #23262B; border-radius: 2px; overflow: hidden; }
+  #gymlog .today-fill { height: 100%; background: #7FBF7F; border-radius: 2px; }
+  #gymlog .set-head, #gymlog .set-row { display: grid; grid-template-columns: 34px 1fr 1fr; gap: 8px; align-items: center; }
+  #gymlog .set-head { font-size: 10px; font-weight: 600; letter-spacing: .06em; text-transform: uppercase; color: #5C5A52; margin-bottom: 6px; }
+  #gymlog .set-head span:not(:first-child) { padding-left: 12px; }
+  #gymlog .set-row { margin-bottom: 8px; }
+  #gymlog .set-label { width: 26px; height: 26px; border-radius: 50%; background: #23262B; color: #8C8A82; font-size: 12px; font-weight: 600; display: flex; align-items: center; justify-content: center; }
+  #gymlog .set-row input { min-width: 0; font-size: 17px; font-weight: 600; padding: 11px 12px; }
   #gymlog .easy-check { display: flex; align-items: center; gap: 5px; font-size: 11px; color: #8C8A82; flex-shrink: 0; width: 62px; }
   #gymlog .easy-check input { width: auto; accent-color: #E8A33D; }
   #gymlog .session { padding: 8px 0; border-bottom: 1px solid #2C3036; }
@@ -65,8 +82,8 @@
   #gymlog .toolbar button { flex: 1; }
   #gymlog .pr-badge { display: inline-block; background: #E8A33D; color: #16181B; border-radius: 5px; padding: 1px 6px; font-size: 10px; font-weight: 700; letter-spacing: .04em; vertical-align: middle; }
   #gymlog .stats { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 10px; }
-  #gymlog .stat { background: #21242A; border: 1px solid #2C3036; border-radius: 8px; padding: 6px 10px; font-size: 11px; color: #8C8A82; flex: 1; min-width: 92px; }
-  #gymlog .stat b { display: block; color: #EDEBE3; font-size: 15px; font-weight: 600; margin-top: 2px; }
+  #gymlog .stat { background: #1C1F23; border: 1px solid #2A2E34; border-radius: 12px; padding: 8px 12px; font-size: 11px; color: #8C8A82; flex: 1; min-width: 92px; }
+  #gymlog .stat b { display: block; color: #EDEBE3; font-size: 22px; font-weight: 700; margin-top: 2px; line-height: 1.1; }
   #gymlog .ed-ex { background: #1D2024; border: 1px solid #2C3036; border-radius: 10px; padding: 10px 12px; margin-bottom: 8px; }
   #gymlog .ed-grid { display: flex; gap: 6px; margin-top: 8px; }
   #gymlog .ed-grid label { flex: 1; font-size: 10px; color: #8C8A82; }
@@ -74,12 +91,43 @@
   #gymlog .ed-actions { display: flex; gap: 6px; margin-top: 8px; justify-content: flex-end; }
   #gymlog .hint { color: #5C5A52; font-size: 11px; line-height: 1.5; }
   #gymlog textarea { font-family: ui-monospace, monospace; font-size: 11px; height: 120px; resize: vertical; }
-  #gymlog .timer-btn.running { color: #E8A33D; border-color: #E8A33D; }
+  #gymlog .timer-btn { padding: 7px 12px; font-size: 13px; border-radius: 20px; display: inline-flex; align-items: center; gap: 6px; font-variant-numeric: tabular-nums; }
+  #gymlog .timer-btn.running { color: #16181B; background: #E8A33D; border-color: #E8A33D; }
   #gymlog .timer-btn.done { color: #7FBF7F; border-color: #7FBF7F; }
+  #gymlog .ico { width: 14px; height: 14px; flex-shrink: 0; }
+  #gymlog .done-chip { color: #7FBF7F; font-weight: 600; }
+  #gymlog .card.logged { border-color: #2F3B31; }
+
+  #gymlog .head { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; }
+  #gymlog .cycle-chip { text-align: right; min-width: 92px; }
+  #gymlog .cycle-chip .num { font-size: 22px; font-weight: 700; color: #E8A33D; line-height: 1; }
+  #gymlog .cycle-chip .num small { font-size: 14px; color: #8C8A82; font-weight: 600; }
+  #gymlog .cycle-chip .lbl { font-size: 10px; letter-spacing: .08em; text-transform: uppercase; color: #8C8A82; margin-top: 2px; }
+  #gymlog .cycle-chip.over .num { color: #D97757; }
+  #gymlog .cycle-track { display: flex; gap: 3px; margin-top: 6px; justify-content: flex-end; }
+  #gymlog .cycle-track i { width: 10px; height: 4px; border-radius: 2px; background: #2A2E34; }
+  #gymlog .cycle-track i.on { background: #E8A33D; }
+  #gymlog .cycle-chip.over .cycle-track i.on { background: #D97757; }
+
+  #gymlog .bottom-nav { position: fixed; left: 0; right: 0; bottom: 0; z-index: 20; background: rgba(19,21,24,.94); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); border-top: 1px solid #23262B; padding: 6px 8px calc(6px + env(safe-area-inset-bottom)); }
+  #gymlog .bottom-nav-inner { max-width: 520px; margin: 0 auto; display: flex; }
+  #gymlog .nav-btn { flex: 1; background: none; border: none; color: #6E6C66; padding: 6px 0 4px; display: flex; flex-direction: column; align-items: center; gap: 3px; font-size: 11px; font-weight: 600; border-radius: 10px; }
+  #gymlog .nav-btn svg { width: 22px; height: 22px; }
+  #gymlog .nav-btn.active { color: #E8A33D; }
+
+  #gymlog .timer-bar { position: fixed; left: 0; right: 0; bottom: calc(62px + env(safe-area-inset-bottom)); z-index: 19; padding: 0 12px 8px; }
+  #gymlog .timer-bar-inner { max-width: 496px; margin: 0 auto; background: #E8A33D; color: #16181B; border-radius: 14px; padding: 10px 10px 10px 16px; display: flex; align-items: center; gap: 12px; box-shadow: 0 8px 24px rgba(0,0,0,.45); }
+  #gymlog .timer-bar.done .timer-bar-inner { background: #7FBF7F; }
+  #gymlog .timer-clock { font-size: 30px; font-weight: 700; line-height: 1; font-variant-numeric: tabular-nums; min-width: 64px; }
+  #gymlog .timer-name { flex: 1; min-width: 0; font-size: 12px; line-height: 1.3; }
+  #gymlog .timer-name b { display: block; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  #gymlog .timer-name small { display: block; font-weight: 500; opacity: .7; }
+  #gymlog .timer-bar button { background: rgba(22,24,27,.14); color: #16181B; padding: 8px 12px; font-size: 13px; border-radius: 10px; }
+  #gymlog .timer-progress { position: absolute; left: 0; bottom: 0; height: 3px; background: rgba(22,24,27,.35); border-radius: 0 2px 2px 0; }
+  #gymlog .timer-bar-inner { position: relative; overflow: hidden; }
   #gymlog .draft-note { font-size: 11px; color: #E8A33D; margin-top: 6px; text-align: center; }
   #gymlog [hidden] { display: none !important; }
-  #gymlog .cycle-line { color: #E8A33D; font-size: 12px; font-weight: 600; margin: 4px 0 0; }
-  #gymlog .cycle-line.over { color: #D97757; }
+  #gymlog .cycle-line { display: none; }
   #gymlog .card.priority { box-shadow: inset 3px 0 0 #E8A33D; }
   #gymlog .prio-tag { display: inline-block; border: 1px solid #E8A33D; color: #E8A33D; border-radius: 5px; padding: 0 5px; font-size: 9px; font-weight: 700; letter-spacing: .05em; vertical-align: middle; margin-left: 4px; }
   #gymlog .ed-grid select { margin-top: 3px; padding: 7px 8px; font-size: 13px; }
@@ -96,20 +144,43 @@
 <body>
 
 <div id="gymlog">
-  <div class="row" style="justify-content:space-between;align-items:flex-start;">
+  <div class="head">
     <div>
-      <h1 style="font-size:28px;font-weight:700;margin:0 0 2px;">Gym log</h1>
-      <p id="subtitle" style="color:#8C8A82;font-size:13px;margin:0;">Tap an exercise to log this week's weight</p>
+      <h1 style="font-size:32px;font-weight:700;margin:0;line-height:1;">Gym log</h1>
+      <p id="subtitle" style="color:#8C8A82;font-size:13px;margin:4px 0 0;">Tap an exercise to log this week's weight</p>
       <p id="cycle-line" class="cycle-line" hidden></p>
     </div>
-  </div>
-  <div class="toolbar">
-    <button class="ghost mini" id="nav-log">Workout</button>
-    <button class="ghost mini" id="nav-edit">Routine</button>
-    <button class="ghost mini" id="nav-data">Data</button>
+    <div id="cycle-chip" class="cycle-chip" hidden></div>
   </div>
   <div id="view"></div>
-  <p class="hint" id="backup-note" style="margin:18px 0 0;">Saved on this device only — export a backup now and then.</p>
+  <p class="hint" id="backup-note" style="margin:18px 0 0;text-align:center;">Saved on this device only — export a backup now and then.</p>
+
+  <div class="timer-bar" id="timer-bar" hidden>
+    <div class="timer-bar-inner">
+      <div class="timer-clock" id="timer-clock">0:00</div>
+      <div class="timer-name" id="timer-name"></div>
+      <button id="timer-add">+30s</button>
+      <button id="timer-stop">Stop</button>
+      <div class="timer-progress" id="timer-progress"></div>
+    </div>
+  </div>
+
+  <nav class="bottom-nav">
+    <div class="bottom-nav-inner">
+      <button class="nav-btn" id="nav-log">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6.5 6.5v11M17.5 6.5v11M3.5 9v6M20.5 9v6M6.5 12h11"/></svg>
+        Workout
+      </button>
+      <button class="nav-btn" id="nav-edit">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M9 6h11M9 12h11M9 18h11M4.5 6h.01M4.5 12h.01M4.5 18h.01"/></svg>
+        Routine
+      </button>
+      <button class="nav-btn" id="nav-data">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></svg>
+        Data
+      </button>
+    </div>
+  </nav>
 </div>
 
 <script>
@@ -256,15 +327,31 @@
     var start = new Date(c.start + 'T00:00:00');
     var today = new Date(todayStr() + 'T00:00:00');
     var days = Math.round((today - start) / 86400000);
-    if (days < 0) return { text: 'Cycle starts in ' + (-days) + (days === -1 ? ' day' : ' days'), over: false };
+    if (days < 0) return { text: 'Cycle starts in ' + (-days) + (days === -1 ? ' day' : ' days'), over: false, week: 0, weeks: c.weeks, before: -days };
     var week = Math.floor(days / 7) + 1;
-    if (week > c.weeks) return { text: 'Week ' + week + ' — cycle planned for ' + c.weeks + ' weeks is over', over: true };
-    return { text: 'Week ' + week + ' / ' + c.weeks + (week === c.weeks ? ' — last week' : ''), over: false };
+    if (week > c.weeks) return { text: 'Week ' + week + ' — cycle planned for ' + c.weeks + ' weeks is over', over: true, week: week, weeks: c.weeks };
+    return { text: 'Week ' + week + ' / ' + c.weeks + (week === c.weeks ? ' — last week' : ''), over: false, week: week, weeks: c.weeks, last: week === c.weeks };
   }
   function paintCycle() {
     var el = document.getElementById('cycle-line');
     var info = cycleInfo();
     var name = activePlan().name;
+    var chip = document.getElementById('cycle-chip');
+    if (!info) {
+      chip.hidden = true;
+    } else {
+      chip.hidden = false;
+      chip.classList.toggle('over', !!info.over);
+      var track = '';
+      if (info.weeks <= 16) {
+        for (var i = 1; i <= info.weeks; i++) track += '<i' + (i <= info.week ? ' class="on"' : '') + '></i>';
+      }
+      chip.innerHTML = info.before
+        ? '<div class="num">' + info.before + '<small>d</small></div><div class="lbl">to cycle start</div>'
+        : '<div class="num">' + info.week + '<small> / ' + info.weeks + '</small></div>' +
+          '<div class="lbl">' + (info.over ? 'Cycle over' : info.last ? 'Last week' : 'Week') + '</div>' +
+          (track ? '<div class="cycle-track">' + track + '</div>' : '');
+    }
     if (!info && store.list.length < 2) { el.hidden = true; return; }
     el.hidden = false;
     el.textContent = (store.list.length > 1 ? name : '') + (info ? (store.list.length > 1 ? ' · ' : '') + info.text : '');
@@ -480,8 +567,19 @@
     if (!timer) return 0;
     return Math.max(0, Math.ceil((timer.endAt - Date.now()) / 1000));
   }
-  function startTimer(key, restSec) {
-    timer = { key: key, endAt: Date.now() + restSec * 1000, restSec: restSec, alerted: false };
+  function startTimer(key, restSec, name) {
+    timer = { key: key, name: name || '', endAt: Date.now() + restSec * 1000, restSec: restSec, alerted: false };
+    localStorage.setItem(TIMER_KEY, JSON.stringify(timer));
+    acquireWakeLock();
+    ensureTicker();
+    paintTimers();
+  }
+  function extendTimer(sec) {
+    if (!timer) return;
+    var base = Math.max(timer.endAt, Date.now());
+    timer.endAt = base + sec * 1000;
+    timer.restSec += sec;
+    timer.alerted = false;
     localStorage.setItem(TIMER_KEY, JSON.stringify(timer));
     acquireWakeLock();
     ensureTicker();
@@ -523,32 +621,53 @@
       }
       releaseWakeLock();
     }
+    var CLOCK_ICO = '<svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><circle cx="12" cy="13" r="8"/><path d="M12 9v4l2.5 2M9 2h6"/></svg>';
     btns.forEach(function(btn) {
       var key = btn.getAttribute('data-timer');
       btn.classList.remove('running', 'done');
       if (timer && timer.key === key) {
         if (remaining > 0) {
-          btn.textContent = fmtClock(remaining);
+          btn.innerHTML = CLOCK_ICO + fmtClock(remaining);
           btn.classList.add('running');
         } else {
-          btn.textContent = "Time's up — tap to restart";
+          btn.innerHTML = CLOCK_ICO + 'Rest done';
           btn.classList.add('done');
         }
       } else {
-        btn.textContent = 'Start rest timer (' + fmtRest(parseInt(btn.getAttribute('data-rest'), 10)) + ')';
+        btn.innerHTML = CLOCK_ICO + 'Rest ' + fmtRest(parseInt(btn.getAttribute('data-rest'), 10));
       }
     });
+
+    // Floating bar: visible from anywhere in the app while a rest is running or just ended.
+    var bar = document.getElementById('timer-bar');
+    var app = document.getElementById('gymlog');
+    var showBar = !!timer && (remaining > 0 || Date.now() - timer.endAt < 60000);
+    bar.hidden = !showBar;
+    app.classList.toggle('timer-on', showBar);
+    if (showBar) {
+      bar.classList.toggle('done', remaining <= 0);
+      document.getElementById('timer-clock').textContent = remaining > 0 ? fmtClock(remaining) : '0:00';
+      document.getElementById('timer-name').innerHTML = '<b>' + esc(timer.name || 'Rest') + '</b>' +
+        '<small>' + (remaining > 0 ? 'Resting' : 'Rest done — next set') + '</small>';
+      var pct = timer.restSec ? Math.max(0, Math.min(100, (1 - remaining / timer.restSec) * 100)) : 100;
+      document.getElementById('timer-progress').style.width = pct + '%';
+    }
     // Nothing left to count down: stop ticking instead of spinning forever.
-    if (!timer || remaining <= 0) stopTicker();
+    // While the "done" bar is still shown, keep a slow tick so it hides itself after a minute.
+    if (!timer || remaining <= 0) {
+      stopTicker();
+      if (showBar) setTimeout(paintTimers, 5000);
+    }
   }
 
   // ---------- render ----------
   function render() {
-    document.getElementById('nav-log').classList.toggle('ghost', view !== 'log');
-    document.getElementById('nav-edit').classList.toggle('ghost', view !== 'edit');
-    document.getElementById('nav-data').classList.toggle('ghost', view !== 'data');
+    document.getElementById('nav-log').classList.toggle('active', view === 'log');
+    document.getElementById('nav-edit').classList.toggle('active', view === 'edit');
+    document.getElementById('nav-data').classList.toggle('active', view === 'data');
     var sub = document.getElementById('subtitle');
-    sub.textContent = view === 'log' ? "Tap an exercise to log this week's weight"
+    sub.textContent = view === 'log'
+      ? (store.list.length > 1 ? activePlan().name : 'Tap an exercise to log it')
       : view === 'edit' ? 'Add, edit or reorder your exercises'
       : 'Backup, restore and stats';
     if (view === 'log') renderLog();
@@ -556,11 +675,21 @@
     else renderData();
     paintBackupNote();
     paintCycle();
+    paintTimers();
+  }
+
+  function loggedToday(day) {
+    var t = todayStr();
+    return day.exercises.filter(function(ex) {
+      return (entries[ex.id] || []).some(function(s) { return s.date === t; });
+    }).length;
   }
 
   function tabsHtml() {
     return '<div class="tabs">' + routine.map(function(d) {
-      return '<div class="tab ' + (d.id === activeDay ? 'active' : '') + '" data-day="' + d.id + '">' + esc(d.label) + '</div>';
+      var n = view === 'log' ? loggedToday(d) : 0;
+      var mark = !n ? '' : n >= d.exercises.length ? '<span class="tab-check">✓</span>' : '<span class="tab-dot"></span>';
+      return '<div class="tab ' + (d.id === activeDay ? 'active' : '') + '" data-day="' + d.id + '">' + esc(d.label) + mark + '</div>';
     }).join('') + '</div>';
   }
 
@@ -580,6 +709,11 @@
     activeDay = day.id;
 
     var html = tabsHtml();
+    var doneToday = loggedToday(day);
+    if (doneToday) {
+      html += '<div class="today-line"><span>' + doneToday + ' of ' + day.exercises.length + ' logged today</span>' +
+        '<div class="today-track"><div class="today-fill" style="width:' + Math.round(doneToday / day.exercises.length * 100) + '%"></div></div></div>';
+    }
 
     day.exercises.forEach(function(ex) {
       var key = ex.id;
@@ -621,12 +755,12 @@
       var maxM = Math.max.apply(null, hist.map(metric).concat([1]));
       var sparkBars = hist.slice(-8).map(function(h) {
         var a = metric(h);
-        return '<div class="bar" style="height:' + Math.max(8, (a / maxM) * 32) + 'px" title="' + fmtDate(h.date) + ': ' + a + (bwOnly ? ' reps' : 'kg') + '"></div>';
+        return '<div class="bar" style="height:' + Math.max(4, (a / maxM) * 28) + 'px" title="' + fmtDate(h.date) + ': ' + a + (bwOnly ? ' reps' : 'kg') + '"></div>';
       }).join('');
 
       // Inputs: today's unsaved draft if any, otherwise pre-filled from the last session.
       var draft = drafts[key];
-      var setInputs = '';
+      var setInputs = '<div class="set-head"><span>Set</span><span>kg</span><span>Reps</span></div>';
       for (var i = 1; i <= ex.sets; i++) {
         var pre = last && last.sets[i - 1] ? last.sets[i - 1] : null;
         var pw = pre && pre.weight != null ? pre.weight : '';
@@ -635,9 +769,9 @@
         if (draft && draft.r[i - 1] !== undefined) pr = draft.r[i - 1];
         setInputs +=
           '<div class="set-row">' +
-            '<div class="set-label">Set ' + i + '</div>' +
-            '<input type="number" inputmode="decimal" step="0.5" min="0" placeholder="kg (0 = BW)" value="' + esc(pw) + '" id="w-' + key + '-' + i + '" data-draft="' + key + '" data-setcount="' + ex.sets + '">' +
-            '<input type="number" inputmode="numeric" step="1" min="0" placeholder="reps" value="' + esc(pr) + '" id="r-' + key + '-' + i + '" data-draft="' + key + '" data-setcount="' + ex.sets + '">' +
+            '<div class="set-label">' + i + '</div>' +
+            '<input type="number" inputmode="decimal" step="0.5" min="0" placeholder="0 = BW" value="' + esc(pw) + '" id="w-' + key + '-' + i + '" data-draft="' + key + '" data-setcount="' + ex.sets + '">' +
+            '<input type="number" inputmode="numeric" step="1" min="0" placeholder="—" value="' + esc(pr) + '" id="r-' + key + '-' + i + '" data-draft="' + key + '" data-setcount="' + ex.sets + '">' +
           '</div>';
       }
       setInputs +=
@@ -673,31 +807,33 @@
 
       var isOpen = !!openCards[key] || !!draft;
       if (draft) openCards[key] = true;
+      var today = todayStr();
+      var isDoneToday = !!last && last.date === today;
 
       html +=
-        '<div class="card' + (ex.priority ? ' priority' : '') + '">' +
-          '<div class="row" style="justify-content:space-between;cursor:pointer;" data-toggle="' + key + '">' +
-            '<div>' +
+        '<div class="card' + (ex.priority ? ' priority' : '') + (isDoneToday ? ' logged' : '') + '">' +
+          '<div class="row" style="justify-content:space-between;align-items:flex-start;cursor:pointer;" data-toggle="' + key + '">' +
+            '<div style="min-width:0;">' +
               '<div class="ex-name">' + esc(ex.name) + (ex.priority ? '<span class="prio-tag">PRIORITY</span>' : '') + prHtml + '</div>' +
-              '<div class="ex-meta">' + metaOf(ex) + ' · rest ' + fmtRest(ex.restSec) + '</div>' +
+              '<div class="ex-meta"><span>' + metaOf(ex) + '</span>' + (isDoneToday ? '<span class="done-chip">✓ Today</span>' : '') + '</div>' +
             '</div>' +
             '<div>' +
-              '<div class="weight-badge">' + lastLabel + '</div>' +
+              '<div class="weight-badge' + (last ? '' : ' empty') + '">' + lastLabel + '</div>' +
               deltaHtml +
               hintHtml +
             '</div>' +
           '</div>' +
-          (hist.length ? '<div class="spark">' + sparkBars + '</div>' : '') +
-          '<div class="row" style="margin-top:10px;gap:8px;">' +
-            '<button class="ghost timer-btn" data-timer="' + key + '" data-rest="' + ex.restSec + '" style="flex:1;"></button>' +
+          (hist.length >= 2 ? '<div class="spark">' + sparkBars + '</div>' : '') +
+          '<div class="card-foot">' +
+            '<button class="ghost timer-btn" data-timer="' + key + '" data-rest="' + ex.restSec + '" data-name="' + esc(ex.name) + '"></button>' +
+            '<div class="toggle' + (isOpen ? ' open' : '') + '" data-toggle="' + key + '"><span>' + (isOpen ? 'Close' : (hist.length ? 'Log · history' : 'Log')) + '</span><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg></div>' +
           '</div>' +
           '<div class="history' + (isOpen ? ' open' : '') + '" id="hist-' + key + '">' +
             setInputs +
-            '<button data-log="' + key + '" data-setcount="' + ex.sets + '" style="width:100%;margin-top:4px;">Log session</button>' +
+            '<button data-log="' + key + '" data-setcount="' + ex.sets + '" style="width:100%;margin-top:4px;">' + (isDoneToday ? 'Update today’s session' : 'Log session') + '</button>' +
             '<div class="draft-note" id="draft-' + key + '"' + (draft ? '' : ' hidden') + '>Not logged yet — values kept until you tap Log session</div>' +
-            '<div style="margin-top:12px;padding-top:10px;border-top:1px solid #2C3036;">' + statsHtml + sessionsHtml + '</div>' +
+            (hist.length ? '<div style="margin-top:14px;padding-top:12px;border-top:1px solid #2A2E34;">' + statsHtml + sessionsHtml + '</div>' : '') +
           '</div>' +
-          '<div class="toggle" data-toggle="' + key + '">' + (isOpen ? 'Hide history' : 'View history / log new weight') + '</div>' +
         '</div>';
     });
 
@@ -711,7 +847,9 @@
         var h = document.getElementById('hist-' + key);
         h.classList.toggle('open', openCards[key]);
         root.querySelectorAll('[data-toggle="' + key + '"].toggle').forEach(function(t) {
-          t.textContent = openCards[key] ? 'Hide history' : 'View history / log new weight';
+          t.classList.toggle('open', openCards[key]);
+          var hasHist = (entries[key] || []).length > 0;
+          t.querySelector('span').textContent = openCards[key] ? 'Close' : (hasHist ? 'Log · history' : 'Log');
         });
       });
     });
@@ -777,7 +915,7 @@
         var key = btn.getAttribute('data-timer');
         var restSec = parseInt(btn.getAttribute('data-rest'), 10);
         if (timer && timer.key === key && timerRemaining() > 0) stopTimer();
-        else startTimer(key, restSec);
+        else startTimer(key, restSec, btn.getAttribute('data-name'));
       });
     });
 
@@ -1161,6 +1299,8 @@
   document.getElementById('nav-edit').addEventListener('click', function() { view = 'edit'; render(); });
   document.getElementById('nav-data').addEventListener('click', function() { view = 'data'; render(); });
   document.getElementById('backup-note').addEventListener('click', function() { view = 'data'; render(); });
+  document.getElementById('timer-stop').addEventListener('click', function() { stopTimer(); });
+  document.getElementById('timer-add').addEventListener('click', function() { extendTimer(30); });
 
   // Coming back to the app: refresh the timer and re-take the screen wake lock.
   document.addEventListener('visibilitychange', function() {

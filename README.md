@@ -26,7 +26,9 @@ Live: `https://gianlucagrillo.github.io/gymlog/`
 - **Records** — best weight, estimated 1RM (Epley formula) and session volume,
   with a `PR` badge when you beat your best estimated 1RM.
 - **Rest timer** — anchored to the clock, so it stays accurate even if you lock
-  the screen or switch views. Vibration and a beep when the rest is over.
+  the screen or switch views. While resting, a bar pinned above the bottom
+  navigation shows the countdown with +30s and Stop. Vibration and a beep when
+  the rest is over.
 - **Backup** — JSON export/import, via file download or copy-paste.
 
 ## Where the data lives
