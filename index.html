@@ -75,6 +75,8 @@
   #gymlog textarea { font-family: ui-monospace, monospace; font-size: 11px; height: 120px; resize: vertical; }
   #gymlog .timer-btn.running { color: #E8A33D; border-color: #E8A33D; }
   #gymlog .timer-btn.done { color: #7FBF7F; border-color: #7FBF7F; }
+  #gymlog .draft-note { font-size: 11px; color: #E8A33D; margin-top: 6px; text-align: center; }
+  #gymlog [hidden] { display: none !important; }
 </style>
 </head>
 <body>
@@ -92,7 +94,7 @@
     <button class="ghost mini" id="nav-data">Data</button>
   </div>
   <div id="view"></div>
-  <p class="hint" style="margin:18px 0 0;">Saved on this device only — export a backup now and then.</p>
+  <p class="hint" id="backup-note" style="margin:18px 0 0;">Saved on this device only — export a backup now and then.</p>
 </div>
 
 <script>
@@ -106,11 +108,11 @@
         { name: 'Dumbbell lateral raise', sets: 3, repMin: 6, repMax: 10, restSec: 90 },
         { name: 'Incline dumbbell press', sets: 3, repMin: 6, repMax: 10, restSec: 180 },
         { name: 'Flat machine/chest press', sets: 3, repMin: 8, repMax: 12, restSec: 120 },
-        { name: 'Cable fly', sets: 2, repMin: 12, repMax: 15, restSec: 90 },
+        { name: 'Machine fly', sets: 2, repMin: 12, repMax: 15, restSec: 90 },
         { name: 'Seated dumbbell shoulder press', sets: 2, repMin: 8, repMax: 12, restSec: 120 },
-        { name: 'Cable lateral raise', sets: 4, repMin: 12, repMax: 20, restSec: 90 },
-        { name: 'Overhead cable triceps extension', sets: 3, repMin: 10, repMax: 15, restSec: 90 },
-        { name: 'Triceps pushdown', sets: 2, repMin: 10, repMax: 15, restSec: 90 }
+        { name: 'Seated dumbbell lateral raise', sets: 4, repMin: 12, repMax: 20, restSec: 90 },
+        { name: 'Overhead dumbbell triceps extension', sets: 3, repMin: 10, repMax: 15, restSec: 90 },
+        { name: 'Dips', sets: 2, repMin: 10, repMax: 15, restSec: 90 }
       ]},
       { id: 'day2', label: 'Day 2', exercises: [
         { name: 'Dumbbell shoulder press', sets: 3, repMin: 6, repMax: 10, restSec: 90 },
@@ -119,9 +121,9 @@
         { name: 'Single-arm lat pulldown', sets: 2, repMin: 10, repMax: 15, restSec: 90 },
         { name: 'Cable row', sets: 2, repMin: 8, repMax: 12, restSec: 120 },
         { name: 'Reverse pec deck', sets: 3, repMin: 12, repMax: 20, restSec: 90 },
-        { name: 'Cable rear-delt raise', sets: 2, repMin: 12, repMax: 20, restSec: 90 },
+        { name: 'Bent-over dumbbell rear-delt raise', sets: 2, repMin: 12, repMax: 20, restSec: 90 },
         { name: 'Incline dumbbell curl', sets: 3, repMin: 8, repMax: 12, restSec: 90 },
-        { name: 'Cable curl', sets: 2, repMin: 10, repMax: 15, restSec: 90 }
+        { name: 'Dumbbell hammer curl', sets: 2, repMin: 10, repMax: 15, restSec: 90 }
       ]},
       { id: 'day3', label: 'Day 3', exercises: [
         { name: 'Dumbbell lateral raise', sets: 3, repMin: 6, repMax: 10, restSec: 90 },
@@ -132,29 +134,29 @@
         { name: 'Leg extension', sets: 2, repMin: 12, repMax: 15, restSec: 90 },
         { name: 'Standing calf raise', sets: 3, repMin: 8, repMax: 15, restSec: 90 },
         { name: 'Seated calf raise', sets: 2, repMin: 12, repMax: 20, restSec: 90 },
-        { name: 'Cable crunch', sets: 3, repMin: 10, repMax: 15, restSec: 90 },
+        { name: 'Weighted decline crunch', sets: 3, repMin: 10, repMax: 15, restSec: 90 },
         { name: 'Hanging leg raise', sets: 2, repMin: 10, repMax: 15, restSec: 90 }
       ]},
       { id: 'day4', label: 'Day 4', exercises: [
         { name: 'Dumbbell shoulder press', sets: 3, repMin: 6, repMax: 10, restSec: 90 },
-        { name: 'Cable lateral raise', sets: 4, repMin: 12, repMax: 20, restSec: 90 },
+        { name: 'Seated dumbbell lateral raise', sets: 4, repMin: 12, repMax: 20, restSec: 90 },
         { name: 'Reverse pec deck', sets: 3, repMin: 12, repMax: 20, restSec: 90 },
         { name: 'Seated dumbbell shoulder press', sets: 3, repMin: 8, repMax: 12, restSec: 120 },
         { name: 'EZ-bar curl', sets: 3, repMin: 8, repMax: 12, restSec: 90 },
         { name: 'Incline dumbbell curl', sets: 2, repMin: 10, repMax: 15, restSec: 90 },
-        { name: 'Cable pushdown', sets: 3, repMin: 10, repMax: 15, restSec: 90 },
-        { name: 'Overhead cable triceps extension', sets: 2, repMin: 10, repMax: 15, restSec: 90 }
+        { name: 'Dumbbell skull crusher', sets: 3, repMin: 10, repMax: 15, restSec: 90 },
+        { name: 'Overhead dumbbell triceps extension', sets: 2, repMin: 10, repMax: 15, restSec: 90 }
       ]},
       { id: 'day5', label: 'Day 5', exercises: [
         { name: 'Dumbbell lateral raise', sets: 3, repMin: 6, repMax: 10, restSec: 90 },
         { name: 'Incline Smith/machine press', sets: 3, repMin: 6, repMax: 10, restSec: 180 },
         { name: 'Lat pulldown', sets: 3, repMin: 8, repMax: 12, restSec: 120 },
         { name: 'Chest-supported row', sets: 2, repMin: 8, repMax: 12, restSec: 120 },
-        { name: 'Cable fly', sets: 2, repMin: 12, repMax: 15, restSec: 90 },
-        { name: 'Cable lateral raise', sets: 4, repMin: 12, repMax: 20, restSec: 90 },
+        { name: 'Machine fly', sets: 2, repMin: 12, repMax: 15, restSec: 90 },
+        { name: 'Seated dumbbell lateral raise', sets: 4, repMin: 12, repMax: 20, restSec: 90 },
         { name: 'Reverse pec deck', sets: 2, repMin: 12, repMax: 20, restSec: 90 },
         { name: 'EZ-bar curl', sets: 2, repMin: 8, repMax: 12, restSec: 90 },
-        { name: 'Rope triceps pushdown', sets: 2, repMin: 10, repMax: 15, restSec: 90 }
+        { name: 'Dips', sets: 2, repMin: 10, repMax: 15, restSec: 90 }
       ]}
     ].map(function(d) {
       d.exercises = d.exercises.map(function(ex) {
@@ -171,12 +173,14 @@
   var LEGACY_KEY = 'gymlog-entries-v3';
   var ROUTINE_KEY = 'gymlog-routine-v1';
   var TIMER_KEY = 'gymlog-timer-v1';
+  var BACKUP_KEY = 'gymlog-lastbackup-v1';
 
   var entries = {};
   var routine = [];
   var activeDay = null;
   var view = 'log';
   var openCards = {};
+  var drafts = {};
 
   function readJSON(key, fallback) {
     try {
@@ -193,6 +197,66 @@
   function saveRoutine() {
     try { localStorage.setItem(ROUTINE_KEY, JSON.stringify(routine)); }
     catch (e) { alert('Could not save the routine.'); }
+  }
+
+  // ---------- drafts: typed-but-unlogged values survive the re-render after logging another exercise ----------
+  function captureDraft(key, setCount) {
+    var d = { w: [], r: [], easy: false };
+    for (var i = 1; i <= setCount; i++) {
+      var wi = document.getElementById('w-' + key + '-' + i);
+      var ri = document.getElementById('r-' + key + '-' + i);
+      d.w.push(wi ? wi.value : '');
+      d.r.push(ri ? ri.value : '');
+    }
+    var ei = document.getElementById('easy-' + key);
+    d.easy = !!(ei && ei.checked);
+    drafts[key] = d;
+  }
+  function clearDraft(key) {
+    delete drafts[key];
+  }
+
+  // ---------- which day to open on ----------
+  // Open the day you trained today, or else the one after the last day you trained.
+  function pickStartDay() {
+    var lastDate = null;
+    for (var k in entries) (entries[k] || []).forEach(function(s) { if (!lastDate || s.date > lastDate) lastDate = s.date; });
+    if (!lastDate) return routine[0].id;
+
+    var idx = -1, bestHits = 0;
+    routine.forEach(function(d, i) {
+      var hits = d.exercises.filter(function(ex) {
+        return (entries[ex.id] || []).some(function(s) { return s.date === lastDate; });
+      }).length;
+      if (hits > bestHits) { bestHits = hits; idx = i; }
+    });
+    if (idx < 0) return routine[0].id;
+    if (lastDate === todayStr()) return routine[idx].id;
+    return routine[(idx + 1) % routine.length].id;
+  }
+
+  // ---------- backup health ----------
+  function daysSinceBackup() {
+    var at = localStorage.getItem(BACKUP_KEY);
+    if (!at) return null;
+    return Math.floor((Date.now() - new Date(at).getTime()) / 86400000);
+  }
+  function markBackedUp() {
+    localStorage.setItem(BACKUP_KEY, new Date().toISOString());
+    paintBackupNote();
+  }
+  function paintBackupNote() {
+    var el = document.getElementById('backup-note');
+    if (!el) return;
+    var hasData = Object.keys(entries).some(function(k) { return (entries[k] || []).length; });
+    var d = daysSinceBackup();
+    var txt = 'Saved on this device only — ';
+    txt += d == null ? 'no backup yet' : d === 0 ? 'backed up today' : 'last backup ' + d + (d === 1 ? ' day' : ' days') + ' ago';
+    el.textContent = txt;
+    var stale = hasData && (d == null || d >= 14);
+    el.style.color = stale ? '#E8A33D' : '';
+    el.style.cursor = stale ? 'pointer' : '';
+    el.style.textDecoration = stale ? 'underline' : '';
   }
 
   // v3 -> v4: sets become { weight, reps }. The v3 key is left untouched as a fallback.
@@ -239,6 +303,11 @@
   function metaOf(ex) { return ex.sets + ' × ' + ex.repMin + '–' + ex.repMax; }
   function avg(nums) { return nums.reduce(function(a, b) { return a + b; }, 0) / nums.length; }
   function round1(n) { return Math.round(n * 10) / 10; }
+  // 0 kg = bodyweight (pull-ups, hanging leg raise...)
+  function fmtW(w) { return w === 0 ? 'BW' : w + 'kg'; }
+  function totalReps(session) {
+    return session.sets.reduce(function(a, s) { return a + (s.reps || 0); }, 0);
+  }
   function uid(prefix) { return prefix + '_' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6); }
   function sortedHist(key) {
     return (entries[key] || []).slice().sort(function(a, b) { return a.date.localeCompare(b.date); });
@@ -285,6 +354,23 @@
     localStorage.removeItem(TIMER_KEY);
   }
   var ticker = null;
+  var wakeLock = null;
+
+  // Keep the screen on while resting: a locked phone suspends JS, so the
+  // end-of-rest vibration/beep would never fire.
+  function acquireWakeLock() {
+    try {
+      if (!('wakeLock' in navigator) || wakeLock || document.visibilityState !== 'visible') return;
+      navigator.wakeLock.request('screen').then(function(l) {
+        wakeLock = l;
+        l.addEventListener('release', function() { wakeLock = null; });
+      }).catch(function() {});
+    } catch (e) {}
+  }
+  function releaseWakeLock() {
+    try { if (wakeLock) wakeLock.release(); } catch (e) {}
+    wakeLock = null;
+  }
 
   function timerRemaining() {
     if (!timer) return 0;
@@ -293,12 +379,14 @@
   function startTimer(key, restSec) {
     timer = { key: key, endAt: Date.now() + restSec * 1000, restSec: restSec, alerted: false };
     localStorage.setItem(TIMER_KEY, JSON.stringify(timer));
+    acquireWakeLock();
     ensureTicker();
     paintTimers();
   }
   function stopTimer() {
     timer = null;
     localStorage.removeItem(TIMER_KEY);
+    releaseWakeLock();
     paintTimers();
   }
   function ensureTicker() {
@@ -324,8 +412,12 @@
     var remaining = timerRemaining();
     if (timer && remaining <= 0 && !timer.alerted) {
       timer.alerted = true;
-      if (navigator.vibrate) navigator.vibrate([250, 100, 250]);
-      beep();
+      // Only alert if the rest ended just now, not when reopening the app much later.
+      if (Date.now() - timer.endAt < 15000) {
+        if (navigator.vibrate) navigator.vibrate([250, 100, 250]);
+        beep();
+      }
+      releaseWakeLock();
     }
     btns.forEach(function(btn) {
       var key = btn.getAttribute('data-timer');
@@ -358,6 +450,7 @@
     if (view === 'log') renderLog();
     else if (view === 'edit') renderEdit();
     else renderData();
+    paintBackupNote();
   }
 
   function tabsHtml() {
@@ -391,7 +484,9 @@
 
       var lastWeights = last ? last.sets.map(function(s) { return s.weight; }) : [];
       var lastLabel = lastWeights.length
-        ? (lastWeights.every(function(w) { return w === lastWeights[0]; }) ? lastWeights[0] + 'kg' : lastWeights.join('/') + 'kg')
+        ? (lastWeights.every(function(w) { return w === lastWeights[0]; })
+            ? fmtW(lastWeights[0])
+            : (lastWeights.every(function(w) { return w === 0; }) ? 'BW' : lastWeights.join('/') + 'kg'))
         : '—';
 
       // --- delta vs last: kept exactly as in the original version, do not refactor ---
@@ -411,30 +506,38 @@
       var isPr = !!(last && best.e1rmDate && best.e1rmDate === last.date && hist.length > 1);
       var prHtml = isPr ? ' <span class="pr-badge">PR</span>' : '';
 
-      var maxW = Math.max.apply(null, hist.map(function(h) {
-        return Math.max.apply(null, h.sets.map(function(s) { return s.weight; }));
-      }).concat([1]));
+      // Bodyweight exercises have no load to chart, so the sparkline tracks total reps instead.
+      var allW = [];
+      hist.forEach(function(h) { h.sets.forEach(function(s) { allW.push(s.weight); }); });
+      var bwOnly = allW.length > 0 && allW.every(function(w) { return w === 0; });
+      var metric = function(h) {
+        return bwOnly ? totalReps(h) : round1(avg(h.sets.map(function(s) { return s.weight; })));
+      };
+      var maxM = Math.max.apply(null, hist.map(metric).concat([1]));
       var sparkBars = hist.slice(-8).map(function(h) {
-        var a = round1(avg(h.sets.map(function(s) { return s.weight; })));
-        return '<div class="bar" style="height:' + Math.max(8, (a / maxW) * 32) + 'px" title="' + fmtDate(h.date) + ': ' + a + 'kg"></div>';
+        var a = metric(h);
+        return '<div class="bar" style="height:' + Math.max(8, (a / maxM) * 32) + 'px" title="' + fmtDate(h.date) + ': ' + a + (bwOnly ? ' reps' : 'kg') + '"></div>';
       }).join('');
 
-      // Inputs are pre-filled with the last session so you only edit what changed.
+      // Inputs: today's unsaved draft if any, otherwise pre-filled from the last session.
+      var draft = drafts[key];
       var setInputs = '';
       for (var i = 1; i <= ex.sets; i++) {
         var pre = last && last.sets[i - 1] ? last.sets[i - 1] : null;
         var pw = pre && pre.weight != null ? pre.weight : '';
         var pr = pre && pre.reps != null ? pre.reps : '';
+        if (draft && draft.w[i - 1] !== undefined) pw = draft.w[i - 1];
+        if (draft && draft.r[i - 1] !== undefined) pr = draft.r[i - 1];
         setInputs +=
           '<div class="set-row">' +
             '<div class="set-label">Set ' + i + '</div>' +
-            '<input type="number" inputmode="decimal" step="0.5" min="0" placeholder="kg" value="' + pw + '" id="w-' + key + '-' + i + '">' +
-            '<input type="number" inputmode="numeric" step="1" min="0" placeholder="reps" value="' + pr + '" id="r-' + key + '-' + i + '">' +
+            '<input type="number" inputmode="decimal" step="0.5" min="0" placeholder="kg (0 = BW)" value="' + esc(pw) + '" id="w-' + key + '-' + i + '" data-draft="' + key + '" data-setcount="' + ex.sets + '">' +
+            '<input type="number" inputmode="numeric" step="1" min="0" placeholder="reps" value="' + esc(pr) + '" id="r-' + key + '-' + i + '" data-draft="' + key + '" data-setcount="' + ex.sets + '">' +
           '</div>';
       }
       setInputs +=
         '<label class="easy-check" style="width:auto;margin:2px 0 10px;">' +
-          '<input type="checkbox" id="easy-' + key + '"> too easy, add weight next time' +
+          '<input type="checkbox" id="easy-' + key + '" data-draft="' + key + '" data-setcount="' + ex.sets + '"' + (draft && draft.easy ? ' checked' : '') + '> too easy, add weight next time' +
         '</label>';
 
       var statsHtml = '';
@@ -450,7 +553,7 @@
       var sessionsHtml = hist.slice().reverse().map(function(h) {
         var chips = h.sets.map(function(s, idx) {
           var reps = (s.reps && s.reps > 0) ? ' × ' + s.reps : '';
-          return '<span class="set-chip">S' + (idx + 1) + ': ' + s.weight + 'kg' + reps + '</span>';
+          return '<span class="set-chip">S' + (idx + 1) + ': ' + fmtW(s.weight) + reps + '</span>';
         }).join('');
         var vol = volumeOf(h);
         var volTxt = vol ? ' · ' + round1(vol) + 'kg vol' : '';
@@ -463,7 +566,8 @@
           '</div>';
       }).join('') || '<div class="hist-row" style="color:#5C5A52;">No entries yet</div>';
 
-      var isOpen = !!openCards[key];
+      var isOpen = !!openCards[key] || !!draft;
+      if (draft) openCards[key] = true;
 
       html +=
         '<div class="card">' +
@@ -485,6 +589,7 @@
           '<div class="history' + (isOpen ? ' open' : '') + '" id="hist-' + key + '">' +
             setInputs +
             '<button data-log="' + key + '" data-setcount="' + ex.sets + '" style="width:100%;margin-top:4px;">Log session</button>' +
+            '<div class="draft-note" id="draft-' + key + '"' + (draft ? '' : ' hidden') + '>Not logged yet — values kept until you tap Log session</div>' +
             '<div style="margin-top:12px;padding-top:10px;border-top:1px solid #2C3036;">' + statsHtml + sessionsHtml + '</div>' +
           '</div>' +
           '<div class="toggle" data-toggle="' + key + '">' + (isOpen ? 'Hide history' : 'View history / log new weight') + '</div>' +
@@ -506,6 +611,16 @@
       });
     });
 
+    root.querySelectorAll('[data-draft]').forEach(function(inp) {
+      var ev = inp.type === 'checkbox' ? 'change' : 'input';
+      inp.addEventListener(ev, function() {
+        var key = inp.getAttribute('data-draft');
+        captureDraft(key, parseInt(inp.getAttribute('data-setcount'), 10));
+        var note = document.getElementById('draft-' + key);
+        if (note) note.hidden = false;
+      });
+    });
+
     root.querySelectorAll('[data-log]').forEach(function(btn) {
       btn.addEventListener('click', function(e) {
         e.stopPropagation();
@@ -517,8 +632,11 @@
           var ri = document.getElementById('r-' + key + '-' + i);
           var w = parseFloat(wi.value);
           var r = parseInt(ri.value, 10);
+          var hasW = isFinite(w) && w > 0;
+          var hasR = isFinite(r) && r > 0;
           wi.style.borderColor = '';
-          if (w && w > 0) sets.push({ weight: w, reps: (r && r > 0) ? r : null });
+          // A set counts if it has a load, or reps alone (bodyweight, logged as 0 kg).
+          if (hasW || hasR) sets.push({ weight: hasW ? w : 0, reps: hasR ? r : null });
         }
         if (sets.length === 0) {
           document.getElementById('w-' + key + '-1').style.borderColor = '#D97757';
@@ -531,6 +649,7 @@
         if (idx >= 0) { entries[key][idx].sets = sets; entries[key][idx].easy = easy; }
         else entries[key].push({ date: today, sets: sets, easy: easy });
         saveEntries();
+        clearDraft(key);
         render();
       });
     });
@@ -727,6 +846,8 @@
     });
     allDates.sort();
     var uniqueDays = allDates.filter(function(d, i) { return allDates.indexOf(d) === i; }).length;
+    var bd = daysSinceBackup();
+    var backupTxt = bd == null ? 'Never backed up.' : bd === 0 ? 'Last backup: today.' : 'Last backup: ' + bd + (bd === 1 ? ' day' : ' days') + ' ago.';
 
     root.innerHTML =
       '<div class="stats" style="margin-top:4px;">' +
@@ -736,7 +857,7 @@
       '</div>' +
       '<div class="card">' +
         '<div class="ex-name">Backup</div>' +
-        '<p class="hint" style="margin:4px 0 10px;">Your data lives in this browser only. Download a file every so often: if you switch phone or the browser clears its storage, without a backup it is gone.</p>' +
+        '<p class="hint" style="margin:4px 0 10px;">Your data lives in this browser only. Download a file every so often: if you switch phone or the browser clears its storage, without a backup it is gone.<br><b style="color:#B7B4A9;">' + backupTxt + '</b></p>' +
         '<button id="do-export" style="width:100%;">Download .json backup</button>' +
         '<button class="ghost" id="do-copy" style="width:100%;margin-top:8px;">Copy to clipboard</button>' +
       '</div>' +
@@ -763,12 +884,14 @@
       a.click();
       document.body.removeChild(a);
       setTimeout(function() { URL.revokeObjectURL(url); }, 1000);
+      markBackedUp();
+      renderData();
     });
 
     document.getElementById('do-copy').addEventListener('click', function() {
       var txt = JSON.stringify(exportPayload());
       if (navigator.clipboard && navigator.clipboard.writeText) {
-        navigator.clipboard.writeText(txt).then(function() { alert('Backup copied to clipboard.'); },
+        navigator.clipboard.writeText(txt).then(function() { markBackedUp(); alert('Backup copied to clipboard.'); },
           function() { document.getElementById('paste-in').value = txt; });
       } else {
         document.getElementById('paste-in').value = txt;
@@ -831,11 +954,19 @@
   entries = migrate();
   routine = readJSON(ROUTINE_KEY, null);
   if (!Array.isArray(routine) || !routine.length) routine = defaultRoutine();
-  activeDay = routine[0].id;
+  activeDay = pickStartDay();
 
   document.getElementById('nav-log').addEventListener('click', function() { view = 'log'; render(); });
   document.getElementById('nav-edit').addEventListener('click', function() { view = 'edit'; render(); });
   document.getElementById('nav-data').addEventListener('click', function() { view = 'data'; render(); });
+  document.getElementById('backup-note').addEventListener('click', function() { view = 'data'; render(); });
+
+  // Coming back to the app: refresh the timer and re-take the screen wake lock.
+  document.addEventListener('visibilitychange', function() {
+    if (document.visibilityState !== 'visible') return;
+    if (timer && timerRemaining() > 0) { acquireWakeLock(); ensureTicker(); }
+    paintTimers();
+  });
 
   render();
 })();
