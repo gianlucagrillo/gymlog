@@ -108,20 +108,15 @@
         { name: 'Dumbbell lateral raise', sets: 3, repMin: 6, repMax: 10, restSec: 90 },
         { name: 'Incline dumbbell press', sets: 3, repMin: 6, repMax: 10, restSec: 180 },
         { name: 'Flat machine/chest press', sets: 3, repMin: 8, repMax: 12, restSec: 120 },
-        { name: 'Machine fly', sets: 2, repMin: 12, repMax: 15, restSec: 90 },
-        { name: 'Seated dumbbell shoulder press', sets: 2, repMin: 8, repMax: 12, restSec: 120 },
+        { name: 'Seated dumbbell shoulder press', sets: 3, repMin: 8, repMax: 12, restSec: 120 },
         { name: 'Seated dumbbell lateral raise', sets: 4, repMin: 12, repMax: 20, restSec: 90 },
-        { name: 'Overhead dumbbell triceps extension', sets: 3, repMin: 10, repMax: 15, restSec: 90 },
-        { name: 'Dips', sets: 2, repMin: 10, repMax: 15, restSec: 90 }
+        { name: 'Overhead dumbbell triceps extension', sets: 3, repMin: 10, repMax: 15, restSec: 90 }
       ]},
       { id: 'day2', label: 'Day 2', exercises: [
         { name: 'Dumbbell shoulder press', sets: 3, repMin: 6, repMax: 10, restSec: 90 },
         { name: 'Pull-ups / lat pulldown', sets: 3, repMin: 6, repMax: 10, restSec: 180 },
         { name: 'Chest-supported row', sets: 3, repMin: 8, repMax: 12, restSec: 120 },
-        { name: 'Single-arm lat pulldown', sets: 2, repMin: 10, repMax: 15, restSec: 90 },
-        { name: 'Cable row', sets: 2, repMin: 8, repMax: 12, restSec: 120 },
-        { name: 'Reverse pec deck', sets: 3, repMin: 12, repMax: 20, restSec: 90 },
-        { name: 'Bent-over dumbbell rear-delt raise', sets: 2, repMin: 12, repMax: 20, restSec: 90 },
+        { name: 'Reverse pec deck', sets: 4, repMin: 12, repMax: 20, restSec: 90 },
         { name: 'Incline dumbbell curl', sets: 3, repMin: 8, repMax: 12, restSec: 90 },
         { name: 'Dumbbell hammer curl', sets: 2, repMin: 10, repMax: 15, restSec: 90 }
       ]},
@@ -131,19 +126,13 @@
         { name: 'Romanian deadlift', sets: 3, repMin: 8, repMax: 12, restSec: 180 },
         { name: 'Leg press', sets: 3, repMin: 10, repMax: 15, restSec: 120 },
         { name: 'Leg curl', sets: 3, repMin: 10, repMax: 15, restSec: 90 },
-        { name: 'Leg extension', sets: 2, repMin: 12, repMax: 15, restSec: 90 },
-        { name: 'Standing calf raise', sets: 3, repMin: 8, repMax: 15, restSec: 90 },
-        { name: 'Seated calf raise', sets: 2, repMin: 12, repMax: 20, restSec: 90 },
-        { name: 'Weighted decline crunch', sets: 3, repMin: 10, repMax: 15, restSec: 90 },
-        { name: 'Hanging leg raise', sets: 2, repMin: 10, repMax: 15, restSec: 90 }
+        { name: 'Standing calf raise', sets: 4, repMin: 8, repMax: 15, restSec: 90 }
       ]},
       { id: 'day4', label: 'Day 4', exercises: [
         { name: 'Dumbbell shoulder press', sets: 3, repMin: 6, repMax: 10, restSec: 90 },
         { name: 'Seated dumbbell lateral raise', sets: 4, repMin: 12, repMax: 20, restSec: 90 },
         { name: 'Reverse pec deck', sets: 3, repMin: 12, repMax: 20, restSec: 90 },
-        { name: 'Seated dumbbell shoulder press', sets: 3, repMin: 8, repMax: 12, restSec: 120 },
         { name: 'EZ-bar curl', sets: 3, repMin: 8, repMax: 12, restSec: 90 },
-        { name: 'Incline dumbbell curl', sets: 2, repMin: 10, repMax: 15, restSec: 90 },
         { name: 'Dumbbell skull crusher', sets: 3, repMin: 10, repMax: 15, restSec: 90 },
         { name: 'Overhead dumbbell triceps extension', sets: 2, repMin: 10, repMax: 15, restSec: 90 }
       ]},
@@ -151,17 +140,15 @@
         { name: 'Dumbbell lateral raise', sets: 3, repMin: 6, repMax: 10, restSec: 90 },
         { name: 'Incline Smith/machine press', sets: 3, repMin: 6, repMax: 10, restSec: 180 },
         { name: 'Lat pulldown', sets: 3, repMin: 8, repMax: 12, restSec: 120 },
-        { name: 'Chest-supported row', sets: 2, repMin: 8, repMax: 12, restSec: 120 },
-        { name: 'Machine fly', sets: 2, repMin: 12, repMax: 15, restSec: 90 },
+        // Moved here from Day 2: keeps the Day 2 id so its history stays attached.
+        { id: 'day2_cable_row', name: 'Cable row', sets: 3, repMin: 8, repMax: 12, restSec: 120 },
         { name: 'Seated dumbbell lateral raise', sets: 4, repMin: 12, repMax: 20, restSec: 90 },
-        { name: 'Reverse pec deck', sets: 2, repMin: 12, repMax: 20, restSec: 90 },
-        { name: 'EZ-bar curl', sets: 2, repMin: 8, repMax: 12, restSec: 90 },
-        { name: 'Dips', sets: 2, repMin: 10, repMax: 15, restSec: 90 }
+        { name: 'Reverse pec deck', sets: 2, repMin: 12, repMax: 20, restSec: 90 }
       ]}
     ].map(function(d) {
       d.exercises = d.exercises.map(function(ex) {
         // Legacy id = same slug the v3 store used, so existing history stays attached.
-        ex.id = d.id + '_' + ex.name.toLowerCase().replace(/[^a-z0-9]+/g, '_');
+        if (!ex.id) ex.id = d.id + '_' + ex.name.toLowerCase().replace(/[^a-z0-9]+/g, '_');
         return ex;
       });
       return d;
