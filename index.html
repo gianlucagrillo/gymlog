@@ -37,7 +37,7 @@
   #gymlog .ex-meta { color: #8C8A82; font-size: 12px; margin-top: 3px; display: flex; flex-wrap: wrap; gap: 4px 8px; align-items: center; }
   #gymlog .weight-badge { font-size: 28px; font-weight: 700; color: #E8A33D; min-width: 64px; text-align: right; line-height: 1; white-space: nowrap; }
   #gymlog .weight-badge.empty { color: #3A3E46; }
-  #gymlog .delta { font-size: 12px; margin-top: 2px; text-align: right; }
+  #gymlog .delta { font-size: 12px; margin-top: 2px; text-align: right; white-space: nowrap; }
   #gymlog .delta.up { color: #7FBF7F; }
   #gymlog .delta.down { color: #D97757; }
   #gymlog .delta.flat { color: #8C8A82; }
@@ -139,6 +139,151 @@
   #gymlog .vol-fill { height: 100%; background: #E8A33D; }
   #gymlog .vol-fill.full { background: #7FBF7F; }
   #gymlog .vol-num { width: 44px; text-align: right; flex-shrink: 0; color: #EDEBE3; }
+
+  /* ----- per-set check-off ----- */
+  #gymlog .set-head, #gymlog .set-row { grid-template-columns: 30px 1fr 1fr 46px; }
+  #gymlog .set-check { width: 46px; height: 44px; padding: 0; border-radius: 12px; background: #23262B; border: 1px solid #2A2E34; color: #4A4D53; display: flex; align-items: center; justify-content: center; transition: background .15s, border-color .15s, color .15s; }
+  #gymlog .set-check svg { width: 22px; height: 22px; }
+  #gymlog .set-check.next { border-color: #E8A33D; color: #E8A33D; background: rgba(232,163,61,.08); }
+  #gymlog .set-row.done .set-check { background: #7FBF7F; border-color: #7FBF7F; color: #16181B; }
+  #gymlog .set-row.done .set-check:disabled { opacity: 1; }
+  #gymlog .set-row.done input { background: #1B231D; border-color: #2F3B31; color: #CFE8CF; }
+  #gymlog .set-row.done .set-label { background: #7FBF7F; color: #16181B; }
+  #gymlog .set-row.next .set-label { background: #E8A33D; color: #16181B; }
+  #gymlog .set-row.pop .set-check { animation: gl-pop .4s ease; }
+  @keyframes gl-pop { 0% { transform: scale(1); } 35% { transform: scale(1.22); } 100% { transform: scale(1); } }
+  #gymlog .set-hint { font-size: 11px; color: #6E6C66; margin: -2px 0 8px; }
+  #gymlog .sets-chip { color: #E8A33D; font-weight: 600; }
+  #gymlog .card.active { border-color: rgba(232,163,61,.45); }
+  #gymlog .today-line.complete { color: #7FBF7F; font-weight: 600; cursor: pointer; }
+
+  /* ----- PR toast + confetti ----- */
+  #gymlog .toast { position: fixed; left: 12px; right: 12px; top: max(12px, env(safe-area-inset-top)); z-index: 60; max-width: 496px; margin: 0 auto; background: #E8A33D; color: #16181B; border-radius: 16px; padding: 12px 16px; display: flex; gap: 12px; align-items: center; box-shadow: 0 12px 32px rgba(0,0,0,.5); animation: gl-drop .45s cubic-bezier(.2,1.4,.4,1); }
+  #gymlog .toast.out { animation: gl-up .3s ease forwards; }
+  #gymlog .toast-ico svg { width: 30px; height: 30px; display: block; }
+  #gymlog .toast b { display: block; font-size: 15px; }
+  #gymlog .toast span { font-size: 12px; font-weight: 500; }
+  @keyframes gl-drop { from { transform: translateY(-140%); } to { transform: translateY(0); } }
+  @keyframes gl-up { to { transform: translateY(-140%); opacity: 0; } }
+  .gl-confetti { position: fixed; inset: 0; pointer-events: none; z-index: 70; overflow: hidden; }
+  .gl-confetti i { position: absolute; top: -14px; width: 8px; height: 12px; border-radius: 2px; animation: gl-fall var(--dur) cubic-bezier(.25,.6,.4,1) var(--delay) forwards; }
+  @keyframes gl-fall { to { transform: translate3d(var(--dx), 105vh, 0) rotate(var(--rot)); } }
+  @media (prefers-reduced-motion: reduce) { .gl-confetti { display: none; } }
+
+  /* ----- workout summary sheet ----- */
+  #gymlog .sheet-wrap { position: fixed; inset: 0; z-index: 50; display: flex; align-items: flex-end; justify-content: center; }
+  #gymlog .sheet-bg { position: absolute; inset: 0; background: rgba(0,0,0,.62); animation: gl-fade .25s ease; }
+  #gymlog .sheet { position: relative; width: 100%; max-width: 520px; max-height: 90vh; overflow-y: auto; background: #1C1F23; border-radius: 24px 24px 0 0; padding: 10px 20px calc(20px + env(safe-area-inset-bottom)); animation: gl-rise .4s cubic-bezier(.2,1,.3,1); }
+  #gymlog .sheet-grab { width: 40px; height: 4px; border-radius: 2px; background: #3A3E46; margin: 0 auto 18px; }
+  @keyframes gl-fade { from { opacity: 0; } }
+  @keyframes gl-rise { from { transform: translateY(100%); } }
+  #gymlog .sum-kicker { font-size: 11px; letter-spacing: .12em; text-transform: uppercase; color: #7FBF7F; font-weight: 700; }
+  #gymlog .sum-title { font-family: 'Barlow Condensed', sans-serif; font-size: 44px; font-weight: 700; line-height: 1; margin: 4px 0 2px; }
+  #gymlog .sum-date { color: #8C8A82; font-size: 13px; }
+  #gymlog .sum-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin: 18px 0 12px; }
+  #gymlog .sum-stat { background: #23262B; border-radius: 14px; padding: 12px 14px; font-size: 11px; color: #8C8A82; }
+  #gymlog .sum-stat b { display: block; font-family: 'Barlow Condensed', sans-serif; font-size: 32px; line-height: 1; color: #EDEBE3; margin-bottom: 2px; }
+  #gymlog .sum-stat b small { font-size: 16px; color: #8C8A82; }
+  #gymlog .sum-stat.hl b { color: #E8A33D; }
+  #gymlog .sum-vs { font-size: 13px; color: #B7B4A9; margin-bottom: 14px; }
+  #gymlog .sum-vs .up { color: #7FBF7F; font-weight: 600; }
+  #gymlog .sum-vs .down { color: #D97757; font-weight: 600; }
+  #gymlog .sum-pr { display: flex; align-items: center; gap: 10px; background: rgba(232,163,61,.1); border: 1px solid rgba(232,163,61,.35); border-radius: 12px; padding: 10px 12px; margin-bottom: 8px; font-size: 13px; }
+  #gymlog .sum-pr svg { width: 20px; height: 20px; color: #E8A33D; flex-shrink: 0; }
+  #gymlog .sum-ex { padding: 10px 0; border-top: 1px solid #2A2E34; font-size: 13px; }
+  #gymlog .sum-ex-name { font-weight: 600; }
+  #gymlog .sum-ex-sets { color: #8C8A82; font-size: 12px; margin-top: 2px; }
+
+  /* ----- full-screen rest timer ----- */
+  #gymlog .timer-bar-inner { cursor: pointer; }
+  #gymlog .tfull { position: fixed; inset: 0; z-index: 40; background: radial-gradient(circle at 50% 38%, #24282E 0%, #131518 72%); display: flex; flex-direction: column; align-items: center; justify-content: center; padding: max(24px, env(safe-area-inset-top)) 24px max(24px, env(safe-area-inset-bottom)); animation: gl-fade .2s ease; }
+  #gymlog .tfull-close { position: absolute; top: max(12px, env(safe-area-inset-top)); left: 8px; background: none; color: #8C8A82; padding: 12px; }
+  #gymlog .tfull-close svg { width: 28px; height: 28px; display: block; }
+  #gymlog .tfull-name { font-size: 15px; font-weight: 600; color: #B7B4A9; text-align: center; max-width: 320px; }
+  #gymlog .tfull-ring { position: relative; width: min(76vw, 300px); aspect-ratio: 1; margin: 24px 0; }
+  #gymlog .tfull-ring svg { width: 100%; height: 100%; transform: rotate(-90deg); display: block; }
+  #gymlog .tfull-ring .trk { fill: none; stroke: #23262B; stroke-width: 14; }
+  #gymlog .tfull-ring .prg { fill: none; stroke: #E8A33D; stroke-width: 14; stroke-linecap: round; transition: stroke-dashoffset .3s linear, stroke .3s; }
+  #gymlog .tfull.done .prg { stroke: #7FBF7F; }
+  #gymlog .tfull-center { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+  #gymlog .tfull-clock { font-family: 'Barlow Condensed', sans-serif; font-size: clamp(64px, 22vw, 100px); font-weight: 700; line-height: 1; font-variant-numeric: tabular-nums; }
+  #gymlog .tfull.done .tfull-clock { color: #7FBF7F; }
+  #gymlog .tfull-sub { font-size: 12px; letter-spacing: .14em; text-transform: uppercase; color: #8C8A82; margin-top: 6px; }
+  #gymlog .tfull-next { background: #1C1F23; border: 1px solid #2A2E34; border-radius: 18px; padding: 14px 18px; width: 100%; max-width: 340px; text-align: center; }
+  #gymlog .tfull-next small { display: block; font-size: 11px; letter-spacing: .1em; text-transform: uppercase; color: #8C8A82; }
+  #gymlog .tfull-next b { display: block; font-family: 'Barlow Condensed', sans-serif; font-size: 32px; line-height: 1.1; margin-top: 4px; color: #E8A33D; }
+  #gymlog .tfull-next span { font-size: 13px; color: #B7B4A9; }
+  #gymlog .tfull-actions { display: flex; gap: 10px; margin-top: 22px; width: 100%; max-width: 340px; }
+  #gymlog .tfull-actions button { flex: 1; padding: 15px 0; font-size: 15px; border-radius: 14px; background: #23262B; color: #EDEBE3; }
+  #gymlog .tfull-actions button.stop { background: #E8A33D; color: #16181B; }
+  #gymlog .tfull.done .tfull-actions button.stop { background: #7FBF7F; }
+
+  /* ----- per-exercise chart ----- */
+  #gymlog .chart { margin: 0 0 14px; }
+  #gymlog .chart-head { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; font-size: 11px; color: #8C8A82; margin-bottom: 6px; }
+  #gymlog .chart-head b { font-family: 'Barlow Condensed', sans-serif; font-size: 22px; color: #EDEBE3; font-weight: 700; }
+  #gymlog .chart svg { width: 100%; height: auto; display: block; overflow: visible; }
+  #gymlog .chart .pt { cursor: pointer; }
+  #gymlog .chart .pt.sel .dot { fill: #EDEBE3; stroke: #EDEBE3; }
+  #gymlog .session.hl { background: rgba(232,163,61,.08); border-radius: 8px; margin: 0 -8px; padding: 8px; }
+
+  /* ----- consistency calendar ----- */
+  #gymlog .cal-months, #gymlog .cal { display: grid; grid-template-columns: repeat(17, 1fr); gap: 3px; }
+  #gymlog .cal { grid-template-rows: repeat(7, auto); grid-auto-flow: column; }
+  #gymlog .cal-months { font-size: 9px; color: #6E6C66; margin-bottom: 4px; height: 12px; }
+  #gymlog .cal-months span { white-space: nowrap; overflow: visible; }
+  #gymlog .cal i, #gymlog .cal-legend i { aspect-ratio: 1; border-radius: 3px; background: #23262B; display: block; }
+  #gymlog .cal i.l1, #gymlog .cal-legend i.l1 { background: rgba(232,163,61,.3); }
+  #gymlog .cal i.l2, #gymlog .cal-legend i.l2 { background: rgba(232,163,61,.62); }
+  #gymlog .cal i.l3, #gymlog .cal-legend i.l3 { background: #E8A33D; }
+  #gymlog .cal i.fut { background: transparent; }
+  #gymlog .cal i.today { outline: 1.5px solid #EDEBE3; outline-offset: -1.5px; }
+  #gymlog .cal-legend { display: flex; justify-content: flex-end; align-items: center; gap: 3px; font-size: 10px; color: #6E6C66; margin-top: 8px; }
+  #gymlog .cal-legend i { width: 10px; height: 10px; }
+
+  /* ----- rep targets in set rows ----- */
+  #gymlog .rep-cell { position: relative; min-width: 0; }
+  #gymlog .rep-cell input { width: 100%; padding-right: 40px; }
+  #gymlog .tgt { position: absolute; right: 10px; top: 50%; transform: translateY(-50%); font-size: 12px; font-weight: 600; color: #6E6C66; pointer-events: none; font-variant-numeric: tabular-nums; }
+  #gymlog .tgt.up { color: #7FBF7F; }
+  #gymlog .tgt.down { color: #D97757; }
+
+  /* ----- strength view ----- */
+  #gymlog .bal-row { display: grid; grid-template-columns: 96px 1fr 50px; gap: 8px; align-items: center; font-size: 12px; color: #B7B4A9; padding: 5px 0; }
+  #gymlog .bal-track { position: relative; height: 8px; background: #23262B; border-radius: 4px; }
+  #gymlog .bal-track::after { content: ''; position: absolute; left: 50%; top: -3px; bottom: -3px; width: 1px; background: #4A4D53; }
+  #gymlog .bal-fill { position: absolute; top: 0; bottom: 0; border-radius: 4px; background: #7FBF7F; }
+  #gymlog .bal-fill.neg { background: #D97757; }
+  #gymlog .bal-fill.focus { background: #E8A33D; }
+  #gymlog .bal-num { text-align: right; color: #EDEBE3; font-family: 'Barlow Condensed', sans-serif; font-size: 16px; font-weight: 700; }
+  #gymlog .focus-tag { display: inline-block; font-size: 8px; font-weight: 700; letter-spacing: .06em; color: #E8A33D; border: 1px solid #E8A33D; border-radius: 4px; padding: 0 4px; margin-left: 4px; vertical-align: middle; }
+  #gymlog .pair { padding: 12px 0 4px; border-top: 1px solid #2A2E34; }
+  #gymlog .pair-head { display: flex; justify-content: space-between; font-size: 12px; color: #B7B4A9; }
+  #gymlog .pair-head b { color: #EDEBE3; }
+  #gymlog .pair-beam { position: relative; height: 6px; background: #23262B; border-radius: 3px; margin: 12px 4px 8px; }
+  #gymlog .pair-beam::before { content: ''; position: absolute; left: 50%; top: -5px; bottom: -5px; width: 2px; margin-left: -1px; background: #4A4D53; border-radius: 1px; }
+  #gymlog .pair-dot { position: absolute; top: 50%; width: 16px; height: 16px; border-radius: 50%; transform: translate(-50%, -50%); background: #7FBF7F; box-shadow: 0 0 0 3px #1C1F23; transition: left .4s; }
+  #gymlog .pair-dot.off { background: #E8A33D; }
+  #gymlog .pair-verdict { font-size: 12px; text-align: center; color: #7FBF7F; font-weight: 600; }
+  #gymlog .pair-verdict.off { color: #E8A33D; }
+  #gymlog details.mv { margin-top: 12px; }
+  #gymlog details.mv summary { font-size: 13px; font-weight: 600; color: #B7B4A9; cursor: pointer; padding: 6px 0; }
+  #gymlog .mv-row { display: grid; grid-template-columns: 1fr auto 48px; gap: 10px; font-size: 12px; padding: 6px 0; border-top: 1px solid #23262B; color: #B7B4A9; }
+  #gymlog .mv-row b { color: #EDEBE3; font-weight: 600; text-align: right; }
+  #gymlog .pl { font-size: 11px; letter-spacing: .08em; text-transform: uppercase; color: #8C8A82; margin: 14px 0 6px; display: block; }
+  #gymlog .pgrid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 8px; }
+  #gymlog .pfield { position: relative; }
+  #gymlog .pfield input { padding-right: 44px; font-size: 17px; font-weight: 600; }
+  #gymlog .pfield span { position: absolute; right: 12px; top: 50%; transform: translateY(-50%); font-size: 12px; color: #6E6C66; pointer-events: none; }
+  #gymlog .presult { margin-top: 16px; background: #23262B; border-radius: 16px; padding: 16px; text-align: center; }
+  #gymlog .presult .big { font-family: 'Barlow Condensed', sans-serif; font-size: 52px; font-weight: 700; line-height: 1; color: #E8A33D; }
+  #gymlog .presult .big small { font-size: 20px; color: #B7B4A9; }
+  #gymlog .presult .sub { font-size: 13px; color: #B7B4A9; margin-top: 4px; }
+  #gymlog .presult .why { font-size: 11px; color: #6E6C66; margin-top: 10px; line-height: 1.5; }
+  #gymlog .conf { display: inline-block; font-size: 10px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; padding: 2px 7px; border-radius: 5px; margin-top: 10px; }
+  #gymlog .conf.good { background: rgba(127,191,127,.15); color: #7FBF7F; }
+  #gymlog .conf.fair { background: rgba(232,163,61,.15); color: #E8A33D; }
+  #gymlog .conf.low { background: rgba(217,119,87,.15); color: #D97757; }
 </style>
 </head>
 <body>
@@ -165,11 +310,34 @@
     </div>
   </div>
 
+  <div class="tfull" id="tfull" hidden>
+    <button class="tfull-close" id="tfull-close" aria-label="Close">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg>
+    </button>
+    <div class="tfull-name" id="tfull-name"></div>
+    <div class="tfull-ring">
+      <svg viewBox="0 0 260 260"><circle class="trk" cx="130" cy="130" r="116"/><circle class="prg" id="tfull-prg" cx="130" cy="130" r="116" stroke-dasharray="728.85" stroke-dashoffset="0"/></svg>
+      <div class="tfull-center"><div class="tfull-clock" id="tfull-clock">0:00</div><div class="tfull-sub" id="tfull-sub">Rest</div></div>
+    </div>
+    <div class="tfull-next" id="tfull-next"></div>
+    <div class="tfull-actions">
+      <button id="tfull-minus">−15s</button>
+      <button id="tfull-plus">+30s</button>
+      <button id="tfull-stop" class="stop">Skip</button>
+    </div>
+  </div>
+
+  <div class="sheet-wrap" id="sheet" hidden></div>
+
   <nav class="bottom-nav">
     <div class="bottom-nav-inner">
       <button class="nav-btn" id="nav-log">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6.5 6.5v11M17.5 6.5v11M3.5 9v6M20.5 9v6M6.5 12h11"/></svg>
         Workout
+      </button>
+      <button class="nav-btn" id="nav-strength">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v18M8 21h8M5 7h14M5 7l-3 7a3 3 0 0 0 6 0L5 7zM19 7l-3 7a3 3 0 0 0 6 0l-3-7z"/></svg>
+        Strength
       </button>
       <button class="nav-btn" id="nav-edit">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M9 6h11M9 12h11M9 18h11M4.5 6h.01M4.5 12h.01M4.5 18h.01"/></svg>
@@ -537,6 +705,642 @@
     return '';
   }
 
+  // ---------- today's session, per-set check-off ----------
+  var TROPHY = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 21h8M12 17v4M7 4h10v5a5 5 0 0 1-10 0V4z"/><path d="M17 5h3v2a3 3 0 0 1-3 3M7 5H4v2a3 3 0 0 0 3 3"/></svg>';
+  var CHECK = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>';
+  var justChecked = null;
+  var scrollTarget = null;
+
+  function todaySession(key) {
+    var t = todayStr();
+    return (entries[key] || []).find(function(s) { return s.date === t; }) || null;
+  }
+  function findEx(key) {
+    for (var i = 0; i < routine.length; i++) {
+      var ex = routine[i].exercises.find(function(e) { return e.id === key; });
+      if (ex) return { day: routine[i], ex: ex };
+    }
+    return null;
+  }
+  // An exercise is done for today once every planned set is checked, or it was logged in one go.
+  function exDone(ex) {
+    var s = todaySession(ex.id);
+    return !!s && (!!s.complete || s.sets.length >= ex.sets);
+  }
+  function dayProgress(day) {
+    var done = 0, started = 0;
+    day.exercises.forEach(function(ex) {
+      if (todaySession(ex.id)) started++;
+      if (exDone(ex)) done++;
+    });
+    return { done: done, started: started, total: day.exercises.length };
+  }
+  function fmtSet(s) { return (s.weight === 0 ? 'BW' : s.weight + ' kg') + (s.reps ? ' × ' + s.reps : ''); }
+  function readRow(key, i) {
+    var wi = document.getElementById('w-' + key + '-' + i);
+    var ri = document.getElementById('r-' + key + '-' + i);
+    var w = parseFloat(wi.value), r = parseInt(ri.value, 10);
+    var hasW = isFinite(w) && w > 0, hasR = isFinite(r) && r > 0;
+    return { ok: hasW || hasR, set: { weight: hasW ? w : 0, reps: hasR ? r : null }, wi: wi };
+  }
+  function snapshot(key) {
+    var t = todayStr();
+    var f = findEx(key);
+    var ts = todaySession(key);
+    return {
+      prevBest: bestOf(sortedHist(key).filter(function(s) { return s.date < t; })),
+      todayBest: bestOf(ts ? [ts] : []),
+      exDone: f ? exDone(f.ex) : false,
+      dayDone: f ? dayProgress(f.day).done === f.day.exercises.length : false
+    };
+  }
+
+  function checkSet(key, i) {
+    var f = findEx(key);
+    if (!f) return;
+    var ts = todaySession(key);
+    var n = ts ? ts.sets.length : 0;
+    if (i !== n + 1) return;
+    var row = readRow(key, i);
+    if (!row.ok) { row.wi.style.borderColor = '#D97757'; row.wi.focus(); return; }
+    captureDraft(key, f.ex.sets);
+    var snap = snapshot(key);
+    if (!ts) {
+      ts = { date: todayStr(), sets: [], easy: false };
+      (entries[key] = entries[key] || []).push(ts);
+    }
+    row.set.at = Date.now();
+    ts.sets.push(row.set);
+    var easyEl = document.getElementById('easy-' + key);
+    ts.easy = !!(easyEl && easyEl.checked);
+    if (ts.sets.length >= f.ex.sets) ts.complete = true;
+    saveEntries();
+    justChecked = { key: key, i: i };
+    afterSave(key, snap, { rest: true });
+  }
+
+  // Only the last checked set can be undone: sets happen in order.
+  function uncheckSet(key, i) {
+    var f = findEx(key);
+    var ts = todaySession(key);
+    if (!f || !ts || i !== ts.sets.length) return;
+    captureDraft(key, f.ex.sets);
+    var s = ts.sets.pop();
+    ts.complete = false;
+    // put the values back into the row so they can be fixed and checked again
+    drafts[key].w[i - 1] = s.weight === 0 && s.reps ? '' : String(s.weight);
+    drafts[key].r[i - 1] = s.reps != null ? String(s.reps) : '';
+    if (!ts.sets.length) entries[key] = entries[key].filter(function(x) { return x !== ts; });
+    saveEntries();
+    if (timer && timer.key === key) stopTimer();
+    openCards[key] = true;
+    render();
+  }
+
+  function afterSave(key, snap, opts) {
+    var f = findEx(key);
+    if (f) checkPR(key, snap, f.ex.name);
+    var complete = !!f && exDone(f.ex);
+    if (complete && !snap.exDone) {
+      openCards[key] = false;
+      clearDraft(key);
+      var next = f.day.exercises.find(function(e) { return !exDone(e); });
+      if (next && f.day.id === activeDay) { openCards[next.id] = true; scrollTarget = next.id; }
+    }
+    var dayDone = !!f && dayProgress(f.day).done === f.day.exercises.length;
+    if (opts.rest && f && !dayDone) startTimer(key, f.ex.restSec, f.ex.name);
+    render();
+    if (scrollTarget) {
+      var el = document.querySelector('[data-card="' + scrollTarget + '"]');
+      scrollTarget = null;
+      if (el) setTimeout(function() { el.scrollIntoView({ behavior: 'smooth', block: 'start' }); }, 80);
+    }
+    if (dayDone && !snap.dayDone) {
+      stopTimer();
+      setTimeout(function() { showSummary(f.day); }, 500);
+    }
+  }
+
+  // ---------- PRs ----------
+  function checkPR(key, snap, name) {
+    var ts = todaySession(key);
+    if (!ts) return;
+    var prev = snap.prevBest;
+    if (!prev.weight && !prev.e1rm) return; // first time ever: nothing to beat
+    var now = bestOf([ts]);
+    var was = snap.todayBest;
+    var lines = [];
+    if (prev.e1rm && now.e1rm > Math.max(prev.e1rm, was.e1rm) + 0.05) {
+      lines.push('Est. 1RM ' + round1(now.e1rm) + ' kg (+' + round1(now.e1rm - prev.e1rm) + ')');
+    }
+    if (prev.weight > 0 && now.weight > Math.max(prev.weight, was.weight)) {
+      lines.push('Best weight ' + now.weight + ' kg');
+    }
+    if (lines.length) celebrate(name, lines);
+  }
+  function celebrate(title, lines) {
+    if (navigator.vibrate) navigator.vibrate([60, 40, 60, 40, 160]);
+    confetti();
+    var old = document.getElementById('toast');
+    if (old) old.remove();
+    var el = document.createElement('div');
+    el.className = 'toast';
+    el.id = 'toast';
+    el.innerHTML = '<div class="toast-ico">' + TROPHY + '</div><div><b>New PR · ' + esc(title) + '</b><span>' + lines.map(esc).join(' · ') + '</span></div>';
+    document.getElementById('gymlog').appendChild(el);
+    var hide = function() {
+      if (!el.parentNode) return;
+      el.classList.add('out');
+      setTimeout(function() { el.remove(); }, 320);
+    };
+    el.addEventListener('click', hide);
+    setTimeout(hide, 3600);
+  }
+  function confetti() {
+    var wrap = document.createElement('div');
+    wrap.className = 'gl-confetti';
+    var colors = ['#E8A33D', '#7FBF7F', '#EDEBE3', '#D97757', '#F2C779'];
+    for (var i = 0; i < 48; i++) {
+      var p = document.createElement('i');
+      p.style.left = (Math.random() * 100) + '%';
+      p.style.background = colors[i % colors.length];
+      p.style.setProperty('--dx', (Math.random() * 160 - 80) + 'px');
+      p.style.setProperty('--rot', (Math.random() * 900 - 450) + 'deg');
+      p.style.setProperty('--dur', (1.3 + Math.random() * 1.1) + 's');
+      p.style.setProperty('--delay', (Math.random() * 0.25) + 's');
+      if (i % 3 === 0) { p.style.width = '7px'; p.style.height = '7px'; p.style.borderRadius = '50%'; }
+      wrap.appendChild(p);
+    }
+    document.body.appendChild(wrap);
+    setTimeout(function() { wrap.remove(); }, 2800);
+  }
+
+  // ---------- workout summary ----------
+  function showSummary(day) {
+    var t = todayStr();
+    var sets = 0, vol = 0, ats = [], prs = [], rows = '';
+    day.exercises.forEach(function(ex) {
+      var h = sortedHist(ex.id);
+      var ts = h.find(function(s) { return s.date === t; });
+      if (!ts) return;
+      var before = bestOf(h.filter(function(s) { return s.date < t; }));
+      var nb = bestOf([ts]);
+      var isPr = (before.e1rm > 0 && nb.e1rm > before.e1rm + 0.05) || (before.weight > 0 && nb.weight > before.weight);
+      sets += ts.sets.length;
+      vol += volumeOf(ts) || 0;
+      ts.sets.forEach(function(s) { if (s.at) ats.push(s.at); });
+      if (isPr) prs.push(ex.name);
+      rows += '<div class="sum-ex"><div class="sum-ex-name">' + esc(ex.name) + (isPr ? ' <span class="pr-badge">PR</span>' : '') + '</div>' +
+        '<div class="sum-ex-sets">' + ts.sets.map(fmtSet).join(' · ') + '</div></div>';
+    });
+
+    // the previous time this day was trained
+    var prevDate = null;
+    day.exercises.forEach(function(ex) {
+      (entries[ex.id] || []).forEach(function(s) { if (s.date < t && (!prevDate || s.date > prevDate)) prevDate = s.date; });
+    });
+    var pVol = 0, pSets = 0;
+    if (prevDate) day.exercises.forEach(function(ex) {
+      var s = (entries[ex.id] || []).find(function(x) { return x.date === prevDate; });
+      if (s) { pSets += s.sets.length; pVol += volumeOf(s) || 0; }
+    });
+
+    ats.sort();
+    var dur = '—';
+    if (ats.length >= 2 && ats[ats.length - 1] - ats[0] >= 60000) {
+      var mins = Math.round((ats[ats.length - 1] - ats[0]) / 60000);
+      dur = mins >= 60 ? Math.floor(mins / 60) + '<small>h</small> ' + (mins % 60) + '<small>m</small>' : mins + '<small> min</small>';
+    }
+
+    var vs = '';
+    if (prevDate && pVol > 0 && vol > 0) {
+      var pct = Math.round((vol - pVol) / pVol * 100);
+      vs = '<div class="sum-vs">Volume <span class="' + (pct >= 0 ? 'up' : 'down') + '">' + (pct >= 0 ? '+' : '') + pct + '%</span> vs ' +
+        esc(day.label) + ' on ' + fmtDate(prevDate) + ' (' + pSets + ' sets)</div>';
+    }
+    var cyc = cycleInfo();
+    var dateTxt = new Date().toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long' }) +
+      (cyc && cyc.week ? ' · Week ' + cyc.week + ' / ' + cyc.weeks : '');
+    var stat = function(v, label, hl) { return '<div class="sum-stat' + (hl ? ' hl' : '') + '"><b>' + v + '</b>' + label + '</div>'; };
+
+    var wrap = document.getElementById('sheet');
+    wrap.innerHTML =
+      '<div class="sheet-bg" data-close></div>' +
+      '<div class="sheet">' +
+        '<div class="sheet-grab"></div>' +
+        '<div class="sum-kicker">Workout complete</div>' +
+        '<div class="sum-title">' + esc(day.label) + '</div>' +
+        '<div class="sum-date">' + dateTxt + '</div>' +
+        '<div class="sum-grid">' +
+          stat(dur, 'Duration') +
+          stat(sets, 'Sets') +
+          stat(Math.round(vol).toLocaleString('en-GB') + '<small> kg</small>', 'Volume') +
+          stat(prs.length, prs.length === 1 ? 'Personal record' : 'Personal records', prs.length > 0) +
+        '</div>' +
+        vs +
+        prs.map(function(n) { return '<div class="sum-pr">' + TROPHY + '<span>New PR on <b>' + esc(n) + '</b></span></div>'; }).join('') +
+        rows +
+        '<button data-close style="width:100%;margin-top:16px;">Done</button>' +
+      '</div>';
+    wrap.hidden = false;
+    document.body.style.overflow = 'hidden';
+    wrap.querySelectorAll('[data-close]').forEach(function(el) { el.addEventListener('click', closeSheet); });
+    if (prs.length) confetti();
+  }
+  function closeSheet() {
+    var wrap = document.getElementById('sheet');
+    wrap.hidden = true;
+    wrap.innerHTML = '';
+    document.body.style.overflow = '';
+  }
+
+  // ---------- per-exercise chart ----------
+  function chartHtml(key, hist) {
+    // A session still in progress today would drag the line down mid-workout.
+    var f = findEx(key);
+    if (f && !exDone(f.ex)) hist = hist.filter(function(h) { return h.date !== todayStr(); });
+    if (hist.length < 2) return '';
+    var allBW = hist.every(function(h) { return h.sets.every(function(s) { return s.weight === 0; }); });
+    var pts = hist.map(function(h) {
+      return { date: h.date, e: bestOf([h]).e1rm || 0, w: avg(h.sets.map(function(s) { return s.weight; })), r: totalReps(h) };
+    });
+    var mode = allBW ? 'r' : pts.filter(function(p) { return p.e; }).length >= 2 ? 'e' : 'w';
+    var label = mode === 'e' ? 'Est. 1RM' : mode === 'r' ? 'Total reps' : 'Avg weight';
+    var unit = mode === 'r' ? ' reps' : ' kg';
+    var data = pts.filter(function(p) { return mode !== 'e' || p.e; }).map(function(p) {
+      return { date: p.date, v: round1(mode === 'e' ? p.e : mode === 'r' ? p.r : p.w) };
+    }).slice(-16);
+    if (data.length < 2) return '';
+
+    var W = 320, H = 118, pl = 4, pr = 4, pt = 12, pb = 18;
+    var vals = data.map(function(d) { return d.v; });
+    var min = Math.min.apply(null, vals), max = Math.max.apply(null, vals);
+    if (max === min) { max += 1; min -= 1; }
+    var pad = (max - min) * 0.15;
+    min -= pad; max += pad;
+    var x = function(j) { return pl + j * (W - pl - pr) / (data.length - 1); };
+    var y = function(v) { return pt + (1 - (v - min) / (max - min)) * (H - pt - pb); };
+    var line = data.map(function(d, j) { return (j ? 'L' : 'M') + x(j).toFixed(1) + ' ' + y(d.v).toFixed(1); }).join(' ');
+    var base = (H - pb).toFixed(1);
+    var area = line + ' L' + x(data.length - 1).toFixed(1) + ' ' + base + ' L' + x(0).toFixed(1) + ' ' + base + ' Z';
+    var gid = 'g-' + key.replace(/[^a-z0-9_]/gi, '');
+    var grid = [pt, (pt + H - pb) / 2, H - pb].map(function(gy) {
+      return '<line x1="0" x2="' + W + '" y1="' + gy + '" y2="' + gy + '" stroke="#2A2E34" stroke-dasharray="3 4"/>';
+    }).join('');
+    var dots = data.map(function(d, j) {
+      var lastPt = j === data.length - 1;
+      return '<g class="pt' + (lastPt ? ' sel' : '') + '" data-pt="' + key + '" data-date="' + d.date + '" data-v="' + d.v + '" data-unit="' + unit + '">' +
+        '<circle cx="' + x(j).toFixed(1) + '" cy="' + y(d.v).toFixed(1) + '" r="13" fill="transparent"/>' +
+        '<circle class="dot" cx="' + x(j).toFixed(1) + '" cy="' + y(d.v).toFixed(1) + '" r="' + (lastPt ? 5 : 3.5) + '" fill="' + (lastPt ? '#E8A33D' : '#1C1F23') + '" stroke="#E8A33D" stroke-width="2"/>' +
+      '</g>';
+    }).join('');
+    var lastV = data[data.length - 1].v, change = round1(lastV - data[0].v);
+    return '<div class="chart">' +
+      '<div class="chart-head"><span>' + label + ' · <span id="chart-lbl-' + key + '">' + fmtDate(data[data.length - 1].date) + '</span></span>' +
+        '<span><b id="chart-val-' + key + '">' + lastV + '</b>' + unit + ' <span class="' + (change >= 0 ? 'sets-chip' : '') + '" style="' + (change < 0 ? 'color:#D97757;font-weight:600;' : '') + '">' + (change >= 0 ? '+' : '') + change + ' since ' + fmtDate(data[0].date) + '</span></span></div>' +
+      '<svg viewBox="0 0 ' + W + ' ' + H + '">' +
+        '<defs><linearGradient id="' + gid + '" x1="0" x2="0" y1="0" y2="1"><stop offset="0" stop-color="#E8A33D" stop-opacity=".35"/><stop offset="1" stop-color="#E8A33D" stop-opacity="0"/></linearGradient></defs>' +
+        grid +
+        '<path d="' + area + '" fill="url(#' + gid + ')"/>' +
+        '<path d="' + line + '" fill="none" stroke="#E8A33D" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"/>' +
+        dots +
+        '<text x="0" y="' + (H - 3) + '" font-size="9" fill="#6E6C66">' + fmtDate(data[0].date) + '</text>' +
+        '<text x="' + W + '" y="' + (H - 3) + '" font-size="9" fill="#6E6C66" text-anchor="end">' + fmtDate(data[data.length - 1].date) + '</text>' +
+      '</svg></div>';
+  }
+
+  // ---------- consistency calendar ----------
+  function isoLocal(d) { return new Date(d.getTime() - d.getTimezoneOffset() * 60000).toISOString().slice(0, 10); }
+  function addDays(iso, n) { var d = new Date(iso + 'T00:00:00'); d.setDate(d.getDate() + n); return isoLocal(d); }
+
+  function consistencyHtml() {
+    var perDay = {};
+    for (var k in entries) (entries[k] || []).forEach(function(s) { perDay[s.date] = (perDay[s.date] || 0) + s.sets.length; });
+    var dates = Object.keys(perDay).sort();
+    if (!dates.length) return '';
+    var today = todayStr();
+    var thisMon = mondayOf(today);
+    var COLS = 17;
+    var start = addDays(thisMon, -(COLS - 1) * 7);
+    var target = routine.length;
+    var gymDays = function(mon) {
+      var n = 0;
+      for (var i = 0; i < 7; i++) if (perDay[addDays(mon, i)]) n++;
+      return n;
+    };
+
+    var cells = '', months = '';
+    var firstOfMonthCol = function(col) {
+      for (var q = 0; q < 7; q++) { var qd = addDays(addDays(start, col * 7), q); if (qd.slice(8) === '01' && qd <= today) return qd; }
+      return null;
+    };
+    for (var c = 0; c < COLS; c++) {
+      var mon = addDays(start, c * 7);
+      // label each column holding the 1st of a month; label the first column too unless a 1st is right next to it
+      var fom = firstOfMonthCol(c);
+      var lblDate = fom || (c === 0 && !firstOfMonthCol(1) && !firstOfMonthCol(2) ? mon : null);
+      if (lblDate) {
+        months += '<span style="grid-column:' + (c + 1) + '">' + new Date(lblDate + 'T00:00:00').toLocaleDateString('en-GB', { month: 'short' }) + '</span>';
+      }
+      for (var r = 0; r < 7; r++) {
+        var d = addDays(mon, r);
+        var n = perDay[d] || 0;
+        var cls = d > today ? 'fut' : n >= 17 ? 'l3' : n >= 9 ? 'l2' : n > 0 ? 'l1' : '';
+        if (d === today) cls += ' today';
+        cells += '<i class="' + cls + '" title="' + fmtDate(d) + (n ? ': ' + n + ' sets' : '') + '"></i>';
+      }
+    }
+
+    // streak = consecutive full weeks (every routine day trained). The current week
+    // only counts once it's full; until then it doesn't break the streak.
+    var thisWeek = gymDays(thisMon);
+    var w = thisWeek >= target ? thisMon : addDays(thisMon, -7), streak = 0;
+    while (gymDays(w) >= target) { streak++; w = addDays(w, -7); }
+    var best = 0, run = 0;
+    for (var wk = mondayOf(dates[0]); wk <= thisMon; wk = addDays(wk, 7)) {
+      if (gymDays(wk) >= target) { run++; best = Math.max(best, run); } else if (wk !== thisMon) run = 0;
+    }
+
+    return '<div class="card">' +
+      '<div class="ex-name">Consistency</div>' +
+      '<p class="hint" style="margin:2px 0 10px;">Gym days over the last ' + COLS + ' weeks. A full week = all ' + target + ' routine days.</p>' +
+      '<div class="stats">' +
+        '<div class="stat">This week<b>' + thisWeek + ' / ' + target + '</b></div>' +
+        '<div class="stat">Full weeks in a row<b>' + streak + '</b></div>' +
+        '<div class="stat">Best run<b>' + best + '</b></div>' +
+      '</div>' +
+      '<div class="cal-months">' + months + '</div>' +
+      '<div class="cal">' + cells + '</div>' +
+      '<div class="cal-legend">Less <i></i><i class="l1"></i><i class="l2"></i><i class="l3"></i> More</div>' +
+    '</div>';
+  }
+
+  // ---------- strength model ----------
+  // Same-name exercises on different days are one movement for strength purposes.
+  function allExercises() {
+    var out = [];
+    store.list.forEach(function(p) { p.days.forEach(function(d) { d.exercises.forEach(function(e) { out.push(e); }); }); });
+    return out;
+  }
+  function movementKey(name) { return String(name).trim().toLowerCase(); }
+  function movements() {
+    var map = {};
+    var activeIds = {};
+    routine.forEach(function(d) { d.exercises.forEach(function(e) { activeIds[e.id] = true; }); });
+    allExercises().forEach(function(e) {
+      var k = movementKey(e.name);
+      var m = map[k] || (map[k] = { key: k, name: e.name, muscle: e.muscle, ids: [], active: false });
+      if (m.ids.indexOf(e.id) < 0) m.ids.push(e.id);
+      if (activeIds[e.id]) { m.active = true; m.muscle = e.muscle; }
+    });
+    Object.keys(map).forEach(function(k) {
+      var m = map[k], byDate = {};
+      m.ids.forEach(function(id) {
+        (entries[id] || []).forEach(function(s) {
+          var x = byDate[s.date] || (byDate[s.date] = { date: s.date, sets: [] });
+          x.sets = x.sets.concat(s.sets);
+        });
+      });
+      m.sessions = Object.keys(byDate).sort().map(function(d) {
+        var x = byDate[d];
+        x.e = bestOf([x]).e1rm;
+        x.top = x.sets.reduce(function(b, s) { return (e1rm(s) || 0) > (b ? e1rm(b) || 0 : -1) ? s : b; }, null);
+        return x;
+      });
+      m.withE = m.sessions.filter(function(s) { return s.e > 0; });
+    });
+    return map;
+  }
+  // Current strength = best est. 1RM of the last 3 sessions (optionally only before a date).
+  function currentE(m, before) {
+    var s = m.withE.filter(function(x) { return !before || x.date < before; }).slice(-3);
+    return s.length ? Math.max.apply(null, s.map(function(x) { return x.e; })) : 0;
+  }
+  // Per set position, so later sets carry the fatigue of the earlier ones.
+  function setStrength(m, n) {
+    if (!m) return null;
+    var past = m.withE.filter(function(s) { return s.date < todayStr(); }).slice(-3);
+    if (!past.length) return null;
+    var fallback = Math.max.apply(null, past.map(function(s) { return s.e; }));
+    var out = [];
+    for (var i = 0; i < n; i++) {
+      var best = 0;
+      past.forEach(function(s) { var e = s.sets[i] ? e1rm(s.sets[i]) : 0; if (e > best) best = e; });
+      out.push(best || fallback);
+    }
+    return out;
+  }
+  // Inverse Epley: reps you should manage at weight w given an est. 1RM.
+  function predReps(E, w) {
+    if (!E || !(w > 0)) return null;
+    return 30 * (E / w - 1);
+  }
+  function fmtTarget(r) {
+    if (r == null || r > 30) return '';
+    return r < 1 ? '<1' : '≈' + Math.round(r);
+  }
+
+  // ---------- strength balance ----------
+  var PAIRS = [
+    { a: ['Chest', 'Front delts'], b: ['Back'], la: 'Push', lb: 'Pull' },
+    { a: ['Front delts'], b: ['Rear delts'], la: 'Front delts', lb: 'Rear delts' },
+    { a: ['Quads'], b: ['Hamstrings'], la: 'Quads', lb: 'Hamstrings' },
+    { a: ['Biceps'], b: ['Triceps'], la: 'Biceps', lb: 'Triceps' }
+  ];
+  function balanceHtml(mv) {
+    var plan = activePlan();
+    var since = plan.cycle && plan.cycle.start && plan.cycle.start <= todayStr() ? plan.cycle.start : null;
+    var rows = [];
+    var build = function(from) {
+      rows = [];
+      Object.keys(mv).forEach(function(k) {
+        var m = mv[k];
+        if (!m.active) return;
+        var s = m.withE.filter(function(x) { return !from || x.date >= from; });
+        if (s.length < 3) return;
+        var base = s[0].e;
+        var cur = Math.max(s[s.length - 1].e, s[s.length - 2].e);
+        rows.push({ name: m.name, muscle: m.muscle, base: base, cur: cur, pct: (cur / base - 1) * 100 });
+      });
+    };
+    build(since);
+    if (rows.length < 3 && since) { since = null; build(null); }
+    if (!rows.length) {
+      return '<div class="card" style="margin-top:14px;"><div class="ex-name">Strength balance</div>' +
+        '<p class="hint" style="margin:4px 0 0;">Needs at least 3 sessions with reps on an exercise. Keep logging reps and it fills in.</p></div>';
+    }
+    var firstDate = null;
+    Object.keys(mv).forEach(function(k) { var w = mv[k].withE; if (w.length && (!firstDate || w[0].date < firstDate)) firstDate = w[0].date; });
+
+    var byMuscle = {};
+    rows.forEach(function(r) { (byMuscle[r.muscle] = byMuscle[r.muscle] || []).push(r.pct); });
+    var mPct = {};
+    Object.keys(byMuscle).forEach(function(m) { mPct[m] = avg(byMuscle[m]); });
+    var focus = {};
+    routine.forEach(function(d) { d.exercises.forEach(function(e) { if (e.priority) focus[e.muscle] = true; }); });
+    // side delts are what a shoulder block is about even if the flag sits on the press
+    if (focus['Front delts'] || focus['Side delts']) { focus['Side delts'] = true; }
+
+    var scale = Math.max(8, 1.15 * Math.max.apply(null, Object.keys(mPct).map(function(m) { return Math.abs(mPct[m]); })));
+    var musclesHtml = MUSCLES.filter(function(m) { return mPct[m] !== undefined; }).map(function(m) {
+      var p = mPct[m];
+      var w = Math.min(50, Math.abs(p) / scale * 50);
+      var style = p >= 0 ? 'left:50%;width:' + w + '%' : 'right:50%;width:' + w + '%';
+      return '<div class="bal-row"><div>' + m + (focus[m] ? '<span class="focus-tag">FOCUS</span>' : '') + '</div>' +
+        '<div class="bal-track"><div class="bal-fill' + (p < 0 ? ' neg' : focus[m] ? ' focus' : '') + '" style="' + style + '"></div></div>' +
+        '<div class="bal-num">' + (p >= 0 ? '+' : '') + Math.round(p) + '%</div></div>';
+    }).join('');
+
+    var groupPct = function(list) {
+      var v = [];
+      rows.forEach(function(r) { if (list.indexOf(r.muscle) >= 0) v.push(r.pct); });
+      return v.length ? avg(v) : null;
+    };
+    var pairsHtml = PAIRS.map(function(p) {
+      var a = groupPct(p.a), b = groupPct(p.b);
+      if (a == null || b == null) return '';
+      var diff = a - b;
+      var off = Math.abs(diff) >= 3;
+      var left = 50 - Math.max(-15, Math.min(15, diff)) / 15 * 46;
+      var verdict = !off ? 'In balance' : (diff > 0 ? p.la : p.lb) + ' ahead by ' + Math.round(Math.abs(diff)) + ' pts';
+      return '<div class="pair">' +
+        '<div class="pair-head"><span>' + p.la + ' <b>' + (a >= 0 ? '+' : '') + Math.round(a) + '%</b></span><span><b>' + (b >= 0 ? '+' : '') + Math.round(b) + '%</b> ' + p.lb + '</span></div>' +
+        '<div class="pair-beam"><div class="pair-dot' + (off ? ' off' : '') + '" style="left:' + left.toFixed(1) + '%"></div></div>' +
+        '<div class="pair-verdict' + (off ? ' off' : '') + '">' + verdict + '</div></div>';
+    }).join('');
+
+    var mvHtml = rows.slice().sort(function(x, y) { return y.pct - x.pct; }).map(function(r) {
+      return '<div class="mv-row"><span>' + esc(r.name) + '</span><span>' + round1(r.base) + ' → ' + round1(r.cur) + ' kg</span>' +
+        '<b style="color:' + (r.pct >= 0 ? '#7FBF7F' : '#D97757') + '">' + (r.pct >= 0 ? '+' : '') + Math.round(r.pct) + '%</b></div>';
+    }).join('');
+
+    var focusNote = focus['Side delts'] && mPct['Side delts'] !== undefined
+      ? '<p class="hint" style="margin:10px 0 0;">Shoulders are the focus of this block, so them pulling ahead is the goal, not an imbalance.</p>' : '';
+
+    return '<div class="card" style="margin-top:14px;">' +
+      '<div class="ex-name">Strength balance</div>' +
+      '<p class="hint" style="margin:2px 0 10px;">How much each muscle\'s est. 1RM has grown since ' + fmtDate(since || firstDate) +
+        (since ? ' (cycle start)' : '') + '. It compares progress, not kilos — dumbbells and machines can\'t be compared in kg.</p>' +
+      musclesHtml + focusNote +
+      (pairsHtml ? '<div style="margin-top:12px;">' + pairsHtml + '</div>' : '') +
+      '<details class="mv"><summary>Per exercise</summary>' + mvHtml + '</details>' +
+    '</div>';
+  }
+
+  // ---------- rep predictor ----------
+  var predState = null;
+  function predictorHtml(list) {
+    var opts = function(sel) {
+      return list.map(function(m) { return '<option value="' + esc(m.key) + '"' + (m.key === sel ? ' selected' : '') + '>' + esc(m.name) + '</option>'; }).join('');
+    };
+    return '<div class="card">' +
+      '<div class="ex-name">Rep predictor</div>' +
+      '<p class="hint" style="margin:2px 0 0;">Uses the strength ratio between two exercises in your own logs.</p>' +
+      '<label class="pl">If I do</label>' +
+      '<select id="pa">' + opts(predState.a) + '</select>' +
+      '<div class="pgrid">' +
+        '<div class="pfield"><input type="number" inputmode="decimal" step="0.5" id="pa-w" value="' + predState.wa + '"><span>kg</span></div>' +
+        '<div class="pfield"><input type="number" inputmode="numeric" step="1" id="pa-r" value="' + predState.ra + '"><span>reps</span></div>' +
+      '</div>' +
+      '<label class="pl">then on</label>' +
+      '<select id="pb">' + opts(predState.b) + '</select>' +
+      '<div class="pgrid">' +
+        '<div class="pfield"><input type="number" inputmode="decimal" step="0.5" id="pb-w" value="' + predState.wb + '"><span>kg</span></div>' +
+        '<div></div>' +
+      '</div>' +
+      '<div class="presult" id="pres"></div>' +
+    '</div>';
+  }
+  function topOf(m) {
+    var last = m.withE[m.withE.length - 1];
+    return last && last.top ? last.top : { weight: 0, reps: 0 };
+  }
+  function paintPrediction(mv) {
+    var mA = mv[predState.a], mB = mv[predState.b];
+    var out = document.getElementById('pres');
+    var wa = parseFloat(predState.wa), ra = parseInt(predState.ra, 10), wb = parseFloat(predState.wb);
+    if (!mA || !mB || !(wa > 0) || !(ra > 0) || !(wb > 0)) {
+      out.innerHTML = '<div class="sub">Fill in weight and reps.</div>';
+      return;
+    }
+    var cA = currentE(mA), cB = currentE(mB);
+    var ratio = cB / cA;
+    var eA = wa * (1 + ra / 30);
+    var eB = eA * ratio;
+    var reps = predReps(eB, wb);
+
+    var cutoff = addDays(todayStr(), -42);
+    var recent = function(m) { return m.withE.filter(function(s) { return s.date >= cutoff; }).length; };
+    var n = Math.min(recent(mA), recent(mB));
+    var lastA = mA.withE[mA.withE.length - 1].date, lastB = mB.withE[mB.withE.length - 1].date;
+    var gap = Math.abs((new Date(lastA) - new Date(lastB)) / 86400000);
+    var level = n >= 4 && gap <= 14 ? 'good' : n >= 2 ? 'fair' : 'low';
+    var levelTxt = { good: 'Good data', fair: 'Limited data', low: 'Very little data' }[level];
+
+    var big, sub;
+    if (reps < 1) { big = '<1<small> rep</small>'; sub = 'Too heavy — try a lower weight.'; }
+    else if (reps > 30) { big = '30+<small> reps</small>'; sub = 'Too light to predict — try a heavier weight.'; }
+    else { big = '≈' + Math.round(reps) + '<small> reps</small>'; sub = 'at ' + wb + ' kg on ' + esc(mB.name); }
+    var notes = [];
+    if (ra > 12 || (reps > 12 && reps <= 30)) notes.push('Above ~12 reps the estimate gets less precise.');
+    if (gap > 21) notes.push('The two exercises were last logged ' + Math.round(gap) + ' days apart.');
+
+    out.innerHTML =
+      '<div class="big">' + big + '</div>' +
+      '<div class="sub">' + sub + '</div>' +
+      '<span class="conf ' + level + '">' + levelTxt + '</span>' +
+      '<div class="why">' + wa + ' × ' + ra + ' → est. 1RM ' + round1(eA) + ' kg on ' + esc(mA.name) + '.<br>' +
+        'Your current ratio ' + esc(mB.name) + ' / ' + esc(mA.name) + ' = ' + ratio.toFixed(2) +
+        ' (' + round1(cB) + ' / ' + round1(cA) + ' kg) → ' + round1(eB) + ' kg.' +
+        (notes.length ? '<br>' + notes.join(' ') : '') + '</div>';
+  }
+
+  function renderStrength() {
+    var root = document.getElementById('view');
+    var mv = movements();
+    var list = Object.keys(mv).map(function(k) { return mv[k]; })
+      .filter(function(m) { return m.withE.length; })
+      .sort(function(x, y) { return (y.active - x.active) || x.name.localeCompare(y.name); });
+    if (!list.length) {
+      root.innerHTML = '<div class="card" style="margin-top:14px;"><div class="ex-name">Strength</div>' +
+        '<p class="hint" style="margin:4px 0 0;">Log a few sessions with weight and reps and this page shows how your muscles progress against each other, plus a rep predictor between exercises.</p></div>';
+      return;
+    }
+    if (!predState || !mv[predState.a] || !mv[predState.b] || !mv[predState.a].withE.length || !mv[predState.b].withE.length) {
+      // start from the block's priority exercise, compared with the best-documented other one
+      var prioKeys = {};
+      routine.forEach(function(d) { d.exercises.forEach(function(e) { if (e.priority) prioKeys[movementKey(e.name)] = true; }); });
+      var byData = list.slice().sort(function(x, y) {
+        return (!!prioKeys[y.key] - !!prioKeys[x.key]) || (y.active - x.active) || (y.withE.length - x.withE.length);
+      });
+      var a = byData[0];
+      var b = byData.filter(function(m) { return m !== a && !prioKeys[m.key]; })[0] || byData[1] || a;
+      predState = { a: a.key, b: b.key, wa: topOf(a).weight, ra: topOf(a).reps, wb: topOf(b).weight };
+    }
+    root.innerHTML = balanceHtml(mv) + predictorHtml(list);
+
+    var sync = function() {
+      predState.wa = document.getElementById('pa-w').value;
+      predState.ra = document.getElementById('pa-r').value;
+      predState.wb = document.getElementById('pb-w').value;
+      paintPrediction(mv);
+    };
+    document.getElementById('pa').addEventListener('change', function(e) {
+      predState.a = e.target.value;
+      var t = topOf(mv[predState.a]);
+      document.getElementById('pa-w').value = t.weight;
+      document.getElementById('pa-r').value = t.reps;
+      sync();
+    });
+    document.getElementById('pb').addEventListener('change', function(e) {
+      predState.b = e.target.value;
+      document.getElementById('pb-w').value = topOf(mv[predState.b]).weight;
+      sync();
+    });
+    ['pa-w', 'pa-r', 'pb-w'].forEach(function(id) { document.getElementById(id).addEventListener('input', sync); });
+    paintPrediction(mv);
+  }
+
   // ---------- rest timer (clock-anchored, survives re-renders) ----------
   var timer = readJSON(TIMER_KEY, null); // { key, endAt, restSec }
   // A rest that ran out ages ago belongs to a past session: don't resurrect it on launch.
@@ -577,13 +1381,48 @@
   function extendTimer(sec) {
     if (!timer) return;
     var base = Math.max(timer.endAt, Date.now());
-    timer.endAt = base + sec * 1000;
-    timer.restSec += sec;
-    timer.alerted = false;
+    timer.endAt = Math.max(Date.now() + 1000, base + sec * 1000);
+    timer.restSec = Math.max(1, timer.restSec + sec);
+    if (sec > 0) timer.alerted = false;
     localStorage.setItem(TIMER_KEY, JSON.stringify(timer));
     acquireWakeLock();
     ensureTicker();
     paintTimers();
+  }
+
+  var tfullOpen = false;
+  var RING_C = 2 * Math.PI * 116;
+  function openTimerFull() {
+    if (!timer) return;
+    tfullOpen = true;
+    document.getElementById('tfull').hidden = false;
+    document.body.style.overflow = 'hidden';
+    paintTimers();
+  }
+  function closeTimerFull() {
+    tfullOpen = false;
+    document.getElementById('tfull').hidden = true;
+    document.body.style.overflow = '';
+  }
+  // What comes after this rest: the next set of the same exercise, or the next exercise of the day.
+  function nextUpHtml() {
+    var f = timer && findEx(timer.key);
+    if (!f) return '';
+    var ts = todaySession(f.ex.id);
+    var n = ts ? ts.sets.length : 0;
+    if (n < f.ex.sets) {
+      var i = n + 1;
+      var d = drafts[f.ex.id];
+      var prior = sortedHist(f.ex.id).filter(function(s) { return s.date < todayStr(); });
+      var p = prior.length ? prior[prior.length - 1].sets[i - 1] : null;
+      var w = d && d.w[i - 1] ? parseFloat(d.w[i - 1]) : p ? p.weight : null;
+      var r = d && d.r[i - 1] ? parseInt(d.r[i - 1], 10) : p ? p.reps : null;
+      var val = (w == null && !r) ? f.ex.repMin + '–' + f.ex.repMax + ' reps' : fmtSet({ weight: w || 0, reps: r || null });
+      return '<small>Next · set ' + i + ' of ' + f.ex.sets + '</small><b>' + esc(val) + '</b><span>' + esc(f.ex.name) + '</span>';
+    }
+    var next = f.day.exercises.find(function(e) { return !exDone(e); });
+    if (!next) return '<small>All done</small><b>Workout complete</b>';
+    return '<small>Next exercise</small><b>' + esc(next.name) + '</b><span>' + metaOf(next) + ' · rest ' + fmtRest(next.restSec) + '</span>';
   }
   function stopTimer() {
     timer = null;
@@ -642,15 +1481,27 @@
     var bar = document.getElementById('timer-bar');
     var app = document.getElementById('gymlog');
     var showBar = !!timer && (remaining > 0 || Date.now() - timer.endAt < 60000);
+    var pct = timer && timer.restSec ? Math.max(0, Math.min(100, (1 - remaining / timer.restSec) * 100)) : 100;
     bar.hidden = !showBar;
     app.classList.toggle('timer-on', showBar);
     if (showBar) {
       bar.classList.toggle('done', remaining <= 0);
       document.getElementById('timer-clock').textContent = remaining > 0 ? fmtClock(remaining) : '0:00';
       document.getElementById('timer-name').innerHTML = '<b>' + esc(timer.name || 'Rest') + '</b>' +
-        '<small>' + (remaining > 0 ? 'Resting' : 'Rest done — next set') + '</small>';
-      var pct = timer.restSec ? Math.max(0, Math.min(100, (1 - remaining / timer.restSec) * 100)) : 100;
+        '<small>' + (remaining > 0 ? 'Resting · tap to expand' : 'Rest done — next set') + '</small>';
       document.getElementById('timer-progress').style.width = pct + '%';
+    }
+
+    if (tfullOpen && !showBar) closeTimerFull();
+    if (tfullOpen && showBar) {
+      var tf = document.getElementById('tfull');
+      tf.classList.toggle('done', remaining <= 0);
+      document.getElementById('tfull-name').textContent = timer.name || 'Rest';
+      document.getElementById('tfull-clock').textContent = remaining > 0 ? fmtClock(remaining) : 'Go';
+      document.getElementById('tfull-sub').textContent = remaining > 0 ? 'Rest' : 'Rest done';
+      document.getElementById('tfull-prg').style.strokeDashoffset = (RING_C * pct / 100).toFixed(1);
+      document.getElementById('tfull-next').innerHTML = nextUpHtml();
+      document.getElementById('tfull-stop').textContent = remaining > 0 ? 'Skip' : 'Done';
     }
     // Nothing left to count down: stop ticking instead of spinning forever.
     // While the "done" bar is still shown, keep a slow tick so it hides itself after a minute.
@@ -663,14 +1514,17 @@
   // ---------- render ----------
   function render() {
     document.getElementById('nav-log').classList.toggle('active', view === 'log');
+    document.getElementById('nav-strength').classList.toggle('active', view === 'strength');
     document.getElementById('nav-edit').classList.toggle('active', view === 'edit');
     document.getElementById('nav-data').classList.toggle('active', view === 'data');
     var sub = document.getElementById('subtitle');
     sub.textContent = view === 'log'
       ? (store.list.length > 1 ? activePlan().name : 'Tap an exercise to log it')
+      : view === 'strength' ? 'Muscle balance & rep predictor'
       : view === 'edit' ? 'Add, edit or reorder your exercises'
       : 'Backup, restore and stats';
     if (view === 'log') renderLog();
+    else if (view === 'strength') renderStrength();
     else if (view === 'edit') renderEdit();
     else renderData();
     paintBackupNote();
@@ -678,17 +1532,10 @@
     paintTimers();
   }
 
-  function loggedToday(day) {
-    var t = todayStr();
-    return day.exercises.filter(function(ex) {
-      return (entries[ex.id] || []).some(function(s) { return s.date === t; });
-    }).length;
-  }
-
   function tabsHtml() {
     return '<div class="tabs">' + routine.map(function(d) {
-      var n = view === 'log' ? loggedToday(d) : 0;
-      var mark = !n ? '' : n >= d.exercises.length ? '<span class="tab-check">✓</span>' : '<span class="tab-dot"></span>';
+      var p = view === 'log' ? dayProgress(d) : { done: 0, started: 0, total: 1 };
+      var mark = p.done >= p.total ? '<span class="tab-check">✓</span>' : p.started ? '<span class="tab-dot"></span>' : '';
       return '<div class="tab ' + (d.id === activeDay ? 'active' : '') + '" data-day="' + d.id + '">' + esc(d.label) + mark + '</div>';
     }).join('') + '</div>';
   }
@@ -709,10 +1556,13 @@
     activeDay = day.id;
 
     var html = tabsHtml();
-    var doneToday = loggedToday(day);
-    if (doneToday) {
-      html += '<div class="today-line"><span>' + doneToday + ' of ' + day.exercises.length + ' logged today</span>' +
-        '<div class="today-track"><div class="today-fill" style="width:' + Math.round(doneToday / day.exercises.length * 100) + '%"></div></div></div>';
+    var mvMap = movements();
+    var prog = dayProgress(day);
+    if (prog.total && prog.done >= prog.total) {
+      html += '<div class="today-line complete" data-summary="1"><span>✓ Workout complete · view summary ›</span></div>';
+    } else if (prog.started) {
+      html += '<div class="today-line"><span>' + prog.done + ' of ' + prog.total + ' done today</span>' +
+        '<div class="today-track"><div class="today-fill" style="width:' + Math.round(prog.done / prog.total * 100) + '%"></div></div></div>';
     }
 
     day.exercises.forEach(function(ex) {
@@ -738,7 +1588,9 @@
       }
       // --- end of untouched block ---
 
-      var hint = progressionHint(ex, last);
+      // judge progression on the last finished session, not on today's half-done one
+      var hintSess = last && last.date === todayStr() && !exDone(ex) ? prev : last;
+      var hint = progressionHint(ex, hintSess);
       var hintHtml = hint ? '<div class="easy-note">' + hint + '</div>' : '';
 
       var best = bestOf(hist);
@@ -758,25 +1610,50 @@
         return '<div class="bar" style="height:' + Math.max(4, (a / maxM) * 28) + 'px" title="' + fmtDate(h.date) + ': ' + a + (bwOnly ? ' reps' : 'kg') + '"></div>';
       }).join('');
 
-      // Inputs: today's unsaved draft if any, otherwise pre-filled from the last session.
+      // Rows: done sets show today's logged values; the rest show the unsaved draft,
+      // otherwise the same set from the previous session.
       var draft = drafts[key];
-      var setInputs = '<div class="set-head"><span>Set</span><span>kg</span><span>Reps</span></div>';
+      var todayISO = todayStr();
+      var todaySess = last && last.date === todayISO ? last : null;
+      var prevSess = todaySess ? prev : last;
+      var nDone = todaySess ? todaySess.sets.length : 0;
+      var exComplete = exDone(ex);
+      var strengths = setStrength(mvMap[movementKey(ex.name)], ex.sets);
+      var setInputs = '<div class="set-head"><span>Set</span><span>kg</span><span>Reps</span><span></span></div>';
+      if (!nDone) setInputs += '<div class="set-hint">Tap ✓ after each set — the rest timer starts on its own.' + (strengths ? ' ≈ = reps your recent sessions predict at that weight.' : '') + '</div>';
       for (var i = 1; i <= ex.sets; i++) {
-        var pre = last && last.sets[i - 1] ? last.sets[i - 1] : null;
-        var pw = pre && pre.weight != null ? pre.weight : '';
-        var pr = pre && pre.reps != null ? pre.reps : '';
-        if (draft && draft.w[i - 1] !== undefined) pw = draft.w[i - 1];
-        if (draft && draft.r[i - 1] !== undefined) pr = draft.r[i - 1];
+        var isDone = i <= nDone;
+        var isNext = i === nDone + 1;
+        var src = isDone ? todaySess.sets[i - 1] : (prevSess && prevSess.sets[i - 1]) || null;
+        var pw = src && src.weight != null ? src.weight : '';
+        var pr = src && src.reps != null ? src.reps : '';
+        if (!isDone && draft && draft.w[i - 1] !== undefined) pw = draft.w[i - 1];
+        if (!isDone && draft && draft.r[i - 1] !== undefined) pr = draft.r[i - 1];
+        var pop = justChecked && justChecked.key === key && justChecked.i === i;
+        var doneAttr = isDone ? ' data-done="' + i + '"' : '';
+        var E = strengths ? strengths[i - 1] : null;
+        var tgt = '';
+        if (E && isDone && src && src.reps && src.weight > 0) {
+          var want = predReps(E, src.weight);
+          if (want != null && want >= 1 && want <= 30) {
+            var diffR = src.reps - Math.round(want);
+            tgt = '<span class="tgt ' + (diffR > 0 ? 'up' : diffR < 0 ? 'down' : '') + '" title="Target ≈' + Math.round(want) + '">' + (diffR > 0 ? '+' + diffR : diffR < 0 ? '−' + (-diffR) : '=') + '</span>';
+          }
+        } else if (E && !isDone) {
+          tgt = '<span class="tgt" data-e="' + E.toFixed(2) + '">' + fmtTarget(predReps(E, parseFloat(pw))) + '</span>';
+        }
         setInputs +=
-          '<div class="set-row">' +
+          '<div class="set-row' + (isDone ? ' done' : '') + (isNext ? ' next' : '') + (pop ? ' pop' : '') + '">' +
             '<div class="set-label">' + i + '</div>' +
-            '<input type="number" inputmode="decimal" step="0.5" min="0" placeholder="0 = BW" value="' + esc(pw) + '" id="w-' + key + '-' + i + '" data-draft="' + key + '" data-setcount="' + ex.sets + '">' +
-            '<input type="number" inputmode="numeric" step="1" min="0" placeholder="—" value="' + esc(pr) + '" id="r-' + key + '-' + i + '" data-draft="' + key + '" data-setcount="' + ex.sets + '">' +
+            '<input type="number" inputmode="decimal" step="0.5" min="0" placeholder="0 = BW" value="' + esc(pw) + '" id="w-' + key + '-' + i + '" data-draft="' + key + '" data-setcount="' + ex.sets + '"' + doneAttr + '>' +
+            '<div class="rep-cell"><input type="number" inputmode="numeric" step="1" min="0" placeholder="—" value="' + esc(pr) + '" id="r-' + key + '-' + i + '" data-draft="' + key + '" data-setcount="' + ex.sets + '"' + doneAttr + '>' + tgt + '</div>' +
+            '<button class="set-check' + (isNext ? ' next' : '') + '" data-check="' + key + '" data-i="' + i + '" aria-label="Set ' + i + ' done"' +
+              ((isDone && i !== nDone) || (!isDone && !isNext) ? ' disabled' : '') + '>' + CHECK + '</button>' +
           '</div>';
       }
       setInputs +=
         '<label class="easy-check" style="width:auto;margin:2px 0 10px;">' +
-          '<input type="checkbox" id="easy-' + key + '" data-draft="' + key + '" data-setcount="' + ex.sets + '"' + (draft && draft.easy ? ' checked' : '') + '> too easy, add weight next time' +
+          '<input type="checkbox" id="easy-' + key + '" data-draft="' + key + '" data-setcount="' + ex.sets + '"' + ((draft && draft.easy) || (todaySess && todaySess.easy) ? ' checked' : '') + '> too easy, add weight next time' +
         '</label>';
 
       var statsHtml = '';
@@ -796,7 +1673,7 @@
         }).join('');
         var vol = volumeOf(h);
         var volTxt = vol ? ' · ' + round1(vol) + 'kg vol' : '';
-        return '<div class="session">' +
+        return '<div class="session" id="sess-' + key + '-' + h.date + '">' +
             '<div class="session-head">' +
               '<span>' + fmtDate(h.date) + (h.easy ? ' <span style="color:#7FBF7F;">↑ easy</span>' : '') + volTxt + '</span>' +
               '<span class="del" data-del-key="' + key + '" data-del-date="' + h.date + '">Delete</span>' +
@@ -805,17 +1682,17 @@
           '</div>';
       }).join('') || '<div class="hist-row" style="color:#5C5A52;">No entries yet</div>';
 
-      var isOpen = !!openCards[key] || !!draft;
-      if (draft) openCards[key] = true;
-      var today = todayStr();
-      var isDoneToday = !!last && last.date === today;
+      var isOpen = !!openCards[key] || (!!draft && !exComplete);
+      if (isOpen) openCards[key] = true;
+      var metaExtra = exComplete ? '<span class="done-chip">✓ Today</span>'
+        : nDone ? '<span class="sets-chip">' + nDone + ' / ' + ex.sets + ' sets</span>' : '';
 
       html +=
-        '<div class="card' + (ex.priority ? ' priority' : '') + (isDoneToday ? ' logged' : '') + '">' +
+        '<div class="card' + (ex.priority ? ' priority' : '') + (exComplete ? ' logged' : nDone ? ' active' : '') + '" data-card="' + key + '">' +
           '<div class="row" style="justify-content:space-between;align-items:flex-start;cursor:pointer;" data-toggle="' + key + '">' +
             '<div style="min-width:0;">' +
               '<div class="ex-name">' + esc(ex.name) + (ex.priority ? '<span class="prio-tag">PRIORITY</span>' : '') + prHtml + '</div>' +
-              '<div class="ex-meta"><span>' + metaOf(ex) + '</span>' + (isDoneToday ? '<span class="done-chip">✓ Today</span>' : '') + '</div>' +
+              '<div class="ex-meta"><span>' + metaOf(ex) + '</span>' + metaExtra + '</div>' +
             '</div>' +
             '<div>' +
               '<div class="weight-badge' + (last ? '' : ' empty') + '">' + lastLabel + '</div>' +
@@ -830,12 +1707,13 @@
           '</div>' +
           '<div class="history' + (isOpen ? ' open' : '') + '" id="hist-' + key + '">' +
             setInputs +
-            '<button data-log="' + key + '" data-setcount="' + ex.sets + '" style="width:100%;margin-top:4px;">' + (isDoneToday ? 'Update today’s session' : 'Log session') + '</button>' +
-            '<div class="draft-note" id="draft-' + key + '"' + (draft ? '' : ' hidden') + '>Not logged yet — values kept until you tap Log session</div>' +
-            (hist.length ? '<div style="margin-top:14px;padding-top:12px;border-top:1px solid #2A2E34;">' + statsHtml + sessionsHtml + '</div>' : '') +
+            '<button class="ghost" data-log="' + key + '" data-setcount="' + ex.sets + '" style="width:100%;margin-top:4px;">' + (exComplete ? 'Update today’s session' : 'Log all sets at once') + '</button>' +
+            '<div class="draft-note" id="draft-' + key + '"' + (draft && !todaySess ? '' : ' hidden') + '>Not saved yet — tap ✓ or Log all sets</div>' +
+            (hist.length ? '<div style="margin-top:14px;padding-top:12px;border-top:1px solid #2A2E34;">' + chartHtml(key, hist) + statsHtml + sessionsHtml + '</div>' : '') +
           '</div>' +
         '</div>';
     });
+    justChecked = null;
 
     root.innerHTML = html;
     bindTabs(root);
@@ -859,8 +1737,60 @@
       inp.addEventListener(ev, function() {
         var key = inp.getAttribute('data-draft');
         captureDraft(key, parseInt(inp.getAttribute('data-setcount'), 10));
+        // weight changed on an open row: refresh its rep target
+        if (inp.id.indexOf('w-') === 0) {
+          var t = inp.closest('.set-row').querySelector('.tgt[data-e]');
+          if (t) t.textContent = fmtTarget(predReps(parseFloat(t.getAttribute('data-e')), parseFloat(inp.value)));
+        }
+        var ts = todaySession(key);
+        if (inp.type === 'checkbox' && ts) { ts.easy = inp.checked; saveEntries(); return; }
         var note = document.getElementById('draft-' + key);
-        if (note) note.hidden = false;
+        if (note && !ts) note.hidden = false;
+      });
+    });
+
+    // Fixing a value on a set that's already checked updates today's session straight away.
+    root.querySelectorAll('input[data-done]').forEach(function(inp) {
+      inp.addEventListener('change', function() {
+        var key = inp.getAttribute('data-draft');
+        var i = parseInt(inp.getAttribute('data-done'), 10);
+        var ts = todaySession(key);
+        if (!ts || !ts.sets[i - 1]) return;
+        var row = readRow(key, i);
+        if (!row.ok) { render(); return; }
+        ts.sets[i - 1].weight = row.set.weight;
+        ts.sets[i - 1].reps = row.set.reps;
+        saveEntries();
+      });
+    });
+
+    root.querySelectorAll('[data-check]').forEach(function(btn) {
+      btn.addEventListener('click', function(e) {
+        e.stopPropagation();
+        var key = btn.getAttribute('data-check');
+        var i = parseInt(btn.getAttribute('data-i'), 10);
+        var ts = todaySession(key);
+        if (ts && i <= ts.sets.length) uncheckSet(key, i);
+        else checkSet(key, i);
+      });
+    });
+
+    var sumLine = root.querySelector('[data-summary]');
+    if (sumLine) sumLine.addEventListener('click', function() { showSummary(day); });
+
+    root.querySelectorAll('[data-pt]').forEach(function(g) {
+      g.addEventListener('click', function(e) {
+        e.stopPropagation();
+        var key = g.getAttribute('data-pt');
+        var date = g.getAttribute('data-date');
+        g.parentNode.querySelectorAll('.pt').forEach(function(o) {
+          o.classList.toggle('sel', o === g);
+        });
+        document.getElementById('chart-lbl-' + key).textContent = fmtDate(date);
+        document.getElementById('chart-val-' + key).textContent = g.getAttribute('data-v');
+        root.querySelectorAll('[id^="sess-' + key + '-"]').forEach(function(s) { s.classList.remove('hl'); });
+        var sess = document.getElementById('sess-' + key + '-' + date);
+        if (sess) { sess.classList.add('hl'); sess.scrollIntoView({ behavior: 'smooth', block: 'nearest' }); }
       });
     });
 
@@ -885,15 +1815,18 @@
           document.getElementById('w-' + key + '-1').style.borderColor = '#D97757';
           return;
         }
+        var snap = snapshot(key);
         var easy = document.getElementById('easy-' + key).checked;
         if (!entries[key]) entries[key] = [];
-        var today = todayStr();
-        var idx = entries[key].findIndex(function(h) { return h.date === today; });
-        if (idx >= 0) { entries[key][idx].sets = sets; entries[key][idx].easy = easy; }
-        else entries[key].push({ date: today, sets: sets, easy: easy });
+        var existing = todaySession(key);
+        var now = Date.now();
+        // keep the times of sets that were checked off one by one
+        sets.forEach(function(s, j) { s.at = existing && existing.sets[j] && existing.sets[j].at ? existing.sets[j].at : now; });
+        if (existing) { existing.sets = sets; existing.easy = easy; existing.complete = true; }
+        else entries[key].push({ date: todayStr(), sets: sets, easy: easy, complete: true });
         saveEntries();
         clearDraft(key);
-        render();
+        afterSave(key, snap, { rest: false });
       });
     });
 
@@ -1186,6 +2119,7 @@
         '<div class="stat">Total sessions<b>' + totalSessions + '</b></div>' +
         '<div class="stat">Gym days<b>' + uniqueDays + '</b></div>' +
       '</div>' +
+      consistencyHtml() +
       weeklyVolumeHtml() +
       '<div class="card">' +
         '<div class="ex-name">Backup</div>' +
@@ -1296,11 +2230,17 @@
   activeDay = pickStartDay();
 
   document.getElementById('nav-log').addEventListener('click', function() { view = 'log'; render(); });
+  document.getElementById('nav-strength').addEventListener('click', function() { view = 'strength'; render(); });
   document.getElementById('nav-edit').addEventListener('click', function() { view = 'edit'; render(); });
   document.getElementById('nav-data').addEventListener('click', function() { view = 'data'; render(); });
   document.getElementById('backup-note').addEventListener('click', function() { view = 'data'; render(); });
-  document.getElementById('timer-stop').addEventListener('click', function() { stopTimer(); });
-  document.getElementById('timer-add').addEventListener('click', function() { extendTimer(30); });
+  document.getElementById('timer-stop').addEventListener('click', function(e) { e.stopPropagation(); stopTimer(); });
+  document.getElementById('timer-add').addEventListener('click', function(e) { e.stopPropagation(); extendTimer(30); });
+  document.querySelector('#timer-bar .timer-bar-inner').addEventListener('click', openTimerFull);
+  document.getElementById('tfull-close').addEventListener('click', closeTimerFull);
+  document.getElementById('tfull-minus').addEventListener('click', function() { extendTimer(-15); });
+  document.getElementById('tfull-plus').addEventListener('click', function() { extendTimer(30); });
+  document.getElementById('tfull-stop').addEventListener('click', function() { stopTimer(); closeTimerFull(); });
 
   // Coming back to the app: refresh the timer and re-take the screen wake lock.
   document.addEventListener('visibilitychange', function() {
