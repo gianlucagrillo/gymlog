@@ -10,10 +10,15 @@ Live: `https://gianlucagrillo.github.io/gymlog/`
 - **Multi-day routine** — editable from inside the app: add, rename, reorder or
   delete exercises and days without touching the code.
 - **Several saved routines** — e.g. a specialisation block and the plan that
-  follows it. Start one from a template (Shoulder specialization, or Standard:
-  the same plan without the extra shoulder work) or duplicate an existing one;
-  exercises you keep share their history with the original. Reset brings a
-  routine back to the template it started from.
+  follows it. Start one from a template (Aesthetic: upper/lower twice a week
+  plus a delts & arms day; Shoulder specialization; Standard, the same plan
+  without the extra shoulder work; or Lunch, built to fit a 1-hour break) or
+  duplicate an existing one; exercises you keep share their history with the
+  original. Reset brings a routine back to the template it started from. Each
+  day shows an estimated session length.
+- **Supersets** — give two exercises the same letter and they're done
+  alternately: ticking one opens its partner without a rest, and the rest
+  timer starts only after the round.
 - **Training cycle** — set a start date and length per routine and the header
   shows "Week 3 / 6", turning red once the planned block is over.
 - **Priority exercises** — flag the lifts that matter most in the block; they

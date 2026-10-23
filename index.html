@@ -181,6 +181,12 @@
   #gymlog .tpl-opt b { display: block; font-size: 15px; font-weight: 600; }
   #gymlog .tpl-opt span { display: block; font-size: 12px; color: #B7B4A9; margin-top: 3px; line-height: 1.4; }
   #gymlog .tpl-opt small { display: block; font-size: 11px; color: #6E6C66; margin-top: 6px; }
+  #gymlog .ss-group { border-left: 2px solid rgba(232,163,61,.55); padding-left: 10px; margin: 4px 0 12px; }
+  #gymlog .ss-group .card { margin-bottom: 6px; }
+  #gymlog .ss-group .card:last-child { margin-bottom: 0; }
+  #gymlog .ss-head { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; font-size: 11px; color: #8C8A82; margin: 0 2px 6px; }
+  #gymlog .ss-head b { color: #E8A33D; font-size: 11px; letter-spacing: .08em; text-transform: uppercase; }
+  #gymlog .ss-tag { display: inline-block; background: rgba(232,163,61,.16); color: #E8A33D; border-radius: 5px; padding: 0 6px; font-size: 11px; font-weight: 700; margin-right: 7px; vertical-align: 1px; }
   @keyframes gl-rise { from { transform: translateY(100%); } }
   #gymlog .sum-kicker { font-size: 11px; letter-spacing: .12em; text-transform: uppercase; color: #7FBF7F; font-weight: 700; }
   #gymlog .sum-title { font-family: 'Barlow Condensed', sans-serif; font-size: 44px; font-weight: 700; line-height: 1; margin: 4px 0 2px; }
@@ -425,14 +431,159 @@
       return d;
     });
   }
+  // Fits a 1-hour lunch break with ~10 min of travel each way (~25 min of training): two supersets
+  // a day, pairing muscles that don't help each other — heavy push with pull, quads with hamstrings,
+  // biceps with triceps. Legs open Day 3 with squats done as normal sets.
+  // Exercises moved to another day keep their old id, so their history stays attached.
+  function lunchRoutine() {
+    return [
+      { id: 'day1', label: 'Day 1', exercises: [
+        { name: 'Incline dumbbell press', muscle: 'Chest', ss: 'A', sets: 3, repMin: 6, repMax: 10, restSec: 120 },
+        { id: 'day2_chest_supported_row', name: 'Chest-supported row', muscle: 'Back', ss: 'A', sets: 3, repMin: 8, repMax: 12, restSec: 120 },
+        { name: 'Seated dumbbell lateral raise', muscle: 'Side delts', ss: 'B', sets: 3, repMin: 12, repMax: 20, restSec: 75 },
+        { id: 'day2_dumbbell_hammer_curl', name: 'Dumbbell hammer curl', muscle: 'Biceps', ss: 'B', sets: 3, repMin: 10, repMax: 15, restSec: 75 }
+      ]},
+      { id: 'day2', label: 'Day 2', exercises: [
+        { name: 'Pull-ups / lat pulldown', muscle: 'Back', ss: 'A', sets: 3, repMin: 6, repMax: 10, restSec: 120 },
+        { id: 'day1_seated_dumbbell_shoulder_press', name: 'Seated dumbbell shoulder press', muscle: 'Front delts', ss: 'A', sets: 3, repMin: 8, repMax: 12, restSec: 120 },
+        { name: 'Reverse pec deck', muscle: 'Rear delts', ss: 'B', sets: 3, repMin: 12, repMax: 20, restSec: 75 },
+        { id: 'day1_overhead_dumbbell_triceps_extension', name: 'Overhead dumbbell triceps extension', muscle: 'Triceps', ss: 'B', sets: 3, repMin: 10, repMax: 15, restSec: 75 }
+      ]},
+      { id: 'day3', label: 'Day 3', exercises: [
+        { name: 'Squat / hack squat', muscle: 'Quads', sets: 3, repMin: 6, repMax: 10, restSec: 150 },
+        { name: 'Romanian deadlift', muscle: 'Hamstrings', ss: 'A', sets: 3, repMin: 8, repMax: 12, restSec: 120 },
+        { name: 'Standing calf raise', muscle: 'Calves', ss: 'A', sets: 3, repMin: 8, repMax: 15, restSec: 120 }
+      ]},
+      { id: 'day4', label: 'Day 4', exercises: [
+        { id: 'day3_leg_press', name: 'Leg press', muscle: 'Quads', ss: 'A', sets: 3, repMin: 10, repMax: 15, restSec: 90 },
+        { id: 'day3_leg_curl', name: 'Leg curl', muscle: 'Hamstrings', ss: 'A', sets: 3, repMin: 10, repMax: 15, restSec: 90 },
+        { name: 'EZ-bar curl', muscle: 'Biceps', ss: 'B', sets: 3, repMin: 8, repMax: 12, restSec: 75 },
+        { name: 'Dumbbell skull crusher', muscle: 'Triceps', ss: 'B', sets: 3, repMin: 10, repMax: 15, restSec: 75 }
+      ]},
+      { id: 'day5', label: 'Day 5', exercises: [
+        { name: 'Incline Smith/machine press', muscle: 'Chest', ss: 'A', sets: 3, repMin: 6, repMax: 10, restSec: 120 },
+        { name: 'Lat pulldown', muscle: 'Back', ss: 'A', sets: 3, repMin: 8, repMax: 12, restSec: 120 },
+        { name: 'Seated dumbbell lateral raise', muscle: 'Side delts', ss: 'B', sets: 4, repMin: 12, repMax: 20, restSec: 60 },
+        { name: 'Reverse pec deck', muscle: 'Rear delts', ss: 'B', sets: 4, repMin: 12, repMax: 20, restSec: 60 }
+      ]}
+    ].map(function(d) {
+      d.exercises.forEach(function(ex) {
+        if (!ex.id) ex.id = d.id + '_' + ex.name.toLowerCase().replace(/[^a-z0-9]+/g, '_');
+        ex.priority = false;
+      });
+      return d;
+    });
+  }
+
+  // Aesthetic plan: upper/lower twice a week plus a delts & arms day. Every muscle is trained twice
+  // a week, with extra work where it shows most (upper chest, side delts, lats, arms) and exercises
+  // that load the muscle in the stretched position. Lower B is the one to skip in a 4-day week.
+  // Ids point at the exercises' existing history wherever there is one.
+  function aestheticRoutine() {
+    var X = function(id, name, muscle, sets, repMin, repMax, restSec, ss) {
+      var e = { name: name, muscle: muscle, sets: sets, repMin: repMin, repMax: repMax, restSec: restSec, priority: false };
+      if (id) e.id = id;
+      if (ss) e.ss = ss;
+      return e;
+    };
+    return [
+      { id: 'ua', label: 'Upper A', exercises: [
+        X('day1_incline_dumbbell_press', 'Incline dumbbell press', 'Chest', 4, 6, 10, 150),
+        X('day5_lat_pulldown', 'Lat pulldown', 'Back', 3, 8, 12, 120),
+        X('day1_flat_machine_chest_press', 'Flat machine/chest press', 'Chest', 3, 8, 12, 120),
+        X('day2_chest_supported_row', 'Chest-supported row', 'Back', 3, 8, 12, 120),
+        X('day1_dumbbell_lateral_raise', 'Dumbbell lateral raise', 'Side delts', 4, 10, 15, 75),
+        X('day1_overhead_dumbbell_triceps_extension', 'Overhead dumbbell triceps extension', 'Triceps', 3, 10, 15, 75)
+      ]},
+      { id: 'la', label: 'Lower A', exercises: [
+        X('day3_squat_hack_squat', 'Squat / hack squat', 'Quads', 3, 6, 10, 180),
+        X('day3_leg_curl', 'Leg curl', 'Hamstrings', 3, 10, 15, 90),
+        X('day3_leg_extension', 'Leg extension', 'Quads', 3, 10, 15, 90),
+        X('day3_standing_calf_raise', 'Standing calf raise', 'Calves', 4, 8, 12, 75),
+        X('day3_hanging_leg_raise', 'Hanging leg raise', 'Abs', 3, 10, 15, 60)
+      ]},
+      { id: 'ub', label: 'Upper B', exercises: [
+        X('day5_incline_smith_machine_press', 'Incline Smith/machine press', 'Chest', 3, 6, 10, 150),
+        X('day2_pull_ups_lat_pulldown', 'Pull-ups / lat pulldown', 'Back', 3, 6, 10, 150),
+        X('day2_cable_row', 'Cable row', 'Back', 3, 8, 12, 120),
+        X('day4_seated_dumbbell_lateral_raise', 'Seated dumbbell lateral raise', 'Side delts', 4, 12, 20, 75),
+        X('day2_reverse_pec_deck', 'Reverse pec deck', 'Rear delts', 3, 12, 20, 75),
+        X('day2_incline_dumbbell_curl', 'Incline dumbbell curl', 'Biceps', 3, 8, 12, 75)
+      ]},
+      { id: 'lb', label: 'Lower B', exercises: [
+        X('day3_romanian_deadlift', 'Romanian deadlift', 'Hamstrings', 3, 8, 10, 180),
+        X('day3_leg_press', 'Leg press', 'Quads', 3, 10, 15, 120),
+        X('lb_leg_curl', 'Leg curl', 'Hamstrings', 3, 10, 15, 90),
+        X('lb_bulgarian_split_squat', 'Bulgarian split squat', 'Quads', 2, 8, 12, 90),
+        X('day3_seated_calf_raise', 'Seated calf raise', 'Calves', 3, 12, 20, 60),
+        X('day3_weighted_decline_crunch', 'Weighted decline crunch', 'Abs', 3, 10, 15, 60)
+      ]},
+      { id: 'da', label: 'Delts & Arms', exercises: [
+        X('day5_dumbbell_lateral_raise', 'Dumbbell lateral raise', 'Side delts', 4, 12, 20, 75),
+        X('day4_reverse_pec_deck', 'Reverse pec deck', 'Rear delts', 3, 12, 20, 75),
+        X('day4_ez_bar_curl', 'EZ-bar curl', 'Biceps', 3, 8, 12, 90, 'A'),
+        X('day4_dumbbell_skull_crusher', 'Dumbbell skull crusher', 'Triceps', 3, 10, 15, 90, 'A'),
+        X('day2_dumbbell_hammer_curl', 'Dumbbell hammer curl', 'Biceps', 3, 10, 15, 75, 'B'),
+        X('day4_overhead_dumbbell_triceps_extension', 'Overhead dumbbell triceps extension', 'Triceps', 3, 10, 15, 75, 'B')
+      ]}
+    ];
+  }
+
   var TEMPLATES = [
+    { id: 'aesthetic', name: 'Aesthetic', build: aestheticRoutine,
+      desc: 'Upper/lower twice a week plus a delts & arms day: every muscle twice a week, extra work for upper chest, side delts, lats and arms. In a 4-day week, skip Lower B.' },
     { id: 'spec', name: 'Shoulder specialization', build: defaultRoutine,
       desc: 'Shoulders first every day, 6 exercises per session. Side delts 21 sets/week.' },
     { id: 'standard', name: 'Standard', build: standardRoutine,
-      desc: 'Same plan without the extra shoulder work, 5 exercises per session. Side delts 12 sets/week.' }
+      desc: 'Same plan without the extra shoulder work, 5 exercises per session. Side delts 12 sets/week.' },
+    { id: 'lunch', name: 'Lunch', build: lunchRoutine,
+      desc: 'Fits a 1-hour lunch break with 10 min of travel each way: two supersets a day of muscles that don\'t help each other. About 60 sets/week instead of 77.' }
   ];
   function templateOf(plan) {
-    return TEMPLATES.find(function(t) { return t.id === plan.template; }) || TEMPLATES[0];
+    // routines saved before templates existed are the specialization plan
+    return TEMPLATES.find(function(t) { return t.id === (plan.template || 'spec'); }) || TEMPLATES[0];
+  }
+
+  // ---------- supersets + session length ----------
+  // Exercises of a day sharing the same letter (ss) are done alternately, resting after the round.
+  function ssGroup(day, ex) {
+    if (!ex || !ex.ss) return [ex];
+    var g = day.exercises.filter(function(e) { return e.ss === ex.ss; });
+    return g.length > 1 ? g : [ex];
+  }
+  function setsDone(ex) {
+    var s = todaySession(ex.id);
+    return s ? s.sets.length : 0;
+  }
+  // Next exercise to do inside a superset: the one with the fewest sets done, in order.
+  function nextInGroup(group) {
+    var best = null;
+    group.forEach(function(e) {
+      if (exDone(e)) return;
+      if (!best || setsDone(e) < setsDone(best)) best = e;
+    });
+    return best;
+  }
+  // Rough minutes for a day: ~45 s per set, rest between sets (rounds for supersets),
+  // 2 min of warm-up sets before heavy lifts, 5 min general warm-up, 1 min per change of station.
+  function estimateMin(day) {
+    var t = 300, seen = {};
+    day.exercises.forEach(function(ex) {
+      if (seen[ex.id]) return;
+      var g = ssGroup(day, ex);
+      g.forEach(function(e) { seen[e.id] = true; });
+      var n = Math.max.apply(null, g.map(function(e) { return e.sets; }));
+      var rest = Math.max.apply(null, g.map(function(e) { return e.restSec; }));
+      t += 60 + n * (g.length * 45 + (g.length - 1) * 15) + (n - 1) * rest;
+      if (g.length === 1 && rest >= 150) t += 120;
+    });
+    return Math.round(t / 60);
+  }
+  function estimateRange(days) {
+    var m = days.filter(function(d) { return d.exercises.length; }).map(estimateMin);
+    if (!m.length) return '';
+    var lo = Math.min.apply(null, m), hi = Math.max.apply(null, m);
+    return lo === hi ? '≈' + lo : '≈' + lo + '–' + hi;
   }
 
   // Routines saved before muscles/priority existed get them from the default routine
@@ -799,6 +950,16 @@
     if (ts.sets.length >= f.ex.sets) ts.complete = true;
     saveEntries();
     justChecked = { key: key, i: i };
+    // Superset: go straight to the partner if it still owes this round, rest only after the round.
+    var group = ssGroup(f.day, f.ex);
+    if (group.length > 1) {
+      var nxt = nextInGroup(group);
+      var owes = nxt && nxt !== f.ex && setsDone(nxt) < ts.sets.length;
+      var rest = Math.max.apply(null, group.map(function(e) { return e.restSec; }));
+      var label = 'Superset ' + f.ex.ss + ' · ' + group.map(function(e) { return e.name; }).join(' + ');
+      afterSave(key, snap, owes ? { rest: false, focus: nxt.id } : { rest: true, restSec: rest, name: label });
+      return;
+    }
     afterSave(key, snap, { rest: true });
   }
 
@@ -827,11 +988,18 @@
     if (complete && !snap.exDone) {
       openCards[key] = false;
       clearDraft(key);
-      var next = f.day.exercises.find(function(e) { return !exDone(e); });
-      if (next && f.day.id === activeDay) { openCards[next.id] = true; scrollTarget = next.id; }
+      // open what comes next in the day (wrapping round to anything skipped), unless the superset partner is next
+      if (!opts.focus) {
+        var idx = f.day.exercises.indexOf(f.ex);
+        var next = f.day.exercises.slice(idx + 1).find(function(e) { return !exDone(e); }) ||
+                   f.day.exercises.find(function(e) { return !exDone(e); });
+        if (next && f.day.id === activeDay) { openCards[next.id] = true; scrollTarget = next.id; }
+      }
     }
+    if (opts.focus && f && f.day.id === activeDay) { openCards[opts.focus] = true; scrollTarget = opts.focus; }
     var dayDone = !!f && dayProgress(f.day).done === f.day.exercises.length;
-    if (opts.rest && f && !dayDone) startTimer(key, f.ex.restSec, f.ex.name);
+    if (opts.rest && f && !dayDone) startTimer(key, opts.restSec || f.ex.restSec, opts.name || f.ex.name);
+    else if (opts.focus && timer) stopTimer(); // starting the partner's set: any running rest is over
     render();
     if (scrollTarget) {
       var el = document.querySelector('[data-card="' + scrollTarget + '"]');
@@ -1427,21 +1595,23 @@
     document.getElementById('tfull').hidden = true;
     document.body.style.overflow = '';
   }
-  // What comes after this rest: the next set of the same exercise, or the next exercise of the day.
+  // What comes after this rest: the next set of the same exercise (or of its superset partner),
+  // or the next exercise of the day.
   function nextUpHtml() {
     var f = timer && findEx(timer.key);
     if (!f) return '';
-    var ts = todaySession(f.ex.id);
-    var n = ts ? ts.sets.length : 0;
-    if (n < f.ex.sets) {
-      var i = n + 1;
-      var d = drafts[f.ex.id];
-      var prior = sortedHist(f.ex.id).filter(function(s) { return s.date < todayStr(); });
+    var group = ssGroup(f.day, f.ex);
+    var target = group.length > 1 ? nextInGroup(group) : (setsDone(f.ex) < f.ex.sets ? f.ex : null);
+    if (target) {
+      var i = setsDone(target) + 1;
+      var d = drafts[target.id];
+      var prior = sortedHist(target.id).filter(function(s) { return s.date < todayStr(); });
       var p = prior.length ? prior[prior.length - 1].sets[i - 1] : null;
       var w = d && d.w[i - 1] ? parseFloat(d.w[i - 1]) : p ? p.weight : null;
       var r = d && d.r[i - 1] ? parseInt(d.r[i - 1], 10) : p ? p.reps : null;
-      var val = (w == null && !r) ? f.ex.repMin + '–' + f.ex.repMax + ' reps' : fmtSet({ weight: w || 0, reps: r || null });
-      return '<small>Next · set ' + i + ' of ' + f.ex.sets + '</small><b>' + esc(val) + '</b><span>' + esc(f.ex.name) + '</span>';
+      var val = (w == null && !r) ? target.repMin + '–' + target.repMax + ' reps' : fmtSet({ weight: w || 0, reps: r || null });
+      var tag = group.length > 1 ? 'Superset ' + target.ss + ' · ' : '';
+      return '<small>Next · ' + tag + 'set ' + i + ' of ' + target.sets + '</small><b>' + esc(val) + '</b><span>' + esc(target.name) + '</span>';
     }
     var next = f.day.exercises.find(function(e) { return !exDone(e); });
     if (!next) return '<small>All done</small><b>Workout complete</b>';
@@ -1586,9 +1756,19 @@
     } else if (prog.started) {
       html += '<div class="today-line"><span>' + prog.done + ' of ' + prog.total + ' done today</span>' +
         '<div class="today-track"><div class="today-fill" style="width:' + Math.round(prog.done / prog.total * 100) + '%"></div></div></div>';
+    } else if (day.exercises.length) {
+      html += '<div class="today-line"><span>≈' + estimateMin(day) + ' min · ' + day.exercises.length + ' exercises</span></div>';
     }
 
-    day.exercises.forEach(function(ex) {
+    // consecutive exercises sharing a superset letter are drawn as one group
+    var runs = {};
+    day.exercises.forEach(function(ex, i) {
+      var before = day.exercises[i - 1], after = day.exercises[i + 1];
+      if (ex.ss && before && before.ss === ex.ss) runs[i] = 'mid';
+      else if (ex.ss && after && after.ss === ex.ss) runs[i] = 'start';
+    });
+
+    day.exercises.forEach(function(ex, exIdx) {
       var key = ex.id;
       var hist = sortedHist(key);
       var last = hist[hist.length - 1];
@@ -1709,12 +1889,19 @@
       if (isOpen) openCards[key] = true;
       var metaExtra = exComplete ? '<span class="done-chip">✓ Today</span>'
         : nDone ? '<span class="sets-chip">' + nDone + ' / ' + ex.sets + ' sets</span>' : '';
+      var inRun = !!runs[exIdx];
+      var ssTag = inRun ? '<span class="ss-tag">' + esc(ex.ss) + (day.exercises.slice(0, exIdx).filter(function(e) { return e.ss === ex.ss; }).length + 1) + '</span>' : '';
+      if (runs[exIdx] === 'start') {
+        var grp = ssGroup(day, ex);
+        html += '<div class="ss-group"><div class="ss-head"><b>Superset ' + esc(ex.ss) + '</b><span>alternate sets · rest ' +
+          fmtRest(Math.max.apply(null, grp.map(function(e) { return e.restSec; }))) + ' after each round</span></div>';
+      }
 
       html +=
         '<div class="card' + (ex.priority ? ' priority' : '') + (exComplete ? ' logged' : nDone ? ' active' : '') + '" data-card="' + key + '">' +
           '<div class="row" style="justify-content:space-between;align-items:flex-start;cursor:pointer;" data-toggle="' + key + '">' +
             '<div style="min-width:0;">' +
-              '<div class="ex-name">' + esc(ex.name) + (ex.priority ? '<span class="prio-tag">PRIORITY</span>' : '') + prHtml + '</div>' +
+              '<div class="ex-name">' + ssTag + esc(ex.name) + (ex.priority ? '<span class="prio-tag">PRIORITY</span>' : '') + prHtml + '</div>' +
               '<div class="ex-meta"><span>' + metaOf(ex) + '</span>' + metaExtra + '</div>' +
             '</div>' +
             '<div>' +
@@ -1735,6 +1922,8 @@
             (hist.length ? '<div style="margin-top:14px;padding-top:12px;border-top:1px solid #2A2E34;">' + chartHtml(key, hist) + statsHtml + sessionsHtml + '</div>' : '') +
           '</div>' +
         '</div>';
+      var after = day.exercises[exIdx + 1];
+      if (inRun && !(after && after.ss === ex.ss)) html += '</div>';
     });
     justChecked = null;
 
@@ -1915,6 +2104,7 @@
         '<div class="card">' +
           '<label class="hint">Day name</label>' +
           '<input id="day-label" value="' + esc(day.label) + '" style="margin-top:6px;">' +
+          '<p class="hint" style="margin:6px 0 0;">≈' + estimateMin(day) + ' min per session · same letter in Superset = done alternately</p>' +
           '<div class="ed-actions">' +
             '<button class="ghost mini" id="day-save">Save name</button>' +
             '<button class="danger mini" id="day-del">Delete day</button>' +
@@ -1934,6 +2124,9 @@
             '<div class="ed-grid">' +
               '<label style="flex:2;">Muscle<select data-f="muscle" data-i="' + i + '">' +
                 MUSCLES.map(function(m) { return '<option' + (m === ex.muscle ? ' selected' : '') + '>' + m + '</option>'; }).join('') +
+              '</select></label>' +
+              '<label>Superset<select data-f="ss" data-i="' + i + '">' +
+                ['', 'A', 'B', 'C', 'D'].map(function(l) { return '<option value="' + l + '"' + ((ex.ss || '') === l ? ' selected' : '') + '>' + (l || '—') + '</option>'; }).join('') +
               '</select></label>' +
               '<label class="prio-check"><input type="checkbox" data-f="priority" data-i="' + i + '"' + (ex.priority ? ' checked' : '') + '> Priority</label>' +
             '</div>' +
@@ -2012,6 +2205,8 @@
           ex.muscle = inp.value;
         } else if (f === 'priority') {
           ex.priority = inp.checked;
+        } else if (f === 'ss') {
+          if (inp.value) ex.ss = inp.value; else delete ex.ss;
         } else {
           var n = parseInt(inp.value, 10);
           if (isNaN(n) || n < 0) { inp.value = ex[f]; return; }
@@ -2111,7 +2306,7 @@
           return '<button class="tpl-opt" data-tpl="' + t.id + '">' +
             '<b>' + esc(t.name) + '</b>' +
             '<span>' + esc(t.desc) + '</span>' +
-            '<small>' + days.length + ' days · ' + perDay.join(' / ') + ' exercises</small>' +
+            '<small>' + days.length + ' days · ' + perDay.join(' / ') + ' exercises · ' + estimateRange(days) + ' min per session</small>' +
           '</button>';
         }).join('') +
         '<button class="ghost" data-close style="width:100%;margin-top:6px;">Cancel</button>' +
