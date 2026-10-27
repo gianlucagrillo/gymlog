@@ -17,7 +17,9 @@
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700&family=Inter:wght@400;500;600&display=swap">
 <style>
   html, body { margin: 0; padding: 0; background: #131518; min-height: 100vh; }
-  body { padding: env(safe-area-inset-top) env(safe-area-inset-right) 0 env(safe-area-inset-left); padding-top: max(12px, env(safe-area-inset-top)); -webkit-tap-highlight-color: transparent; }
+  body { padding: env(safe-area-inset-top) env(safe-area-inset-right) 0 env(safe-area-inset-left); padding-top: max(8px, env(safe-area-inset-top)); -webkit-tap-highlight-color: transparent; }
+  /* keeps content scrolling under the sticky day bar from showing through a translucent status bar */
+  body::before { content: ''; position: fixed; left: 0; right: 0; top: 0; height: env(safe-area-inset-top, 0px); background: #131518; z-index: 30; }
 
   #gymlog * { box-sizing: border-box; font-family: 'Inter', system-ui, sans-serif; }
   #gymlog h1, #gymlog .num, #gymlog .weight-badge, #gymlog .timer-clock, #gymlog .stat b, #gymlog .vol-num { font-family: 'Barlow Condensed', 'Inter', sans-serif; }
@@ -52,7 +54,10 @@
   #gymlog .chev { width: 14px; height: 14px; transition: transform .15s; }
   #gymlog .toggle.open .chev { transform: rotate(180deg); }
   #gymlog .hist-row .del { color: #D97757; cursor: pointer; font-size: 12px; margin-left: 10px; }
-  #gymlog .tabs { display: flex; gap: 6px; overflow-x: auto; margin: 14px -14px 12px; padding: 0 14px 2px; scrollbar-width: none; }
+  #gymlog .tabs { display: flex; gap: 6px; overflow-x: auto; margin: 14px -14px 12px; padding: 0 14px 2px; scrollbar-width: none;
+    --fl: 0px; --fr: 0px;
+    -webkit-mask-image: linear-gradient(to right, transparent 0, #000 var(--fl), #000 calc(100% - var(--fr)), transparent 100%);
+    mask-image: linear-gradient(to right, transparent 0, #000 var(--fl), #000 calc(100% - var(--fr)), transparent 100%); }
   #gymlog .tabs::-webkit-scrollbar { display: none; }
   #gymlog .tab { flex: 0 0 auto; padding: 8px 14px; border-radius: 20px; border: 1px solid #2A2E34; background: #1C1F23; color: #B7B4A9; font-size: 13px; font-weight: 500; cursor: pointer; white-space: nowrap; display: flex; align-items: center; gap: 6px; }
   #gymlog .tab.active { background: #E8A33D; color: #16181B; border-color: #E8A33D; font-weight: 600; }
@@ -60,9 +65,19 @@
   #gymlog .tab.active .tab-dot { background: #16181B; }
   #gymlog .tab-check { color: #7FBF7F; font-weight: 700; font-size: 12px; }
   #gymlog .tab.active .tab-check { color: #16181B; }
-  #gymlog .today-line { font-size: 12px; color: #8C8A82; margin: 0 0 12px; display: flex; align-items: center; gap: 8px; }
-  #gymlog .today-track { flex: 1; height: 4px; background: #23262B; border-radius: 2px; overflow: hidden; }
-  #gymlog .today-fill { height: 100%; background: #7FBF7F; border-radius: 2px; }
+  #gymlog .today-line { font-size: 12px; color: #8C8A82; margin: 0 0 12px; display: flex; align-items: center; gap: 8px; font-variant-numeric: tabular-nums; }
+  #gymlog .today-line b { color: #EDEBE3; font-weight: 600; }
+  /* day tabs + progress stay on screen while scrolling */
+  #gymlog .sticky-top { position: sticky; top: env(safe-area-inset-top, 0px); z-index: 15; margin: 10px -14px 12px; padding: 8px 14px 0; background: #131518; transition: box-shadow .2s; }
+  #gymlog .sticky-top.stuck { box-shadow: 0 10px 14px -10px rgba(0,0,0,.75); }
+  /* covers the sub-pixel sliver of scrolled content that can show above a stuck bar at fractional scroll offsets;
+     it overlaps the bar by 1px so there's no anti-aliased seam */
+  #gymlog .sticky-top::before { content: ''; position: absolute; left: 0; right: 0; top: -8px; height: 9px; background: #131518; }
+  #gymlog .sticky-top .tabs { margin: 0 -14px; }
+  #gymlog .sticky-top .today-line { margin: 0; padding: 9px 0; }
+  #gymlog .prog-rail { height: 3px; margin: 0 -14px; background: #1F2226; }
+  #gymlog .prog-rail i { display: block; height: 100%; background: #7FBF7F; border-radius: 0 2px 2px 0; transition: width .3s; }
+  #gymlog .card, #gymlog .ss-group, #gymlog .session { scroll-margin-top: calc(var(--stick, 0px) + env(safe-area-inset-top, 0px) + 10px); }
   #gymlog .set-head, #gymlog .set-row { display: grid; grid-template-columns: 34px 1fr 1fr; gap: 8px; align-items: center; }
   #gymlog .set-head { font-size: 10px; font-weight: 600; letter-spacing: .06em; text-transform: uppercase; color: #5C5A52; margin-bottom: 6px; }
   #gymlog .set-head span:not(:first-child) { padding-left: 12px; }
@@ -100,11 +115,11 @@
 
   #gymlog .head { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; }
   #gymlog .cycle-chip { text-align: right; min-width: 92px; }
-  #gymlog .cycle-chip .num { font-size: 22px; font-weight: 700; color: #E8A33D; line-height: 1; }
-  #gymlog .cycle-chip .num small { font-size: 14px; color: #8C8A82; font-weight: 600; }
-  #gymlog .cycle-chip .lbl { font-size: 10px; letter-spacing: .08em; text-transform: uppercase; color: #8C8A82; margin-top: 2px; }
+  #gymlog .cycle-chip .num { font-size: 19px; font-weight: 700; color: #E8A33D; line-height: 1; }
+  #gymlog .cycle-chip .num small { font-size: 13px; color: #8C8A82; font-weight: 600; }
+  #gymlog .cycle-chip .lbl { font-size: 9px; letter-spacing: .08em; text-transform: uppercase; color: #8C8A82; margin-top: 1px; }
   #gymlog .cycle-chip.over .num { color: #D97757; }
-  #gymlog .cycle-track { display: flex; gap: 3px; margin-top: 6px; justify-content: flex-end; }
+  #gymlog .cycle-track { display: flex; gap: 3px; margin-top: 5px; justify-content: flex-end; }
   #gymlog .cycle-track i { width: 10px; height: 4px; border-radius: 2px; background: #2A2E34; }
   #gymlog .cycle-track i.on { background: #E8A33D; }
   #gymlog .cycle-chip.over .cycle-track i.on { background: #D97757; }
@@ -153,11 +168,19 @@
   #gymlog .set-row.pop .set-check { animation: gl-pop .4s ease; }
   @keyframes gl-pop { 0% { transform: scale(1); } 35% { transform: scale(1.22); } 100% { transform: scale(1); } }
   #gymlog .set-hint { font-size: 11px; color: #6E6C66; margin: -2px 0 8px; }
+  /* −/+ under the set you're about to do: adjust without opening the keyboard */
+  #gymlog .step-row { display: grid; grid-template-columns: 30px 1fr 1fr 46px; gap: 8px; margin: -2px 0 10px; }
+  #gymlog .step-pair { display: flex; gap: 6px; min-width: 0; }
+  #gymlog button.step { flex: 1; min-width: 0; height: 38px; padding: 0; border-radius: 10px; background: #23262B; border: 1px solid #2A2E34; color: #EDEBE3; font-size: 14px; font-weight: 600; font-variant-numeric: tabular-nums; touch-action: manipulation; -webkit-user-select: none; user-select: none; }
+  #gymlog button.step:active { background: #2E3238; border-color: #E8A33D; }
+  #gymlog .set-row input.bump { animation: gl-bump .4s ease; }
+  @keyframes gl-bump { from { border-color: #E8A33D; background: rgba(232,163,61,.12); } }
   #gymlog .sets-chip { color: #E8A33D; font-weight: 600; }
   #gymlog .card.active { border-color: rgba(232,163,61,.45); }
   #gymlog .today-line.complete { color: #7FBF7F; font-weight: 600; cursor: pointer; }
   #gymlog .pp { background: #1C1F23; border: 1px solid #2A2E34; border-radius: 16px; padding: 12px 14px; margin-bottom: 12px; }
   #gymlog .pp.done { border-color: #2F3B31; }
+  #gymlog .pp:not(.open) { padding: 9px 14px; border-radius: 12px; }
   #gymlog .pp-head { display: flex; justify-content: space-between; align-items: center; cursor: pointer; font-size: 13px; }
   #gymlog .pp-head b { font-size: 11px; letter-spacing: .08em; text-transform: uppercase; color: #E8A33D; }
   #gymlog .pp.done .pp-head b { color: #7FBF7F; }
@@ -322,8 +345,8 @@
 <div id="gymlog">
   <div class="head">
     <div>
-      <h1 style="font-size:32px;font-weight:700;margin:0;line-height:1;">Gym log</h1>
-      <p id="subtitle" style="color:#8C8A82;font-size:13px;margin:4px 0 0;">Tap an exercise to log this week's weight</p>
+      <h1 style="font-size:26px;font-weight:700;margin:0;line-height:1;">Gym log</h1>
+      <p id="subtitle" style="color:#8C8A82;font-size:12px;margin:3px 0 0;">Tap an exercise to log this week's weight</p>
       <p id="cycle-line" class="cycle-line" hidden></p>
     </div>
     <div id="cycle-chip" class="cycle-chip" hidden></div>
@@ -683,7 +706,7 @@
     var all = c.done === c.total;
     var title = kind === 'pre' ? 'Warm-up' : 'Cool-down';
     var sub = all ? '✓ done' : c.done ? c.done + ' / ' + c.total : (kind === 'pre' ? '≈5–8 min' : '≈3 min · optional');
-    return '<div class="pp' + (all ? ' done' : '') + '">' +
+    return '<div class="pp' + (all ? ' done' : '') + (open ? ' open' : '') + '">' +
       '<div class="pp-head" data-pp-toggle="' + kind + '"><b>' + title + '</b><span>' + sub + ' ' + (open ? '▴' : '▾') + '</span></div>' +
       (open ? '<div class="pp-list">' + ppList(day, kind).map(function(it) {
         var on = t.indexOf(it[0]) >= 0;
@@ -700,9 +723,11 @@
     var idx = day.exercises.indexOf(ex);
     return !day.exercises.slice(0, idx).some(function(e) { return e.muscle === ex.muscle; });
   }
+  // Dumbbells go up in 2 kg steps, bars and machines in 2.5.
+  function weightStep(ex) { return /dumbbell/i.test(ex.name) ? 2 : 2.5; }
   function warmupSets(day, ex, work) {
     if (!(work > 0) || !warmupEligible(day, ex)) return null;
-    var step = /dumbbell/i.test(ex.name) ? 2 : 2.5;
+    var step = weightStep(ex);
     var scheme = ex.restSec >= 150 ? [[0.4, 10], [0.6, 5], [0.8, 3]] : [[0.5, 10], [0.75, 5]];
     var out = [], prevW = 0;
     scheme.forEach(function(s) {
@@ -1097,7 +1122,7 @@
     }
     if (dayDone && !snap.dayDone) {
       stopTimer();
-      setTimeout(function() { showSummary(f.day); }, 500);
+      setTimeout(function() { showSummary(f.day, null, true); }, 500);
     }
   }
 
@@ -1175,7 +1200,8 @@
     return { label: labels.join(' + ') || 'Workout', exercises: exs };
   }
 
-  function showSummary(day, date) {
+  // justFinished: opened by the last set of the day. Reopening it later (or from the calendar) stays quiet.
+  function showSummary(day, date, justFinished) {
     var t = date || todayStr();
     var isToday = t === todayStr();
     var sets = 0, vol = 0, ats = [], prs = [], rows = '';
@@ -1255,7 +1281,7 @@
     wrap.hidden = false;
     document.body.style.overflow = 'hidden';
     wrap.querySelectorAll('[data-close]').forEach(function(el) { el.addEventListener('click', closeSheet); });
-    if (prs.length && isToday) confetti();
+    if (prs.length && isToday && justFinished) confetti();
   }
   function closeSheet() {
     var wrap = document.getElementById('sheet');
@@ -1839,6 +1865,7 @@
     else if (view === 'strength') renderStrength();
     else if (view === 'edit') renderEdit();
     else renderData();
+    paintSticky();
     paintBackupNote();
     paintCycle();
     paintTimers();
@@ -1859,6 +1886,81 @@
         render();
       });
     });
+    fitTabs(root);
+  }
+
+  // Tabs are rebuilt on every render: keep where they were scrolled, make sure the active day is in view,
+  // and fade the edge that has more tabs behind it.
+  var tabScroll = 0;
+  function fitTabs(root) {
+    var tabs = root.querySelector('.tabs');
+    if (!tabs) return;
+    tabs.scrollLeft = tabScroll;
+    var act = tabs.querySelector('.tab.active');
+    if (act) {
+      var tr = tabs.getBoundingClientRect(), ar = act.getBoundingClientRect();
+      if (ar.left < tr.left + 14 || ar.right > tr.right - 14) tabs.scrollLeft += (ar.left + ar.width / 2) - (tr.left + tr.width / 2);
+    }
+    var fade = function() {
+      tabScroll = tabs.scrollLeft;
+      tabs.style.setProperty('--fl', tabs.scrollLeft > 2 ? '32px' : '0px');
+      tabs.style.setProperty('--fr', tabs.scrollLeft + tabs.clientWidth < tabs.scrollWidth - 2 ? '64px' : '0px');
+    };
+    fade();
+    tabs.addEventListener('scroll', fade, { passive: true });
+  }
+
+  // Sets done vs planned for the day, and when today's first and last sets were ticked.
+  function setProgress(day) {
+    var done = 0, total = 0, ats = [];
+    day.exercises.forEach(function(ex) {
+      total += ex.sets;
+      var s = todaySession(ex.id);
+      if (!s) return;
+      done += exDone(ex) ? ex.sets : Math.min(s.sets.length, ex.sets);
+      s.sets.forEach(function(x) { if (x.at) ats.push(x.at); });
+    });
+    return { done: done, total: total,
+      start: ats.length ? Math.min.apply(null, ats) : null, end: ats.length ? Math.max.apply(null, ats) : null };
+  }
+  function fmtMins(mins) {
+    return mins < 60 ? mins + ' min' : Math.floor(mins / 60) + 'h ' + String(mins % 60).padStart(2, '0');
+  }
+  var sessStart = null;
+  function paintSessClock() {
+    var el = document.getElementById('sess-clock');
+    if (el && sessStart) el.textContent = fmtMins(Math.max(0, Math.floor((Date.now() - sessStart) / 60000)));
+  }
+  function paintSticky() {
+    var st = document.getElementById('sticky-top');
+    var app = document.getElementById('gymlog');
+    if (!st) { app.style.removeProperty('--stick'); return; }
+    app.style.setProperty('--stick', st.offsetHeight + 'px');
+    var top = parseFloat(getComputedStyle(st).top) || 0;
+    st.classList.toggle('stuck', window.scrollY > 4 && st.getBoundingClientRect().top <= top + 0.5);
+  }
+
+  // −/+ on the next set. An empty field starts from the set above it.
+  function stepValue(key, i, field, delta) {
+    var inp = document.getElementById(field + '-' + key + '-' + i);
+    if (!inp) return;
+    var v = parseFloat(inp.value);
+    if (!isFinite(v)) {
+      var above = document.getElementById(field + '-' + key + '-' + (i - 1));
+      v = above && isFinite(parseFloat(above.value)) ? parseFloat(above.value) : 0;
+    }
+    v = Math.max(0, Math.round((v + delta) * 100) / 100);
+    inp.value = field === 'r' && v === 0 ? '' : String(v);
+    inp.style.borderColor = '';
+    inp.classList.remove('bump');
+    void inp.offsetWidth;
+    inp.classList.add('bump');
+    inp.dispatchEvent(new Event('input', { bubbles: true }));
+  }
+  function stepBtn(key, i, field, delta) {
+    var txt = (delta < 0 ? '−' : '+') + Math.abs(delta);
+    return '<button class="step" data-step="' + key + '" data-i="' + i + '" data-f="' + field + '" data-d="' + delta + '" aria-label="' +
+      txt + (field === 'w' ? ' kg' : ' reps') + '">' + txt + '</button>';
   }
 
   function renderLog() {
@@ -1867,17 +1969,24 @@
     if (!day) { root.innerHTML = '<p class="hint">No days in your routine. Open “Routine” and add one.</p>'; return; }
     activeDay = day.id;
 
-    var html = tabsHtml();
+    var html = '<div class="sticky-top" id="sticky-top">' + tabsHtml();
     var mvMap = movements();
     var prog = dayProgress(day);
+    var sp = setProgress(day);
+    var rail = function(pct) { return '<div class="prog-rail"><i style="width:' + Math.round(pct) + '%"></i></div>'; };
+    sessStart = null;
     if (prog.total && prog.done >= prog.total) {
-      html += '<div class="today-line complete" data-summary="1"><span>✓ Workout complete · view summary ›</span></div>';
+      var took = sp.start && sp.end - sp.start >= 60000 ? ' · ' + fmtMins(Math.round((sp.end - sp.start) / 60000)) : '';
+      html += '<div class="today-line complete" data-summary="1"><span>✓ Workout complete' + took + ' · view summary ›</span></div>' + rail(100);
     } else if (prog.started) {
-      html += '<div class="today-line"><span>' + prog.done + ' of ' + prog.total + ' done today</span>' +
-        '<div class="today-track"><div class="today-fill" style="width:' + Math.round(prog.done / prog.total * 100) + '%"></div></div></div>';
+      sessStart = sp.start;
+      html += '<div class="today-line"><span><b>Exercise ' + Math.min(prog.done + 1, prog.total) + '</b> / ' + prog.total +
+        ' · <b>' + sp.done + '</b> / ' + sp.total + ' sets' + (sp.start ? ' · <span id="sess-clock"></span>' : '') + '</span></div>' +
+        rail(sp.total ? sp.done / sp.total * 100 : 0);
     } else if (day.exercises.length) {
-      html += '<div class="today-line"><span>≈' + estimateMin(day) + ' min · ' + day.exercises.length + ' exercises</span></div>';
+      html += '<div class="today-line"><span>≈' + estimateMin(day) + ' min · ' + day.exercises.length + ' exercises · ' + sp.total + ' sets</span></div>';
     }
+    html += '</div>';
     if (day.exercises.length) {
       var complete = prog.total && prog.done >= prog.total;
       if (complete) {
@@ -1987,6 +2096,12 @@
             '<button class="set-check' + (isNext ? ' next' : '') + '" data-check="' + key + '" data-i="' + i + '" aria-label="Set ' + i + ' done"' +
               ((isDone && i !== nDone) || (!isDone && !isNext) ? ' disabled' : '') + '>' + CHECK + '</button>' +
           '</div>';
+        if (isNext && !exComplete) {
+          var ws = weightStep(ex);
+          setInputs += '<div class="step-row"><span></span>' +
+            '<div class="step-pair">' + (bwOnly ? '' : stepBtn(key, i, 'w', -ws) + stepBtn(key, i, 'w', ws)) + '</div>' +
+            '<div class="step-pair">' + stepBtn(key, i, 'r', -1) + stepBtn(key, i, 'r', 1) + '</div><span></span></div>';
+        }
       }
       setInputs +=
         '<label class="easy-check" style="width:auto;margin:2px 0 10px;">' +
@@ -2063,6 +2178,15 @@
 
     root.innerHTML = html;
     bindTabs(root);
+    paintSessClock();
+    paintSticky();
+
+    root.querySelectorAll('[data-step]').forEach(function(b) {
+      b.addEventListener('click', function(e) {
+        e.stopPropagation();
+        stepValue(b.getAttribute('data-step'), parseInt(b.getAttribute('data-i'), 10), b.getAttribute('data-f'), parseFloat(b.getAttribute('data-d')));
+      });
+    });
 
     root.querySelectorAll('[data-toggle]').forEach(function(el) {
       el.addEventListener('click', function() {
@@ -2686,7 +2810,10 @@
     if (document.visibilityState !== 'visible') return;
     if (timer && timerRemaining() > 0) { acquireWakeLock(); ensureTicker(); }
     paintTimers();
+    paintSessClock();
   });
+  window.addEventListener('scroll', paintSticky, { passive: true });
+  setInterval(paintSessClock, 15000);
 
   render();
 })();

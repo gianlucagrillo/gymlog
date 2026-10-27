@@ -28,7 +28,12 @@ Live: `https://gianlucagrillo.github.io/gymlog/`
 - **Per-set logging** — tick ✓ after each set: the row turns green, the rest
   timer starts on its own, and the exercise is saved once the last set is
   ticked, then the next exercise opens. Inputs are pre-filled from your last
-  session; "Log all sets at once" is still there.
+  session; "Log all sets at once" is still there. −/+ buttons next to each
+  field adjust the weight (2.5 kg, or 2 kg for dumbbells) and the reps (±1),
+  starting from the previous set when the field is empty.
+- **Progress header** — the day tabs stay pinned at the top while you scroll,
+  with a progress bar, "Exercise 2 / 5 · 6 / 16 sets" and the session time.
+  Once the day is done, tapping it reopens the summary.
 - **Progression** — delta against the previous session, a sparkline of the last
   8 sessions, a line chart per exercise (est. 1RM, or reps for bodyweight
   moves; tap a point to jump to that session), and an automatic nudge when you
