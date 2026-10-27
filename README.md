@@ -38,7 +38,7 @@ Live: `https://gianlucagrillo.github.io/gymlog/`
 - **Workout summary** — when every exercise of the day is done: duration, sets,
   volume, PRs and the change versus the last time you trained that day.
 - **Consistency** — a calendar of gym days over the last 17 weeks, with the
-  current and best run of full weeks.
+  current and best run of full weeks. Tap any gym day to reopen its workout summary.
 - **Rep targets** — each open set row shows the reps your recent sessions
   predict at that weight (inverse of the Epley 1RM estimate, per set position
   so later sets account for fatigue); checked sets show how many reps you did

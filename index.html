@@ -248,6 +248,8 @@
   #gymlog .cal i.l2, #gymlog .cal-legend i.l2 { background: rgba(232,163,61,.62); }
   #gymlog .cal i.l3, #gymlog .cal-legend i.l3 { background: #E8A33D; }
   #gymlog .cal i.fut { background: transparent; }
+  #gymlog .cal i[data-day] { cursor: pointer; }
+  #gymlog .cal i[data-day]:active { outline: 1.5px solid #EDEBE3; outline-offset: -1.5px; }
   #gymlog .cal i.today { outline: 1.5px solid #EDEBE3; outline-offset: -1.5px; }
   #gymlog .cal-legend { display: flex; justify-content: flex-end; align-items: center; gap: 3px; font-size: 10px; color: #6E6C66; margin-top: 8px; }
   #gymlog .cal-legend i { width: 10px; height: 10px; }
@@ -1067,8 +1069,28 @@
   }
 
   // ---------- workout summary ----------
-  function showSummary(day) {
-    var t = todayStr();
+  // Rebuild a "day" for any date from what was logged, labelled after the routine day(s) it belongs to
+  // (active plan first, then the other saved plans).
+  function sessionForDate(date) {
+    var keys = {};
+    for (var k in entries) if ((entries[k] || []).some(function(s) { return s.date === date; })) keys[k] = 1;
+    var plans = [activePlan()].concat(store.list.filter(function(p) { return p !== activePlan(); }));
+    var labels = [], exs = [], seen = {};
+    plans.forEach(function(p) {
+      p.days.forEach(function(d) {
+        var hit = d.exercises.filter(function(e) { return keys[e.id] && !seen[e.id]; });
+        if (!hit.length) return;
+        hit.forEach(function(e) { seen[e.id] = 1; exs.push(e); });
+        if (labels.indexOf(d.label) < 0) labels.push(d.label);
+      });
+    });
+    Object.keys(keys).forEach(function(k) { if (!seen[k]) exs.push({ id: k, name: k }); });
+    return { label: labels.join(' + ') || 'Workout', exercises: exs };
+  }
+
+  function showSummary(day, date) {
+    var t = date || todayStr();
+    var isToday = t === todayStr();
     var sets = 0, vol = 0, ats = [], prs = [], rows = '';
     day.exercises.forEach(function(ex) {
       var h = sortedHist(ex.id);
@@ -1109,8 +1131,8 @@
       vs = '<div class="sum-vs">Volume <span class="' + (pct >= 0 ? 'up' : 'down') + '">' + (pct >= 0 ? '+' : '') + pct + '%</span> vs ' +
         esc(day.label) + ' on ' + fmtDate(prevDate) + ' (' + pSets + ' sets)</div>';
     }
-    var cyc = cycleInfo();
-    var dateTxt = new Date().toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long' }) +
+    var cyc = isToday ? cycleInfo() : null;
+    var dateTxt = new Date(t + 'T00:00:00').toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long' }) +
       (cyc && cyc.week ? ' · Week ' + cyc.week + ' / ' + cyc.weeks : '');
     var stat = function(v, label, hl) { return '<div class="sum-stat' + (hl ? ' hl' : '') + '"><b>' + v + '</b>' + label + '</div>'; };
 
@@ -1119,7 +1141,7 @@
       '<div class="sheet-bg" data-close></div>' +
       '<div class="sheet">' +
         '<div class="sheet-grab"></div>' +
-        '<div class="sum-kicker">Workout complete</div>' +
+        '<div class="sum-kicker">' + (isToday ? 'Workout complete' : 'Workout recap') + '</div>' +
         '<div class="sum-title">' + esc(day.label) + '</div>' +
         '<div class="sum-date">' + dateTxt + '</div>' +
         '<div class="sum-grid">' +
@@ -1136,7 +1158,7 @@
     wrap.hidden = false;
     document.body.style.overflow = 'hidden';
     wrap.querySelectorAll('[data-close]').forEach(function(el) { el.addEventListener('click', closeSheet); });
-    if (prs.length) confetti();
+    if (prs.length && isToday) confetti();
   }
   function closeSheet() {
     var wrap = document.getElementById('sheet');
@@ -1238,7 +1260,7 @@
         var n = perDay[d] || 0;
         var cls = d > today ? 'fut' : n >= 17 ? 'l3' : n >= 9 ? 'l2' : n > 0 ? 'l1' : '';
         if (d === today) cls += ' today';
-        cells += '<i class="' + cls + '" title="' + fmtDate(d) + (n ? ': ' + n + ' sets' : '') + '"></i>';
+        cells += '<i class="' + cls + '"' + (n && d <= today ? ' data-day="' + d + '"' : '') + ' title="' + fmtDate(d) + (n ? ': ' + n + ' sets' : '') + '"></i>';
       }
     }
 
@@ -1254,7 +1276,7 @@
 
     return '<div class="card">' +
       '<div class="ex-name">Consistency</div>' +
-      '<p class="hint" style="margin:2px 0 10px;">Gym days over the last ' + COLS + ' weeks. A full week = all ' + target + ' routine days.</p>' +
+      '<p class="hint" style="margin:2px 0 10px;">Gym days over the last ' + COLS + ' weeks. A full week = all ' + target + ' routine days. Tap a day to see its workout.</p>' +
       '<div class="stats">' +
         '<div class="stat">This week<b>' + thisWeek + ' / ' + target + '</b></div>' +
         '<div class="stat">Full weeks in a row<b>' + streak + '</b></div>' +
@@ -2397,6 +2419,10 @@
         '<p class="hint" style="margin:4px 0 10px;">Wipes every logged session. Your routine stays.</p>' +
         '<button class="danger" id="do-wipe" style="width:100%;">Delete all history</button>' +
       '</div>';
+
+    root.querySelectorAll('.cal i[data-day]').forEach(function(el) {
+      el.addEventListener('click', function() { var d = el.getAttribute('data-day'); showSummary(sessionForDate(d), d); });
+    });
 
     document.getElementById('do-export').addEventListener('click', function() {
       var blob = new Blob([JSON.stringify(exportPayload(), null, 2)], { type: 'application/json' });
