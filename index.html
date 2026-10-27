@@ -156,6 +156,24 @@
   #gymlog .sets-chip { color: #E8A33D; font-weight: 600; }
   #gymlog .card.active { border-color: rgba(232,163,61,.45); }
   #gymlog .today-line.complete { color: #7FBF7F; font-weight: 600; cursor: pointer; }
+  #gymlog .pp { background: #1C1F23; border: 1px solid #2A2E34; border-radius: 16px; padding: 12px 14px; margin-bottom: 12px; }
+  #gymlog .pp.done { border-color: #2F3B31; }
+  #gymlog .pp-head { display: flex; justify-content: space-between; align-items: center; cursor: pointer; font-size: 13px; }
+  #gymlog .pp-head b { font-size: 11px; letter-spacing: .08em; text-transform: uppercase; color: #E8A33D; }
+  #gymlog .pp.done .pp-head b { color: #7FBF7F; }
+  #gymlog .pp-head span { color: #8C8A82; font-size: 12px; }
+  #gymlog .pp-list { margin-top: 10px; }
+  #gymlog .pp-item { display: flex; align-items: center; gap: 10px; padding: 8px 0; border-top: 1px solid #23262B; font-size: 14px; color: #EDEBE3; cursor: pointer; }
+  #gymlog .pp-item input { width: 20px; height: 20px; accent-color: #7FBF7F; flex-shrink: 0; }
+  #gymlog .pp-item.on span { color: #6E6C66; text-decoration: line-through; }
+  #gymlog .pp-item small { display: block; font-size: 11px; color: #8C8A82; text-decoration: none; }
+  #gymlog .wu { background: #21242A; border-radius: 12px; padding: 9px 12px; margin: 0 0 12px; font-size: 12px; color: #B7B4A9; }
+  #gymlog .wu b { color: #E8A33D; font-size: 10px; letter-spacing: .08em; text-transform: uppercase; margin-right: 6px; }
+  #gymlog .wu .wu-sets { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 6px; }
+  #gymlog .wu .set-chip { font-size: 13px; }
+  #gymlog .wu small { display: block; color: #6E6C66; font-size: 11px; margin-top: 6px; }
+  #gymlog .sum-pp { font-size: 13px; color: #B7B4A9; margin: -4px 0 14px; }
+  #gymlog .sum-pp .ok { color: #7FBF7F; font-weight: 600; }
 
   /* ----- PR toast + confetti ----- */
   #gymlog .toast { position: fixed; left: 12px; right: 12px; top: max(12px, env(safe-area-inset-top)); z-index: 60; max-width: 496px; margin: 0 auto; background: #E8A33D; color: #16181B; border-radius: 16px; padding: 12px 16px; display: flex; gap: 12px; align-items: center; box-shadow: 0 12px 32px rgba(0,0,0,.5); animation: gl-drop .45s cubic-bezier(.2,1.4,.4,1); }
@@ -630,6 +648,75 @@
   function saveEntries() {
     try { localStorage.setItem(STORE_KEY, JSON.stringify(entries)); }
     catch (e) { alert('Save failed: browser storage is full or unavailable.'); }
+  }
+
+  // ---------- warm-up / cool-down ----------
+  // prepost = { 'YYYY-MM-DD': { pre: [item names ticked], post: [...] } }
+  var PREPOST_KEY = 'gymlog-prepost-v1';
+  var prepost = readJSON(PREPOST_KEY, {});
+  var ppOpen = {};
+  function savePrepost() {
+    try { localStorage.setItem(PREPOST_KEY, JSON.stringify(prepost)); } catch (e) {}
+  }
+  var PP_LISTS = {
+    preUpper: [['Light cardio', '5 min bike or rower, easy pace'], ['Arm circles + band dislocates', '10 forward, 10 back, 10 dislocates'],
+      ['Band pull-aparts', '2 × 15'], ['Scapular push-ups', '1 × 10']],
+    preLower: [['Light cardio', '5 min bike, easy pace'], ['Leg swings', '10 per leg, front-back and sideways'],
+      ['Bodyweight squats', '1 × 15, slow and deep'], ['Glute bridges', '1 × 15']],
+    postUpper: [['Doorway chest stretch', '30 s per side'], ['Lat stretch', '30 s per side, kneeling at a bench'],
+      ['Overhead triceps stretch', '30 s per side'], ['Slow breathing', '1 min, long exhales']],
+    postLower: [['Couch stretch', '30 s per side, quads and hip flexors'], ['Hamstring stretch', '30 s per side'],
+      ['Wall calf stretch', '30 s per side'], ['Easy walk', '2–3 min']]
+  };
+  function isLowerDay(day) {
+    return day.exercises.some(function(e) { return /quad|hamstring|glute/i.test(e.muscle || ''); });
+  }
+  function ppList(day, kind) { return PP_LISTS[kind + (isLowerDay(day) ? 'Lower' : 'Upper')]; }
+  function ppTicked(date, kind) { return (prepost[date] && prepost[date][kind]) || []; }
+  function ppCount(day, date, kind) {
+    var t = ppTicked(date, kind);
+    var list = ppList(day, kind);
+    return { done: list.filter(function(it) { return t.indexOf(it[0]) >= 0; }).length, total: list.length };
+  }
+  function ppCardHtml(day, kind, open) {
+    var date = todayStr(), t = ppTicked(date, kind), c = ppCount(day, date, kind);
+    var all = c.done === c.total;
+    var title = kind === 'pre' ? 'Warm-up' : 'Cool-down';
+    var sub = all ? '✓ done' : c.done ? c.done + ' / ' + c.total : (kind === 'pre' ? '≈5–8 min' : '≈3 min · optional');
+    return '<div class="pp' + (all ? ' done' : '') + '">' +
+      '<div class="pp-head" data-pp-toggle="' + kind + '"><b>' + title + '</b><span>' + sub + ' ' + (open ? '▴' : '▾') + '</span></div>' +
+      (open ? '<div class="pp-list">' + ppList(day, kind).map(function(it) {
+        var on = t.indexOf(it[0]) >= 0;
+        return '<label class="pp-item' + (on ? ' on' : '') + '"><input type="checkbox" data-pp="' + kind + '" data-item="' + esc(it[0]) + '"' + (on ? ' checked' : '') + '>' +
+          '<span>' + esc(it[0]) + '<small>' + esc(it[1]) + '</small></span></label>';
+      }).join('') + '</div>' : '') +
+    '</div>';
+  }
+
+  // Ramp-up sets before the working weight. Only for heavy lifts (rest ≥ 2 min) that are the
+  // first exercise of the day for that muscle; later ones are already warm. Never logged.
+  function warmupEligible(day, ex) {
+    if (ex.restSec < 120 || (ex.ss && ssGroup(day, ex).length > 1)) return false;
+    var idx = day.exercises.indexOf(ex);
+    return !day.exercises.slice(0, idx).some(function(e) { return e.muscle === ex.muscle; });
+  }
+  function warmupSets(day, ex, work) {
+    if (!(work > 0) || !warmupEligible(day, ex)) return null;
+    var step = /dumbbell/i.test(ex.name) ? 2 : 2.5;
+    var scheme = ex.restSec >= 150 ? [[0.4, 10], [0.6, 5], [0.8, 3]] : [[0.5, 10], [0.75, 5]];
+    var out = [], prevW = 0;
+    scheme.forEach(function(s) {
+      var w = Math.round(work * s[0] / step) * step;
+      if (w >= step && w < work && w > prevW) { out.push({ weight: w, reps: s[1] }); prevW = w; }
+    });
+    return out.length ? out : null;
+  }
+  function warmupInner(day, ex, work) {
+    var ws = warmupSets(day, ex, work);
+    if (!ws) return warmupEligible(day, ex) && !(work > 0) ? '<b>Warm-up sets</b>type the set 1 weight to see them' : '';
+    return '<b>Warm-up sets</b>for ' + work + ' kg' +
+      '<div class="wu-sets">' + ws.map(function(s) { return '<span class="set-chip">' + s.weight + ' kg × ' + s.reps + '</span>'; }).join('') + '</div>' +
+      '<small>Easy reps, ~1 min rest between them. Not logged — they don’t count in charts or PRs.</small>';
   }
 
   // ---------- routines: several saved plans, one active; `routine` is the active plan's days ----------
@@ -1136,6 +1223,15 @@
       (cyc && cyc.week ? ' · Week ' + cyc.week + ' / ' + cyc.weeks : '');
     var stat = function(v, label, hl) { return '<div class="sum-stat' + (hl ? ' hl' : '') + '"><b>' + v + '</b>' + label + '</div>'; };
 
+    var ppLine = '';
+    if (prepost[t] || isToday) {
+      var cPre = ppCount(day, t, 'pre'), cPost = ppCount(day, t, 'post');
+      var ppTxt = function(label, c) {
+        return c.done === c.total ? '<span class="ok">' + label + ' ✓</span>' : label + ' ' + c.done + '/' + c.total;
+      };
+      ppLine = '<div class="sum-pp">' + ppTxt('Warm-up', cPre) + ' · ' + ppTxt('Cool-down', cPost) + '</div>';
+    }
+
     var wrap = document.getElementById('sheet');
     wrap.innerHTML =
       '<div class="sheet-bg" data-close></div>' +
@@ -1151,6 +1247,7 @@
           stat(prs.length, prs.length === 1 ? 'Personal record' : 'Personal records', prs.length > 0) +
         '</div>' +
         vs +
+        ppLine +
         prs.map(function(n) { return '<div class="sum-pr">' + TROPHY + '<span>New PR on <b>' + esc(n) + '</b></span></div>'; }).join('') +
         rows +
         '<button data-close style="width:100%;margin-top:16px;">Done</button>' +
@@ -1781,6 +1878,16 @@
     } else if (day.exercises.length) {
       html += '<div class="today-line"><span>≈' + estimateMin(day) + ' min · ' + day.exercises.length + ' exercises</span></div>';
     }
+    if (day.exercises.length) {
+      var complete = prog.total && prog.done >= prog.total;
+      if (complete) {
+        // cool-down first once the workout is done; warm-up stays reachable, collapsed
+        html += ppCardHtml(day, 'post', ppOpen.post !== undefined ? ppOpen.post : ppCount(day, todayStr(), 'post').done < ppCount(day, todayStr(), 'post').total);
+      } else {
+        var preC = ppCount(day, todayStr(), 'pre');
+        html += ppCardHtml(day, 'pre', ppOpen.pre !== undefined ? ppOpen.pre : (!prog.started && preC.done < preC.total));
+      }
+    }
 
     // consecutive exercises sharing a superset letter are drawn as one group
     var runs = {};
@@ -1846,6 +1953,11 @@
       var strengths = setStrength(mvMap[movementKey(ex.name)], ex.sets);
       var setInputs = '<div class="set-head"><span>Set</span><span>kg</span><span>Reps</span><span></span></div>';
       if (!nDone) setInputs += '<div class="set-hint">Tap ✓ after each set — the rest timer starts on its own.' + (strengths ? ' ≈ = reps your recent sessions predict at that weight.' : '') + '</div>';
+      if (!nDone && warmupEligible(day, ex)) {
+        var w1 = draft && draft.w[0] !== undefined ? parseFloat(draft.w[0]) : (prevSess && prevSess.sets[0] ? prevSess.sets[0].weight : NaN);
+        var wuIn = warmupInner(day, ex, w1);
+        setInputs += '<div class="wu" id="wu-' + key + '"' + (wuIn ? '' : ' hidden') + '>' + wuIn + '</div>';
+      }
       for (var i = 1; i <= ex.sets; i++) {
         var isDone = i <= nDone;
         var isNext = i === nDone + 1;
@@ -1975,6 +2087,13 @@
         if (inp.id.indexOf('w-') === 0) {
           var t = inp.closest('.set-row').querySelector('.tgt[data-e]');
           if (t) t.textContent = fmtTarget(predReps(parseFloat(t.getAttribute('data-e')), parseFloat(inp.value)));
+          var wu = document.getElementById('wu-' + key);
+          if (wu && inp.id === 'w-' + key + '-1') {
+            var wex = day.exercises.find(function(e) { return e.id === key; });
+            var inner = warmupInner(day, wex, parseFloat(inp.value));
+            wu.innerHTML = inner;
+            wu.hidden = !inner;
+          }
         }
         var ts = todaySession(key);
         if (inp.type === 'checkbox' && ts) { ts.easy = inp.checked; saveEntries(); return; }
@@ -2011,6 +2130,27 @@
 
     var sumLine = root.querySelector('[data-summary]');
     if (sumLine) sumLine.addEventListener('click', function() { showSummary(day); });
+
+    root.querySelectorAll('[data-pp-toggle]').forEach(function(h) {
+      h.addEventListener('click', function() {
+        var kind = h.getAttribute('data-pp-toggle');
+        ppOpen[kind] = !h.parentNode.querySelector('.pp-list');
+        renderLog();
+      });
+    });
+    root.querySelectorAll('[data-pp]').forEach(function(cb) {
+      cb.addEventListener('change', function() {
+        var kind = cb.getAttribute('data-pp'), item = cb.getAttribute('data-item'), d = todayStr();
+        if (!prepost[d]) prepost[d] = {};
+        var arr = (prepost[d][kind] || []).filter(function(x) { return x !== item; });
+        if (cb.checked) arr.push(item);
+        prepost[d][kind] = arr;
+        savePrepost();
+        var c = ppCount(day, d, kind);
+        if (c.done === c.total) ppOpen[kind] = false;
+        renderLog();
+      });
+    });
 
     root.querySelectorAll('[data-pt]').forEach(function(g) {
       g.addEventListener('click', function(e) {
@@ -2359,7 +2499,8 @@
       exportedAt: new Date().toISOString(),
       routines: store,
       routine: routine,
-      entries: entries
+      entries: entries,
+      prepost: prepost
     };
   }
 
@@ -2498,6 +2639,10 @@
 
     entries = newEntries;
     saveEntries();
+    if (data && data.prepost && typeof data.prepost === 'object' && !Array.isArray(data.prepost)) {
+      prepost = data.prepost;
+      savePrepost();
+    }
     if (takeRoutine && hasRoutines) {
       // v5 backup: all saved routines
       data.routines.list.forEach(function(p) { fillMeta(p.days); });

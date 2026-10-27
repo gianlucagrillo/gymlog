@@ -37,6 +37,13 @@ Live: `https://gianlucagrillo.github.io/gymlog/`
   with a `PR` badge. Beating a record mid-workout pops a banner with confetti.
 - **Workout summary** — when every exercise of the day is done: duration, sets,
   volume, PRs and the change versus the last time you trained that day.
+- **Warm-up & cool-down** — a pre-workout checklist at the top of the day
+  (upper or lower variant) and a cool-down checklist once every set is done;
+  both show up in the summary and are included in the backup.
+- **Warm-up sets** — type the set 1 weight and the first exercise for each
+  muscle suggests ramp-up sets (e.g. 60 kg → 25×10, 35×5, 47.5×3), rounded to
+  the plates or dumbbells available. They aren't logged, so charts and PRs
+  stay clean.
 - **Consistency** — a calendar of gym days over the last 17 weeks, with the
   current and best run of full weeks. Tap any gym day to reopen its workout summary.
 - **Rep targets** — each open set row shows the reps your recent sessions
