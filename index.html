@@ -671,6 +671,7 @@
   function saveEntries() {
     try { localStorage.setItem(STORE_KEY, JSON.stringify(entries)); }
     catch (e) { alert('Save failed: browser storage is full or unavailable.'); }
+    markDirty();
   }
 
   // ---------- warm-up / cool-down ----------
@@ -680,6 +681,7 @@
   var ppOpen = {};
   function savePrepost() {
     try { localStorage.setItem(PREPOST_KEY, JSON.stringify(prepost)); } catch (e) {}
+    markDirty();
   }
   var PP_LISTS = {
     preUpper: [['Light cardio', '5 min bike or rower, easy pace'], ['Arm circles + band dislocates', '10 forward, 10 back, 10 dislocates'],
@@ -755,6 +757,7 @@
     activePlan().days = routine;
     try { localStorage.setItem(ROUTINES_KEY, JSON.stringify(store)); }
     catch (e) { alert('Could not save the routine.'); }
+    markDirty();
   }
   function loadRoutines() {
     var s = readJSON(ROUTINES_KEY, null);
@@ -892,9 +895,115 @@
     localStorage.setItem(BACKUP_KEY, new Date().toISOString());
     paintBackupNote();
   }
+  // ---------- GitHub sync ----------
+  // sync = { repo: 'owner/name', token, lastAt, lastErr, dirty }. Never part of a backup.
+  var SYNC_KEY = 'gymlog-sync-v1';
+  var SYNC_PATH = 'data.json';
+  var sync = readJSON(SYNC_KEY, {});
+  var syncing = false;
+  function saveSync() { try { localStorage.setItem(SYNC_KEY, JSON.stringify(sync)); } catch (e) {} }
+  function syncOn() { return !!(sync.repo && sync.token); }
+  function markDirty() { if (syncOn() && !sync.dirty) { sync.dirty = true; saveSync(); } }
+  function b64utf8(s) {
+    var bytes = new TextEncoder().encode(s), bin = '';
+    for (var i = 0; i < bytes.length; i += 0x8000) bin += String.fromCharCode.apply(null, bytes.subarray(i, i + 0x8000));
+    return btoa(bin);
+  }
+  function ghApi(method, body) {
+    return fetch('https://api.github.com/repos/' + sync.repo + '/contents/' + SYNC_PATH, {
+      method: method,
+      cache: 'no-store',
+      headers: { 'Authorization': 'Bearer ' + sync.token, 'Accept': 'application/vnd.github+json' },
+      body: body ? JSON.stringify(body) : undefined
+    });
+  }
+  function syncErrText(status) {
+    if (status === 401) return 'token not valid or expired';
+    if (status === 403 || status === 404) return 'no access to ' + sync.repo + ' (check repo name and token permissions)';
+    return 'GitHub error ' + status;
+  }
+  // The phone is the only writer, so the remote file is simply overwritten with local data.
+  function pushSync(manual) {
+    if (!syncOn() || syncing) return Promise.resolve(false);
+    if (!navigator.onLine) { if (manual) alert('You are offline. It will sync later.'); return Promise.resolve(false); }
+    syncing = true;
+    paintSyncState();
+    var content = b64utf8(JSON.stringify(exportPayload(), null, 1));
+    var put = function(sha) {
+      var now = new Date(), p2 = function(n) { return (n < 10 ? '0' : '') + n; };
+      var body = { message: 'Sync ' + todayStr() + ' ' + p2(now.getHours()) + ':' + p2(now.getMinutes()), content: content };
+      if (sha) body.sha = sha;
+      return ghApi('PUT', body);
+    };
+    var getSha = function() {
+      return ghApi('GET').then(function(r) {
+        if (r.status === 404) return null;
+        if (!r.ok) throw r.status;
+        return r.json().then(function(j) { return j.sha; });
+      });
+    };
+    var retry = function(r, left) {
+      if ((r.status !== 409 && r.status !== 422) || !left) return r;
+      // Remembered sha is out of date (e.g. the file was edited on GitHub): fetch the current one.
+      return new Promise(function(res) { setTimeout(res, 1500); })
+        .then(getSha).then(put).then(function(r2) { return retry(r2, left - 1); });
+    };
+    var first = sync.sha ? Promise.resolve(sync.sha) : getSha();
+    return first.then(put).then(function(r) { return retry(r, 2); }).then(function(r) {
+      if (!r.ok) throw r.status;
+      return r.json().catch(function() { return {}; });
+    }).then(function(j) {
+      sync.sha = (j && j.content && j.content.sha) || '';
+      sync.lastAt = new Date().toISOString();
+      sync.lastErr = '';
+      sync.dirty = false;
+      saveSync();
+      markBackedUp();
+      return true;
+    }).catch(function(err) {
+      sync.lastErr = typeof err === 'number' ? syncErrText(err) : 'network error';
+      saveSync();
+      if (manual) alert('Sync failed: ' + sync.lastErr + '.');
+      return false;
+    }).then(function(ok) {
+      syncing = false;
+      paintSyncState();
+      paintBackupNote();
+      return ok;
+    });
+  }
+  function syncAgo() {
+    if (!sync.lastAt) return 'never';
+    var m = Math.round((Date.now() - new Date(sync.lastAt).getTime()) / 60000);
+    if (m < 1) return 'just now';
+    if (m < 60) return m + ' min ago';
+    var h = Math.round(m / 60);
+    if (h < 24) return h + ' h ago';
+    var d = Math.round(h / 24);
+    return d + (d === 1 ? ' day' : ' days') + ' ago';
+  }
+  function paintSyncState() {
+    var el = document.getElementById('sync-state');
+    if (!el) return;
+    if (!syncOn()) { el.textContent = 'Not connected.'; el.style.color = ''; return; }
+    if (syncing) { el.textContent = 'Syncing…'; el.style.color = ''; return; }
+    var t = 'Last sync: ' + syncAgo() + '.';
+    if (sync.dirty) t += ' Changes waiting.';
+    if (sync.lastErr) t += ' Last attempt failed: ' + sync.lastErr + '.';
+    el.textContent = t;
+    el.style.color = sync.lastErr ? '#D97757' : '';
+  }
+
   function paintBackupNote() {
     var el = document.getElementById('backup-note');
     if (!el) return;
+    if (syncOn()) {
+      el.textContent = 'Synced to GitHub — ' + (syncing ? 'syncing…' : syncAgo()) + (sync.lastErr ? ' · last attempt failed' : '');
+      el.style.color = sync.lastErr ? '#D97757' : '';
+      el.style.cursor = sync.lastErr ? 'pointer' : '';
+      el.style.textDecoration = sync.lastErr ? 'underline' : '';
+      return;
+    }
     var hasData = Object.keys(entries).some(function(k) { return (entries[k] || []).length; });
     var d = daysSinceBackup();
     var txt = 'Saved on this device only — ';
@@ -1123,6 +1232,7 @@
     if (dayDone && !snap.dayDone) {
       stopTimer();
       setTimeout(function() { showSummary(f.day, null, true); }, 500);
+      pushSync();
     }
   }
 
@@ -2667,6 +2777,18 @@
       consistencyHtml() +
       weeklyVolumeHtml() +
       '<div class="card">' +
+        '<div class="ex-name">GitHub sync</div>' +
+        '<p class="hint" style="margin:4px 0 10px;">Saves everything to a private GitHub repo after each finished workout and whenever you leave the app with unsaved changes.</p>' +
+        (syncOn()
+          ? '<p class="hint" style="margin:0 0 10px;">Repo: <b style="color:#B7B4A9;">' + esc(sync.repo) + '</b><br><span id="sync-state"></span></p>' +
+            '<button id="sync-now" style="width:100%;">Sync now</button>' +
+            '<button class="ghost" id="sync-off" style="width:100%;margin-top:8px;">Disconnect</button>'
+          : '<input id="sync-repo" placeholder="owner/repo" value="gianlucagrillo/gymlog-data" autocapitalize="off" autocorrect="off" spellcheck="false">' +
+            '<input id="sync-token" type="password" placeholder="Fine-grained token (github_pat_…)" autocapitalize="off" autocorrect="off" spellcheck="false" style="margin-top:8px;">' +
+            '<button id="sync-connect" style="width:100%;margin-top:8px;">Connect and sync</button>' +
+            '<p class="hint" id="sync-state" style="margin:8px 0 0;"></p>') +
+      '</div>' +
+      '<div class="card">' +
         '<div class="ex-name">Backup</div>' +
         '<p class="hint" style="margin:4px 0 10px;">Your data lives in this browser only. Download a file every so often: if you switch phone or the browser clears its storage, without a backup it is gone.<br><b style="color:#B7B4A9;">' + backupTxt + '</b></p>' +
         '<button id="do-export" style="width:100%;">Download .json backup</button>' +
@@ -2688,6 +2810,34 @@
     root.querySelectorAll('.cal i[data-day]').forEach(function(el) {
       el.addEventListener('click', function() { var d = el.getAttribute('data-day'); showSummary(sessionForDate(d), d); });
     });
+
+    paintSyncState();
+    if (syncOn()) {
+      document.getElementById('sync-now').addEventListener('click', function() {
+        pushSync(true).then(function(ok) { if (ok) renderData(); });
+      });
+      document.getElementById('sync-off').addEventListener('click', function() {
+        if (!confirm('Disconnect from GitHub? The token is removed from this phone; data already on GitHub stays there.')) return;
+        sync = {};
+        saveSync();
+        paintBackupNote();
+        renderData();
+      });
+    } else {
+      document.getElementById('sync-connect').addEventListener('click', function() {
+        var repo = document.getElementById('sync-repo').value.trim().replace(/^https?:\/\/github\.com\//, '').replace(/\/+$/, '');
+        var token = document.getElementById('sync-token').value.trim();
+        if (!/^[\w.-]+\/[\w.-]+$/.test(repo)) { alert('Repo must look like owner/name.'); return; }
+        if (!token) { alert('Paste the token first.'); return; }
+        sync = { repo: repo, token: token, dirty: true };
+        saveSync();
+        pushSync(false).then(function(ok) {
+          if (!ok) { var keep = sync.lastErr || 'you seem to be offline'; sync = {}; saveSync(); alert('Not connected: ' + keep + '.'); }
+          paintBackupNote();
+          renderData();
+        });
+      });
+    }
 
     document.getElementById('do-export').addEventListener('click', function() {
       var blob = new Blob([JSON.stringify(exportPayload(), null, 2)], { type: 'application/json' });
@@ -2806,7 +2956,9 @@
   document.getElementById('tfull-stop').addEventListener('click', function() { stopTimer(); closeTimerFull(); });
 
   // Coming back to the app: refresh the timer and re-take the screen wake lock.
+  // Leaving or reopening the app pushes any pending changes.
   document.addEventListener('visibilitychange', function() {
+    if (sync.dirty) pushSync();
     if (document.visibilityState !== 'visible') return;
     if (timer && timerRemaining() > 0) { acquireWakeLock(); ensureTicker(); }
     paintTimers();
@@ -2814,8 +2966,10 @@
   });
   window.addEventListener('scroll', paintSticky, { passive: true });
   setInterval(paintSessClock, 15000);
+  window.addEventListener('online', function() { if (sync.dirty) pushSync(); });
 
   render();
+  if (sync.dirty) pushSync();
 })();
 </script>
 

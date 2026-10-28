@@ -68,14 +68,20 @@ Live: `https://gianlucagrillo.github.io/gymlog/`
   ring with the next set's weight and reps. Vibration and a beep when the rest
   is over.
 - **Backup** — JSON export/import, via file download or copy-paste.
+- **GitHub sync (v12)** — optional. Data → GitHub sync: enter a private repo
+  (`owner/name`) and a fine-grained token with *Contents: read and write* on that
+  repo only. The full backup is written to `data.json` in that repo after every
+  finished workout, when you leave or reopen the app with unsaved changes, and
+  with "Sync now". The token stays in this browser and is never part of a backup.
 
 ## Where the data lives
 
-All in `localStorage`, in that one browser. No account, no server, no sync
-between devices.
+All in `localStorage`, in that one browser. Without GitHub sync there is no
+server and no sync between devices.
 
 Which means **if you switch phone or the browser clears its storage, the data is
-gone**: every so often use Data → "Download .json backup".
+gone** unless GitHub sync is on: otherwise every so often use Data → "Download .json backup".
+To restore from GitHub, download `data.json` from the repo and import it.
 
 ## Deploy
 
