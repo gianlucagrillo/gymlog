@@ -77,6 +77,16 @@ Live: `https://gianlucagrillo.github.io/gymlog/`
   the wrong one can be moved from its history ("Move…"). The Aesthetic template
   puts free weights and cables first, with machine versions among the
   alternatives.
+- **Redesigned workout screen (v14)** — inspired by Dribbble gym-app concepts
+  (BetterFit, Gym Workout App, Hypertrofit). Today's list: a Monday–Sunday week
+  strip (done days, what's next in the rotation, rest days — set them in
+  Routine → Rest days; tap a past day for its recap, a future one to switch to
+  it), a "today" card with a sets ring and Start / Continue, and compact rows
+  with an equipment icon (barbell, dumbbell, cable, machine, bodyweight) and ⇄
+  to substitute. Tapping a row opens the exercise full screen: big title, last /
+  best e1RM / tip, sets as large pill rows, previous/next exercise; finishing an
+  exercise moves on to the next one, supersets alternate on their own. The rest
+  bar is restyled with Skip.
 - **GitHub sync (v12)** — optional. Data → GitHub sync: enter a private repo
   (`owner/name`) and a fine-grained token with *Contents: read and write* on that
   repo only. The full backup is written to `data.json` in that repo after every
