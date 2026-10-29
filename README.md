@@ -29,6 +29,12 @@ four sections:
 - **Settings** — training cycle, rest days, rest-end sound; GitHub sync,
   export / copy / restore backup, delete history.
 
+Motion (v16): screens fade in when you change tab or start a workout, the
+exercise that opens slides in, a ticked set pops with a short vibration (on
+phones that support it), and in the active workout you swipe left / right on the
+open exercise to move to the next / previous one. Tapped rows and buttons give a
+small press feedback. Everything is off when the phone asks for reduced motion.
+
 The details below describe the features, which are unchanged.
 
 ## What it does

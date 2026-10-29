@@ -801,6 +801,31 @@
   #gymlog .altbox { border-top: .5px solid var(--line); margin-top: 14px; padding-top: 12px; }
   #gymlog .altbox .ah { display: flex; justify-content: space-between; align-items: center; font-size: 10.5px; color: var(--acc); letter-spacing: .1em; text-transform: uppercase; font-weight: 500; margin-bottom: 8px; }
   #gymlog .sheet .row2 { display: flex; gap: 8px; margin-top: 16px; } #gymlog .sheet .row2 button { flex: 1; }
+
+  /* ---- motion ---- */
+  #gymlog .v-in { animation: gl-vin .34s cubic-bezier(.2,.8,.2,1); }
+  @keyframes gl-vin { from { opacity: 0; transform: translateY(12px); } }
+  #gymlog .xbody.x-in { animation: gl-xin .3s ease; }
+  #gymlog .xbody.x-in-l { animation: gl-xl .32s cubic-bezier(.2,.8,.2,1); }
+  #gymlog .xbody.x-in-r { animation: gl-xr .32s cubic-bezier(.2,.8,.2,1); }
+  @keyframes gl-xin { from { opacity: 0; transform: translateY(-6px); } }
+  @keyframes gl-xl { from { opacity: 0; transform: translateX(36px); } }
+  @keyframes gl-xr { from { opacity: 0; transform: translateX(-36px); } }
+  #gymlog .gli, #gymlog .exc, #gymlog .dayc, #gymlog .srow, #gymlog .wd, #gymlog .hero2 { transition: transform .18s cubic-bezier(.2,.8,.2,1), background-color .2s; }
+  #gymlog .gli:active, #gymlog .exc.collapsed:active, #gymlog .dayc:not(.open):active, #gymlog .srow.tap:active, #gymlog .wd:active { transform: scale(.975); }
+  #gymlog button { transition: transform .15s cubic-bezier(.2,.8,.2,1), background-color .2s, color .2s, box-shadow .2s; }
+  #gymlog button:active { transform: scale(.96); }
+  #gymlog .nav-btn { transition: background-color .25s, color .25s, transform .15s; }
+  #gymlog .exc .set-row.pop .set-check { animation: gl-pop .45s cubic-bezier(.2,1.4,.4,1), gl-glow .7s ease-out; }
+  @keyframes gl-glow { 0% { box-shadow: 0 0 0 0 rgba(255,161,98,.6); } 100% { box-shadow: 0 0 0 14px rgba(255,161,98,0); } }
+  #gymlog .exc .set-row.pop { animation: gl-rowflash .7s ease-out; }
+  @keyframes gl-rowflash { 0% { background: rgba(255,161,98,.16); } 100% { background: transparent; } }
+  #gymlog .timer-bar:not([hidden]) .timer-bar-inner { animation: gl-barin .35s cubic-bezier(.2,1.2,.4,1); }
+  @keyframes gl-barin { from { transform: translateY(18px); opacity: 0; } }
+  #gymlog .hero2 .ring circle { transition: stroke-dashoffset .6s ease; }
+  @media (prefers-reduced-motion: reduce) {
+    #gymlog *, #gymlog *::before, #gymlog *::after { animation: none !important; transition: none !important; }
+  }
 </style>
 </head>
 <body>
@@ -1750,6 +1775,7 @@
       (entries[key] = entries[key] || []).push(ts);
     }
     row.set.at = Date.now();
+    if (navigator.vibrate) navigator.vibrate(14);
     ts.sets.push(row.set);
     var easyEl = document.getElementById('easy-' + key);
     ts.easy = !!(easyEl && easyEl.checked);
@@ -2765,6 +2791,15 @@
     else if (view === 'edit') renderEdit();
     else renderData();
     app.classList.toggle('in-session', view === 'log' && inSession);
+    // a new screen (tab, or today ↔ active workout) fades in; re-renders of the same screen don't
+    var screen = view + (view === 'log' ? (inSession ? ':s' : ':t') : '');
+    if (screen !== lastScreen) {
+      var v = document.getElementById('view');
+      v.classList.remove('v-in');
+      void v.offsetWidth;
+      v.classList.add('v-in');
+      lastScreen = screen;
+    }
     paintSticky();
     paintBackupNote();
     paintCycle();
@@ -2946,6 +2981,7 @@
   var MORE = '<svg viewBox="0 0 24 24" fill="currentColor"><circle cx="5" cy="12" r="1.6"/><circle cx="12" cy="12" r="1.6"/><circle cx="19" cy="12" r="1.6"/></svg>';
   var lastModels = {};
   var inSession = false;   // the active-workout screen is open (otherwise: today's overview)
+  var lastScreen = null, lastFocus = null, swipeDir = null;   // for transitions
 
   function ringSvg(pct, size, stroke) {
     var r = (size - stroke) / 2, c = 2 * Math.PI * r;
@@ -3082,10 +3118,11 @@
         var tip = '';
         if (m.hint && lastS && tw) tip = (lastS.easy ? 'Marked too easy last time' : 'Top of the range last time') + ' — try <b>' + tw + ' kg</b>';
         else if (lastS) tip = 'Last time ' + esc(lastS.sets.map(function(s) { return fmtW(s.weight).replace('kg', '') + (s.reps ? '×' + s.reps : ''); }).join(' · '));
-        h += (tip && !m.exComplete ? '<div class="tip">' + SPARK + '<span>' + tip + '</span></div>' : '') +
+        h += '<div class="xbody">' + (tip && !m.exComplete ? '<div class="tip">' + SPARK + '<span>' + tip + '</span></div>' : '') +
           '<div id="hist-' + m.key + '">' + m.setInputs + '</div>' +
           '<div class="xfoot"><button class="ghost" data-log="' + m.key + '" data-setcount="' + ex.sets + '">' + (m.exComplete ? 'Update session' : 'Log all sets') + '</button></div>' +
-          '<div class="draft-note" id="draft-' + m.key + '"' + (m.draft && !m.todaySess ? '' : ' hidden') + '>Not saved yet — tap ✓ or Log all sets</div>';
+          '<div class="draft-note" id="draft-' + m.key + '"' + (m.draft && !m.todaySess ? '' : ' hidden') + '>Not saved yet — tap ✓ or Log all sets</div>' +
+          (!prefs.swiped && models.length > 1 ? '<p class="hint" style="text-align:center;margin:10px 0 0;">‹ swipe sideways for the previous / next exercise ›</p>' : '') + '</div>';
       }
       h += '</div>';
     });
@@ -3361,6 +3398,13 @@
     root.innerHTML = html;
     paintSessClock();
     paintSticky();
+    // the exercise that just opened slides in (from the side when reached by swiping)
+    if (inSession && focusKey !== lastFocus) {
+      var xb = root.querySelector('.exc.open .xbody');
+      if (xb && lastFocus) xb.classList.add(swipeDir === 'l' ? 'x-in-l' : swipeDir === 'r' ? 'x-in-r' : 'x-in');
+    }
+    lastFocus = inSession ? focusKey : null;
+    swipeDir = null;
 
     var enter = function(key) {
       if (!inSession) listScroll = window.scrollY;
@@ -3377,6 +3421,28 @@
     root.querySelectorAll('[data-expand]').forEach(function(el) {
       el.addEventListener('click', function() { enter(el.getAttribute('data-expand')); });
     });
+    // swipe left / right on the open exercise to move to the next / previous one
+    var openCard = inSession && root.querySelector('.exc.open');
+    if (openCard) {
+      var sx = 0, sy = 0, st = 0, ok = false;
+      openCard.addEventListener('touchstart', function(e) {
+        var t = e.touches[0];
+        ok = e.touches.length === 1 && !e.target.closest('input, button, select, textarea, label');
+        sx = t.clientX; sy = t.clientY; st = Date.now();
+      }, { passive: true });
+      openCard.addEventListener('touchend', function(e) {
+        if (!ok) return;
+        var t = e.changedTouches[0], dx = t.clientX - sx, dy = t.clientY - sy;
+        if (Math.abs(dx) < 60 || Math.abs(dy) > Math.abs(dx) * 0.6 || Date.now() - st > 800) return;
+        var idx = models.findIndex(function(m) { return m.key === focusKey; });
+        var j = idx + (dx < 0 ? 1 : -1);
+        if (j < 0 || j >= models.length) return;
+        swipeDir = dx < 0 ? 'l' : 'r';
+        if (!prefs.swiped) { prefs.swiped = true; savePrefs(); }
+        if (navigator.vibrate) navigator.vibrate(8);
+        enter(models[j].key);
+      });
+    }
     root.querySelectorAll('[data-back]').forEach(function(el) {
       el.addEventListener('click', function() {
         inSession = false;
