@@ -35,6 +35,19 @@ phones that support it), and in the active workout you swipe left / right on the
 open exercise to move to the next / previous one. Tapped rows and buttons give a
 small press feedback. Everything is off when the phone asks for reduced motion.
 
+Progression coach (v17): instead of a "too easy" flag, the app reads the last
+session of each exercise and decides — double progression: every working set at
+the top of the rep range → go up one step (2 kg dumbbells, 2.5 kg bars and
+machines; two steps if every set beat the top by 3+); the first set, or two
+sets, under the bottom of the range → one step down; only the last set under →
+normal fatigue, stay; three sessions at the same weight without more reps
+(counting the same exercise on other days) → one step down and work back up to
+the top of the range; sets at mixed weights → do them all at the heaviest; a
+break of 3+ weeks → ease back in one step lower; otherwise stay and beat last
+time by a rep per set. The suggested weight and rep targets are pre-filled in
+the set table (the Previous column keeps last time's numbers), a line above
+the table says why, and Today shows each target with ↑ / ↓.
+
 The details below describe the features, which are unchanged.
 
 ## What it does

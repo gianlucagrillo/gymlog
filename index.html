@@ -616,6 +616,10 @@
   #gymlog .tip { margin: 0 6px 10px; font-size: 12px; color: var(--t2); display: flex; gap: 7px; align-items: flex-start; line-height: 1.4; }
   #gymlog .tip svg { width: 13px; height: 13px; color: var(--acc); flex-shrink: 0; margin-top: 2px; }
   #gymlog .tip b { color: var(--t1); font-weight: 500; }
+  #gymlog .tip.coach-up svg { color: var(--acc); } #gymlog .tip.coach-down svg, #gymlog .tip.coach-back svg { color: var(--bad); }
+  #gymlog .tip.coach-up, #gymlog .tip.coach-down, #gymlog .tip.coach-back { background: rgba(255,255,255,.04); border-radius: 12px; padding: 8px 10px; margin: 0 2px 10px; }
+  #gymlog .gli .r .ar { display: inline-flex; vertical-align: middle; margin-right: 4px; } #gymlog .gli .r .ar svg { width: 13px; height: 13px; }
+  #gymlog .gli .r .ar.up { color: var(--acc); } #gymlog .gli .r .ar.down { color: var(--bad); }
   #gymlog .exc .wu { background: transparent; padding: 0 6px; margin: 0 0 10px; font-size: 12px; color: var(--t2); }
   #gymlog .exc .wu b { color: var(--t3); font-weight: 500; font-size: 10px; letter-spacing: .1em; }
   #gymlog .exc .wu .wu-sets { display: inline-flex; gap: 6px; margin: 0 0 0 4px; flex-wrap: wrap; }
@@ -2978,6 +2982,8 @@
   var CHEV_R = '<svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"/></svg>';
   var CHEV_D = '<svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg>';
   var SPARK = '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l2.2 6.8L21 11l-6.8 2.2L12 20l-2.2-6.8L3 11l6.8-2.2z"/></svg>';
+  var ARR_UP = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19V5M6 11l6-6 6 6"/></svg>';
+  var ARR_DOWN = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M6 13l6 6 6-6"/></svg>';
   var MORE = '<svg viewBox="0 0 24 24" fill="currentColor"><circle cx="5" cy="12" r="1.6"/><circle cx="12" cy="12" r="1.6"/><circle cx="19" cy="12" r="1.6"/></svg>';
   var lastModels = {};
   var inSession = false;   // the active-workout screen is open (otherwise: today's overview)
@@ -2991,15 +2997,69 @@
         'stroke-dasharray="' + c.toFixed(1) + '" stroke-dashoffset="' + (c * (1 - Math.min(1, pct / 100))).toFixed(1) + '" transform="rotate(-90 ' + size / 2 + ' ' + size / 2 + ')"/>' : '') + '</svg>';
   }
   function topSet(sess) { return sess ? sess.sets.reduce(function(b, s) { return !b || (s.weight || 0) > (b.weight || 0) ? s : b; }, null) : null; }
-  // Weight to aim for today: the last finished session's top weight, one step up when it was
-  // at the top of the rep range (or marked too easy).
+
+  // ---------- progression coach ----------
+  // Double progression on the last session before today: every working set at the top of the rep
+  // range → more weight; the first set (or two sets) under the bottom → less; a plateau over three
+  // sessions → a step down to build back up; otherwise the same weight with one more rep per set.
+  function coach(ex, hist, same) {
+    var today = todayStr();
+    var before = hist.filter(function(h) { return h.date < today; });
+    var L = before[before.length - 1];
+    var n = ex.sets, lo = ex.repMin, hi = ex.repMax, step = weightStep(ex);
+    var fill = function(r) { var a = []; for (var i = 0; i < n; i++) a.push(r); return a; };
+    var B = function(w) { return '<b>' + (w === 0 ? 'bodyweight' : round1(w) + ' kg') + '</b>'; };
+    if (!L || !L.sets.length) {
+      var aim = Math.max(lo, hi - 2);
+      return { act: 'new', weight: null, reps: fill(aim), msg: 'First time: pick a weight you can do for about <b>' + aim + '</b> clean reps.' };
+    }
+    var topW = Math.max.apply(null, L.sets.map(function(s) { return s.weight || 0; }));
+    var work = L.sets.filter(function(s) { return (s.weight || 0) === topW; });
+    var reps = work.map(function(s) { return s.reps || 0; });
+    var gap = Math.round((new Date(today + 'T00:00:00') - new Date(L.date + 'T00:00:00')) / 86400000);
+    var down = function(w) { return Math.max(step, round1(w - step)); };
+    var holdReps = [];
+    for (var i = 0; i < n; i++) holdReps.push(Math.min(hi, Math.max(lo, (reps[i] != null ? reps[i] : reps[reps.length - 1]) + 1)));
+    var avgReps = function(s) {
+      var t = Math.max.apply(null, s.sets.map(function(x) { return x.weight || 0; }));
+      var r = s.sets.filter(function(x) { return (x.weight || 0) === t; }).map(function(x) { return x.reps || 0; });
+      return { w: t, r: r.length ? avg(r) : 0 };
+    };
+
+    if (!reps.some(function(r) { return r > 0; })) {
+      return { act: 'hold', weight: topW, reps: fill(lo), msg: 'No reps were logged last time — log them and the app can tell you when to go up.' };
+    }
+    if (gap >= 21 && topW > 0) {
+      return { act: 'back', weight: down(topW), reps: fill(hi), msg: 'Back after ' + gap + ' days — ease in at ' + B(down(topW)) + ', then build up again.' };
+    }
+    if (L.sets.length > work.length) {
+      return { act: 'hold', weight: topW, reps: fill(reps[0] || lo), msg: 'Last time only ' + work.length + ' of ' + L.sets.length + ' sets were at ' + B(topW) + ' — do all ' + n + ' there; warm-up sets aren\'t logged.' };
+    }
+    if (reps.length >= n && reps.every(function(r) { return r >= hi; })) {
+      if (topW === 0) return { act: 'up', weight: 0, reps: fill(hi), msg: 'Top of the range on every set — add a little weight or slow the reps down.' };
+      var jump = reps.every(function(r) { return r >= hi + 3; }) ? 2 : 1;
+      var upW = round1(topW + step * jump);
+      return { act: 'up', weight: upW, reps: fill(lo), msg: 'Every set hit ' + hi + (jump > 1 ? '+3' : '') + ' reps last time — go up to ' + B(upW) + ' and aim for ' + lo + '+.' };
+    }
+    var under = reps.filter(function(r) { return r < lo; }).length;
+    if (reps[0] < lo || under >= 2) {
+      if (topW === 0) return { act: 'down', weight: 0, reps: fill(lo), msg: (reps[0] < lo ? 'Set 1' : 'Two sets') + ' fell below ' + lo + ' reps — use assistance or an easier variation.' };
+      return { act: 'down', weight: down(topW), reps: fill(lo), msg: (reps[0] < lo ? 'Set 1' : 'Two sets') + ' fell below ' + lo + ' reps last time — drop to ' + B(down(topW)) + '.' };
+    }
+    // plateau: also counts the same exercise logged on other days / routines (same name)
+    var pool = (same && same.length ? same : before).filter(function(h) { return h.date < today; });
+    var last3 = pool.slice(-3).map(avgReps);
+    if (last3.length === 3 && topW > 0 && last3.every(function(x) { return x.w === topW; }) && last3[2].r <= last3[0].r + 0.01) {
+      return { act: 'down', weight: down(topW), reps: fill(hi), msg: 'No progress in 3 sessions at ' + B(topW) + ' — drop to ' + B(down(topW)) + ', work up to ' + hi + ' reps on every set, then go back up.' };
+    }
+    if (under === 1) {
+      return { act: 'hold', weight: topW, reps: holdReps, msg: 'Last set dipped under ' + lo + ' — normal fatigue. Stay at ' + B(topW) + '.' };
+    }
+    return { act: 'hold', weight: topW, reps: holdReps, msg: 'Stay at ' + B(topW) + ' and beat last time: <b>' + holdReps.join(' · ') + '</b> reps.' + (gap >= 10 ? ' (' + gap + ' days since the last one.)' : '') };
+  }
+  // Weight to aim for today, from the coach.
   function targetWeight(m) {
-    var before = m.hist.filter(function(h) { return h.date < todayStr(); });
-    var last = before[before.length - 1];
-    if (!last) return null;
-    var top = topSet(last);
-    if (!top || !(top.weight > 0)) return top ? 0 : null;
-    return progressionHint(m.ex, last) ? round1(top.weight + weightStep(m.ex)) : top.weight;
+    return m.coach ? m.coach.weight : null;
   }
   function musclesOf(day) {
     var seen = [];
@@ -3065,7 +3125,9 @@
       } else {
         cap = (m.nDone ? m.nDone + ' of ' + ex.sets + ' sets · ' : '') + metaOf(ex) + (m.vars.length > 1 && !m.todaySess ? ' · ' + (m.vars.length - 1) + (m.vars.length > 2 ? ' alternatives' : ' alternative') : '');
         var tw = targetWeight(m);
-        right = tw == null ? '' : tw === 0 ? 'BW' : tw + '<small>kg</small>';
+        var act = m.coach && m.coach.act;
+        var arrow = act === 'up' ? '<i class="ar up">' + ARR_UP + '</i>' : act === 'down' || act === 'back' ? '<i class="ar down">' + ARR_DOWN + '</i>' : '';
+        right = tw == null ? '' : arrow + (tw === 0 ? 'BW' : tw + '<small>kg</small>');
       }
       h += '<div class="gli' + (m.exComplete ? ' done' : '') + '" data-card="' + m.key + '" data-open="' + m.key + '">' +
         '<div class="tile' + (m.exComplete ? ' ok' : '') + '">' + (m.exComplete ? CHECK : EQ_ICON[eqOf(ex.name)]) + '</div>' +
@@ -3112,13 +3174,10 @@
           '<button class="sm" data-more="' + m.key + '" aria-label="Details">' + MORE + '</button>' +
         '</div>';
       if (open) {
-        var tw = targetWeight(m);
-        var before = m.hist.filter(function(x) { return x.date < todayStr(); });
-        var lastS = before[before.length - 1];
-        var tip = '';
-        if (m.hint && lastS && tw) tip = (lastS.easy ? 'Marked too easy last time' : 'Top of the range last time') + ' — try <b>' + tw + ' kg</b>';
-        else if (lastS) tip = 'Last time ' + esc(lastS.sets.map(function(s) { return fmtW(s.weight).replace('kg', '') + (s.reps ? '×' + s.reps : ''); }).join(' · '));
-        h += '<div class="xbody">' + (tip && !m.exComplete ? '<div class="tip">' + SPARK + '<span>' + tip + '</span></div>' : '') +
+        var c = m.coach || {};
+        var cIco = c.act === 'up' ? ARR_UP : (c.act === 'down' || c.act === 'back') ? ARR_DOWN : SPARK;
+        var tip = c.msg || '';
+        h += '<div class="xbody">' + (tip && !m.exComplete ? '<div class="tip coach-' + (c.act || 'hold') + '">' + cIco + '<span>' + tip + '</span></div>' : '') +
           '<div id="hist-' + m.key + '">' + m.setInputs + '</div>' +
           '<div class="xfoot"><button class="ghost" data-log="' + m.key + '" data-setcount="' + ex.sets + '">' + (m.exComplete ? 'Update session' : 'Log all sets') + '</button></div>' +
           '<div class="draft-note" id="draft-' + m.key + '"' + (m.draft && !m.todaySess ? '' : ' hidden') + '>Not saved yet — tap ✓ or Log all sets</div>' +
@@ -3295,10 +3354,11 @@
       var nDone = todaySess ? todaySess.sets.length : 0;
       var exComplete = exDone(ex);
       var strengths = setStrength(mvMap[movementKey(ex.name)], ex.sets);
+      var plan = coach(ex, hist, (mvMap[movementKey(ex.name)] || {}).sessions);
       var setInputs = '';
       if (!nDone) setInputs += '<div class="set-hint">Tap ✓ after each set — the rest timer starts on its own.' + (strengths ? ' ≈ = reps your recent sessions predict at that weight.' : '') + '</div>';
       if (!nDone && warmupEligible(day, ex)) {
-        var w1 = draft && draft.w[0] !== undefined ? parseFloat(draft.w[0]) : (prevSess && prevSess.sets[0] ? prevSess.sets[0].weight : NaN);
+        var w1 = draft && draft.w[0] !== undefined ? parseFloat(draft.w[0]) : (plan.weight != null ? plan.weight : prevSess && prevSess.sets[0] ? prevSess.sets[0].weight : NaN);
         var wuIn = warmupInner(day, ex, w1);
         setInputs += '<div class="wu" id="wu-' + key + '"' + (wuIn ? '' : ' hidden') + '>' + wuIn + '</div>';
       }
@@ -3309,6 +3369,9 @@
         var src = isDone ? todaySess.sets[i - 1] : (prevSess && prevSess.sets[i - 1]) || null;
         var pw = src && src.weight != null ? src.weight : '';
         var pr = src && src.reps != null ? src.reps : '';
+        // sets still to do start from the coach's weight and rep target
+        if (!isDone && plan.weight != null) pw = plan.weight;
+        if (!isDone && plan.reps && plan.reps[i - 1] != null) pr = plan.reps[i - 1];
         if (!isDone && draft && draft.w[i - 1] !== undefined) pw = draft.w[i - 1];
         if (!isDone && draft && draft.r[i - 1] !== undefined) pr = draft.r[i - 1];
         var pop = justChecked && justChecked.key === key && justChecked.i === i;
@@ -3341,10 +3404,6 @@
             '<div class="step-pair">' + stepBtn(key, i, 'r', -1) + stepBtn(key, i, 'r', 1) + '</div><span></span></div>';
         }
       }
-      setInputs +=
-        '<label class="easy-check" style="width:auto;margin:2px 0 10px;">' +
-          '<input type="checkbox" id="easy-' + key + '" data-draft="' + key + '" data-setcount="' + ex.sets + '"' + ((draft && draft.easy) || (todaySess && todaySess.easy) ? ' checked' : '') + '> Too easy — add weight next time' +
-        '</label>';
 
       var statsHtml = '';
       if (hist.length) {
@@ -3381,7 +3440,7 @@
       var inRun = !!runs[exIdx];
       var ssLabel = inRun ? esc(ex.ss) + (day.exercises.slice(0, exIdx).filter(function(e) { return e.ss === ex.ss; }).length + 1) : '';
       models.push({ ex: ex, key: key, idx: exIdx, vars: vars, mainId: mainId, hist: hist, last: last, lastLabel: lastLabel,
-        deltaHtml: deltaHtml, hint: hint, prHtml: prHtml, isPr: isPr, best: best, setInputs: setInputs, statsHtml: statsHtml,
+        deltaHtml: deltaHtml, hint: hint, coach: plan, prHtml: prHtml, isPr: isPr, best: best, setInputs: setInputs, statsHtml: statsHtml,
         sessionsHtml: sessionsHtml, exComplete: exComplete, nDone: nDone, draft: draft, todaySess: todaySess,
         run: runs[exIdx] || '', ssLabel: ssLabel, metaExtra: metaExtra });
     });
@@ -3618,7 +3677,8 @@
           return;
         }
         var snap = snapshot(key);
-        var easy = document.getElementById('easy-' + key).checked;
+        var easyEl = document.getElementById('easy-' + key);
+        var easy = !!(easyEl && easyEl.checked);
         if (!entries[key]) entries[key] = [];
         var existing = todaySession(key);
         var now = Date.now();
