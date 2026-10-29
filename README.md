@@ -68,6 +68,15 @@ Live: `https://gianlucagrillo.github.io/gymlog/`
   ring with the next set's weight and reps. Vibration and a beep when the rest
   is over.
 - **Backup** — JSON export/import, via file download or copy-paste.
+- **Alternatives (v13)** — each exercise can list equivalent alternatives, each
+  with its own sets, reps, rest and history (Routine → "+ Alternative"). On the
+  workout screen, tap the exercise name (▾) to open a menu with the planned
+  exercise and its alternatives, with their last session, and pick one for
+  today; once a set is logged the choice is locked for the day. Recaps, weekly
+  sets and strength stats pick up whichever one was done. A session logged on
+  the wrong one can be moved from its history ("Move…"). The Aesthetic template
+  puts free weights and cables first, with machine versions among the
+  alternatives.
 - **GitHub sync (v12)** — optional. Data → GitHub sync: enter a private repo
   (`owner/name`) and a fine-grained token with *Contents: read and write* on that
   repo only. The full backup is written to `data.json` in that repo after every
