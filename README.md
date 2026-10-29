@@ -5,6 +5,32 @@ home screen, it works offline, and it stores everything locally.
 
 Live: `https://gianlucagrillo.github.io/gymlog/`
 
+## Design (v15)
+
+Rebuilt look, one design system for every screen: Satoshi type, a warm "ember"
+palette (amber → orange gradient on near-black), frosted-glass panels over a
+soft mesh gradient with a light film grain, and a floating glass tab bar with
+four sections:
+
+- **Workout** — *Today*: week strip (done days, rest days, what's next), the
+  day's card with a sets ring and Start / Continue, warm-up / cool-down, and the
+  exercise list with the weight to aim for today. *Active workout*: every
+  exercise on one page as a glass card, the current one open with a
+  Set · Previous · kg · Reps · ✓ table, −/+ steppers, a tip, warm-up sets and
+  Log all; ⇄ to substitute, ⋯ for chart, stats and history (move / delete).
+  Finish ends the session and opens the recap.
+- **Progress** — Overview (this week, full weeks in a row, month calendar —
+  tap a day for its recap — and sets per muscle vs plan), Lifts (every lift with
+  est. 1RM and a sparkline, chart of the selected one), Balance (strength
+  balance and rep predictor).
+- **Routine** — the active routine's days as cards; tap an exercise to edit it
+  in a sheet (numbers, muscle, superset, priority, alternatives, order). Change
+  switches, renames, duplicates, creates or deletes routines.
+- **Settings** — training cycle, rest days, rest-end sound; GitHub sync,
+  export / copy / restore backup, delete history.
+
+The details below describe the features, which are unchanged.
+
 ## What it does
 
 - **Multi-day routine** — editable from inside the app: add, rename, reorder or
