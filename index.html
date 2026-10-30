@@ -839,6 +839,49 @@
   #gymlog .timer-bar:not([hidden]) .timer-bar-inner { animation: gl-barin .35s cubic-bezier(.2,1.2,.4,1); }
   @keyframes gl-barin { from { transform: translateY(18px); opacity: 0; } }
   #gymlog .hero2 .ring circle { transition: stroke-dashoffset .6s ease; }
+
+  /* v19: body, protein, muscle map, weekly report */
+  #gymlog .gstat em { display: block; font-style: normal; font-size: 11.5px; color: var(--t2); margin-top: 4px; line-height: 1.35; }
+  #gymlog .wide { width: 100%; margin-top: 12px; }
+  #gymlog .mchips { display: flex; gap: 6px; overflow-x: auto; margin: 0 0 10px; padding: 0 2px; scrollbar-width: none; }
+  #gymlog .mchips::-webkit-scrollbar { display: none; }
+  #gymlog .mchips button { flex: 0 0 auto; background: var(--glass); color: var(--t2); box-shadow: none; border: .5px solid var(--edge); font-weight: 500; font-size: 12.5px; padding: 7px 13px; }
+  #gymlog .mchips button.on { background: rgba(255,255,255,.14); color: var(--t1); }
+  #gymlog .mmap { border-radius: 24px; padding: 14px 12px 12px; }
+  #gymlog .mmap svg { display: block; width: 100%; max-width: 330px; margin: 0 auto; }
+  #gymlog .mmap text { fill: var(--t3); font-size: 6.5px; letter-spacing: .14em; }
+  #gymlog .mleg { display: flex; justify-content: center; gap: 14px; font-size: 11px; color: var(--t3); margin-top: 6px; }
+  #gymlog .mleg i { display: inline-block; width: 10px; height: 10px; border-radius: 3px; margin-right: 5px; vertical-align: -1px; }
+  #gymlog .wrep { border-radius: 22px; padding: 16px 18px; margin-top: 12px; }
+  #gymlog .wrep h3 { margin: 0; font-size: 10.5px; color: var(--t3); letter-spacing: .1em; text-transform: uppercase; font-weight: 500; }
+  #gymlog .wrep ul { list-style: none; margin: 10px 0 0; padding: 0; }
+  #gymlog .wrep li { font-size: 13px; color: var(--t2); line-height: 1.45; padding: 8px 0; border-top: .5px solid var(--line); }
+  #gymlog .wrep li:first-child { border-top: 0; padding-top: 0; }
+  #gymlog .wrep li b { color: var(--t1); font-weight: 600; }
+  #gymlog .prot { border-radius: 22px; padding: 14px 16px; margin-top: 12px; }
+  #gymlog .prot .r1 { display: flex; justify-content: space-between; align-items: baseline; }
+  #gymlog .prot .r1 span { font-size: 10.5px; color: var(--t3); letter-spacing: .1em; text-transform: uppercase; font-weight: 500; }
+  #gymlog .prot .r1 b { font-size: 22px; font-weight: 300; letter-spacing: -.02em; cursor: pointer; }
+  #gymlog .prot .r1 b small { font-size: 12px; color: var(--t3); font-weight: 400; }
+  #gymlog .prot .pbar { height: 5px; border-radius: 3px; background: var(--line); margin: 10px 0 12px; overflow: hidden; }
+  #gymlog .prot .pbar u { display: block; height: 100%; background: var(--grad); border-radius: 3px; transition: width .4s ease; }
+  #gymlog .prot .btns { display: flex; gap: 6px; }
+  #gymlog .prot .btns button { flex: 1; padding: 8px 0; font-size: 13px; }
+  #gymlog .prot .why { display: block; font-size: 11px; color: var(--t3); margin-top: 9px; }
+  #gymlog .mgrid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px 10px; margin-top: 12px; }
+  #gymlog .mgrid label { font-size: 11px; color: var(--t3); }
+  #gymlog .mgrid input { margin-top: 4px; }
+  #gymlog .mgrid small { display: block; font-size: 10.5px; color: var(--t3); margin-top: 4px; line-height: 1.3; }
+  #gymlog .phcmp { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+  #gymlog .phcmp figure { margin: 0; border-radius: 18px; overflow: hidden; position: relative; background: var(--tile); aspect-ratio: 3 / 4; cursor: pointer; }
+  #gymlog .phcmp img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  #gymlog .phcmp figcaption { position: absolute; left: 8px; bottom: 8px; font-size: 11px; background: rgba(0,0,0,.55); color: #fff; padding: 3px 9px; border-radius: 99px; }
+  #gymlog .phstrip { display: flex; gap: 6px; overflow-x: auto; margin-top: 8px; scrollbar-width: none; }
+  #gymlog .phstrip img { width: 54px; height: 72px; object-fit: cover; border-radius: 10px; flex: 0 0 auto; cursor: pointer; opacity: .8; }
+  #gymlog .phstrip img.sel { opacity: 1; box-shadow: 0 0 0 2px var(--acc); }
+  #gymlog .addph { display: block; text-align: center; margin-top: 10px; padding: 11px; border-radius: 99px; background: var(--glass); border: .5px solid var(--edge); color: var(--t1); font-size: 14px; font-weight: 500; cursor: pointer; }
+  #gymlog .phbig { width: 100%; border-radius: 16px; display: block; }
+  #gymlog .seg.sm { margin: 0 0 10px; }
   @media (prefers-reduced-motion: reduce) {
     #gymlog *, #gymlog *::before, #gymlog *::after { animation: none !important; transition: none !important; }
   }
@@ -1246,6 +1289,21 @@
     try { localStorage.setItem(PREPOST_KEY, JSON.stringify(prepost)); } catch (e) {}
     markDirty();
   }
+
+  // ---------- body: measurements and protein (synced); progress photos live in IndexedDB only ----------
+  // body = { measures: [{ date, weight, waist, shoulders, chest, arm, thigh }], protein: { 'YYYY-MM-DD': grams } }
+  var BODY_KEY = 'gymlog-body-v1';
+  var body = readJSON(BODY_KEY, {});
+  function normBody() {
+    if (!body || typeof body !== 'object' || Array.isArray(body)) body = {};
+    if (!Array.isArray(body.measures)) body.measures = [];
+    if (!body.protein || typeof body.protein !== 'object' || Array.isArray(body.protein)) body.protein = {};
+  }
+  normBody();
+  function saveBody() {
+    try { localStorage.setItem(BODY_KEY, JSON.stringify(body)); } catch (e) {}
+    markDirty();
+  }
   var PP_LISTS = {
     preUpper: [['Light cardio', '5 min bike or rower, easy pace'], ['Arm circles + band dislocates', '10 forward, 10 back, 10 dislocates'],
       ['Band pull-aparts', '2 × 15'], ['Scapular push-ups', '1 × 10']],
@@ -1392,7 +1450,7 @@
     d.setDate(d.getDate() - dow);
     return new Date(d.getTime() - d.getTimezoneOffset() * 60000).toISOString().slice(0, 10);
   }
-  function weeklyVolume() {
+  function weeklyVolume(weekStart) {
     var planned = {}, done = {}, muscleOf = {};
     routine.forEach(function(d) {
       d.exercises.forEach(function(e) {
@@ -1408,12 +1466,13 @@
         (e.alts || []).forEach(function(a) { if (!muscleOf[a.id]) muscleOf[a.id] = a.muscle || e.muscle; });
       }); });
     });
-    var weekStart = mondayOf(todayStr());
+    weekStart = weekStart || mondayOf(todayStr());
+    var weekEnd = addDays(weekStart, 6);
     for (var k in entries) {
       var m = muscleOf[k];
       if (!m) continue;
       (entries[k] || []).forEach(function(s) {
-        if (s.date >= weekStart) done[m] = (done[m] || 0) + s.sets.length;
+        if (s.date >= weekStart && s.date <= weekEnd) done[m] = (done[m] || 0) + s.sets.length;
       });
     }
     return MUSCLES.filter(function(m) { return planned[m] || done[m]; })
@@ -2456,7 +2515,7 @@
 
   function progressHead() {
     return '<div class="vhead"><div><h1 class="ttl">Progress</h1></div></div>' +
-      '<div class="seg glass">' + [['overview', 'Overview'], ['lifts', 'Lifts'], ['balance', 'Balance']].map(function(t) {
+      '<div class="seg glass">' + [['overview', 'Overview'], ['lifts', 'Lifts'], ['balance', 'Balance'], ['body', 'Body']].map(function(t) {
         return '<button class="' + (progTab === t[0] ? 'on' : '') + '" data-ptab="' + t[0] + '">' + t[1] + '</button>';
       }).join('') + '</div>';
   }
@@ -2471,6 +2530,7 @@
     var h = '<div class="g2">' +
       '<div class="gstat glass"><small>This week</small><b>' + thisWeek + '<span> / ' + target + ' days</span></b></div>' +
       '<div class="gstat glass"><small>Full weeks in a row</small><b>' + streak + '</b></div></div>';
+    h += weekReportHtml();
 
     if (!calMonth) calMonth = today.slice(0, 7);
     var first = calMonth + '-01';
@@ -2494,6 +2554,7 @@
 
     var vol = weeklyVolume();
     if (vol.length) {
+      h += '<div class="sech2"><span>Muscles this week</span><span>sets vs plan</span></div>' + muscleMapHtml(vol);
       h += '<div class="sech2"><span>Sets this week</span><span>vs plan</span></div>' +
         vol.map(function(r) {
           var pct = r.planned ? Math.min(100, r.done / r.planned * 100) : 100;
@@ -2537,7 +2598,9 @@
     var h = progressHead();
     if (progTab === 'overview') h += overviewHtml();
     else if (progTab === 'lifts') h += liftsHtml(mv);
+    else if (progTab === 'body') h += bodyHtml();
     root.innerHTML = h + (progTab === 'balance' ? '<div id="balance-slot"></div>' : '');
+    if (progTab === 'body') bindBody(root);
     root.querySelectorAll('[data-ptab]').forEach(function(b) {
       b.addEventListener('click', function() { progTab = b.getAttribute('data-ptab'); render(); });
     });
@@ -3160,6 +3223,7 @@
       }
     }
     h += deloadBannerHtml();
+    h += proteinCardHtml();
 
     h += '<div class="sech2"><span>Exercises</span><span>' + (models.some(function(m) { return m.vars.length > 1; }) ? 'alternatives inside' : '') + '</span></div>';
     h += '<div class="glist glass">';
@@ -3630,6 +3694,7 @@
     root.querySelectorAll('[data-more]').forEach(function(el) {
       el.addEventListener('click', function(e) { e.stopPropagation(); openMoreSheet(el.getAttribute('data-more')); });
     });
+    bindProtein(root);
     root.querySelectorAll('[data-deload]').forEach(function(b) {
       b.addEventListener('click', function() {
         var a = b.getAttribute('data-deload'), t = todayStr();
@@ -4155,7 +4220,10 @@
       routines: store,
       routine: routine,
       entries: entries,
-      prepost: prepost
+      prepost: prepost,
+      body: body,
+      // weekly summaries, newest first, so the synced file can be read without re-deriving them
+      reports: [0, 1, 2, 3, 4, 5].map(function(i) { return weekReport(addDays(mondayOf(todayStr()), -7 * i)); })
     };
   }
 
@@ -4176,6 +4244,417 @@
     '</div>';
   }
 
+  // ---------- v19: measurements, photos, protein, muscle map, weekly report ----------
+  var MEASURES = [
+    ['weight', 'Bodyweight', 'kg', 'Morning, after the bathroom, before eating'],
+    ['waist', 'Waist', 'cm', 'At the navel, relaxed, after breathing out'],
+    ['shoulders', 'Shoulders', 'cm', 'All the way round, widest point of the delts'],
+    ['chest', 'Chest', 'cm', 'At nipple height, arms down'],
+    ['arm', 'Arm', 'cm', 'Flexed, widest point of the biceps'],
+    ['thigh', 'Thigh', 'cm', 'Widest point, standing relaxed']
+  ];
+  var bodyMetric = 'weight', photoPose = 'front', photoBefore = null;
+  function sortedMeasures() { return body.measures.slice().sort(function(a, b) { return a.date.localeCompare(b.date); }); }
+  function measureSeries(f) {
+    return sortedMeasures().map(function(m) {
+      var v = f === 'ratio' ? (m.shoulders && m.waist ? Math.round(m.shoulders / m.waist * 100) / 100 : null) : m[f];
+      return v ? { date: m.date, v: v } : null;
+    }).filter(Boolean);
+  }
+  function latestOn(f, date) {
+    var s = measureSeries(f).filter(function(p) { return !date || p.date <= date; });
+    return s.length ? s[s.length - 1] : null;
+  }
+  function bodyweight() { var p = latestOn('weight'); return p ? p.v : null; }
+  function proteinGoal() {
+    if (prefs.protein > 0) return { g: prefs.protein, why: 'Your goal · change it in Settings' };
+    var bw = bodyweight();
+    if (bw) return { g: Math.round(bw * 1.8 / 5) * 5, why: '1.8 g per kg of bodyweight (' + bw + ' kg)' };
+    return { g: 140, why: 'Log your bodyweight in Progress → Body for a goal that fits you' };
+  }
+
+  function proteinCardHtml() {
+    var t = todayStr(), cur = body.protein[t] || 0, goal = proteinGoal();
+    var pct = Math.min(100, cur / goal.g * 100);
+    return '<div class="prot glass">' +
+      '<div class="r1"><span>Protein today' + (cur >= goal.g ? ' · goal reached ✓' : '') + '</span>' +
+        '<b data-prot-set="1">' + cur + '<small> / ' + goal.g + ' g</small></b></div>' +
+      '<div class="pbar"><u style="width:' + pct + '%"></u></div>' +
+      '<div class="btns"><button class="ghost" data-prot="-10"' + (cur ? '' : ' disabled') + '>−10</button>' +
+        '<button data-prot="20">+20</button><button data-prot="30">+30</button><button data-prot="40">+40</button></div>' +
+      '<small class="why">' + esc(goal.why) + '. A meal is usually 30–40 g.</small></div>';
+  }
+  function bindProtein(root) {
+    var t = todayStr();
+    root.querySelectorAll('[data-prot]').forEach(function(b) {
+      b.addEventListener('click', function() {
+        var v = Math.max(0, (body.protein[t] || 0) + parseInt(b.getAttribute('data-prot'), 10));
+        if (v) body.protein[t] = v; else delete body.protein[t];
+        saveBody();
+        if (navigator.vibrate) navigator.vibrate(8);
+        render();
+      });
+    });
+    root.querySelectorAll('[data-prot-set]').forEach(function(b) {
+      b.addEventListener('click', function() {
+        var s = prompt('Protein eaten today (g):', body.protein[t] || 0);
+        if (s == null) return;
+        var v = Math.max(0, Math.round(parseFloat(String(s).replace(',', '.')) || 0));
+        if (v) body.protein[t] = v; else delete body.protein[t];
+        saveBody();
+        render();
+      });
+    });
+  }
+
+  // Front and back silhouettes, each muscle coloured by sets done this week vs plan.
+  function muscleMapHtml(vol) {
+    var by = {};
+    vol.forEach(function(r) { by[r.muscle] = r; });
+    var col = function(m) {
+      var r = by[m];
+      if (!r || !r.done) return 'rgba(255,255,255,.08)';
+      var k = r.planned ? Math.min(1, r.done / r.planned) : 1;
+      return 'rgba(255,' + Math.round(200 - 80 * k) + ',' + Math.round(140 - 70 * k) + ',' + (0.3 + 0.65 * k).toFixed(2) + ')';
+    };
+    var tip = function(m) { var r = by[m]; return m + ': ' + (r ? r.done + (r.planned ? ' of ' + r.planned : '') : 0) + ' sets'; };
+    var G = function(m, shapes) { return '<g fill="' + col(m) + '"><title>' + esc(tip(m)) + '</title>' + shapes + '</g>'; };
+    var E = function(cx, cy, rx, ry) { return '<ellipse cx="' + cx + '" cy="' + cy + '" rx="' + rx + '" ry="' + ry + '"/>'; };
+    var pair = function(cx, cy, rx, ry) { return E(cx, cy, rx, ry) + E(100 - cx, cy, rx, ry); };
+    var base = '<g fill="rgba(255,255,255,.05)"><circle cx="50" cy="13" r="9"/><rect x="45" y="21" width="10" height="8" rx="3"/>' +
+      pair(20, 92, 4.5, 13) + '<circle cx="18.5" cy="110" r="4"/><circle cx="81.5" cy="110" r="4"/>' + pair(42, 156, 5, 4) + pair(41.5, 193, 6, 3) + '</g>';
+    var front = base + '<path d="M36 96H64L66 111H34Z" fill="rgba(255,255,255,.05)"/>' +
+      '<g fill="rgba(255,255,255,.05)"><rect x="35" y="58" width="6" height="36" rx="3"/><rect x="59" y="58" width="6" height="36" rx="3"/></g>' +
+      G('Side delts', pair(27, 42, 6, 8)) + G('Front delts', pair(33.5, 39, 6, 7)) +
+      G('Chest', '<path d="M38.5 35Q49 32 49.4 37V55Q43 59 37 55Q35 44 38.5 35Z"/><path d="M61.5 35Q51 32 50.6 37V55Q57 59 63 55Q65 44 61.5 35Z"/>') +
+      G('Biceps', pair(24, 62, 5, 11)) + G('Abs', '<rect x="42" y="59" width="16" height="35" rx="5"/>') +
+      G('Quads', pair(42, 132, 8, 21)) + G('Calves', pair(41.5, 174, 5, 14));
+    var back = base + '<rect x="42" y="78" width="16" height="17" rx="4" fill="rgba(255,255,255,.05)"/>' +
+      G('Back', '<path d="M40 26H60L66 40L62 75L50 80L38 75L34 40Z"/>') +
+      G('Side delts', pair(27, 42, 6, 8)) + G('Rear delts', pair(33.5, 39, 6, 7)) +
+      G('Triceps', pair(24, 62, 5, 11)) + G('Glutes', pair(43.5, 104, 8, 9)) +
+      G('Hamstrings', pair(42, 134, 7.5, 19)) + G('Calves', pair(41.5, 172, 6, 14));
+    return '<div class="mmap glass"><svg viewBox="0 0 200 207">' + front +
+      '<g transform="translate(100 0)">' + back + '</g>' +
+      '<text x="50" y="205" text-anchor="middle">FRONT</text><text x="150" y="205" text-anchor="middle">BACK</text></svg>' +
+      '<div class="mleg"><span><i style="background:rgba(255,255,255,.08)"></i>none</span><span><i style="background:rgba(255,180,115,.55)"></i>under plan</span><span><i style="background:rgba(255,120,70,.95)"></i>plan done</span></div></div>';
+  }
+
+  // ---------- weekly report ----------
+  function weekReport(mon) {
+    var end = addDays(mon, 6), days = {}, sets = 0;
+    for (var k in entries) (entries[k] || []).forEach(function(s) {
+      if (s.date >= mon && s.date <= end) { days[s.date] = 1; sets += s.sets.length; }
+    });
+    var mv = movements(), prs = [];
+    Object.keys(mv).forEach(function(key) {
+      var m = mv[key];
+      var inW = m.withE.filter(function(s) { return s.date >= mon && s.date <= end; });
+      var before = m.withE.filter(function(s) { return s.date < mon; });
+      if (!inW.length || !before.length) return;
+      var best = Math.max.apply(null, inW.map(function(s) { return s.e; }));
+      var prev = Math.max.apply(null, before.map(function(s) { return s.e; }));
+      if (best > prev + 0.05 && !prs.some(function(p) { return p.e1rm === round1(best) && p.gain === round1(best - prev); })) prs.push({ name: m.name, e1rm: round1(best), gain: round1(best - prev) });
+    });
+    prs.sort(function(a, b) { return b.gain - a.gain; });
+    var vol = weeklyVolume(mon);
+    var under = vol.filter(function(r) { return r.planned && r.done < r.planned * 0.7; })
+      .map(function(r) { return { muscle: r.muscle, done: r.done, planned: r.planned }; });
+    var w1 = latestOn('weight', end), w0 = latestOn('weight', addDays(mon, -1));
+    var goal = proteinGoal().g, pd = [];
+    for (var i = 0; i < 7; i++) { var d = addDays(mon, i); if (body.protein[d]) pd.push(body.protein[d]); }
+    return {
+      week: mon, to: end, workouts: Object.keys(days).length, planned: routine.length, sets: sets,
+      prs: prs, volume: vol, under: under,
+      bodyweight: w1 && w1.date >= mon ? w1.v : null,
+      bodyweightChange: w1 && w0 && w1.date >= mon ? round1(w1.v - w0.v) : null,
+      proteinGoal: goal, proteinDays: pd.length, proteinAvg: pd.length ? Math.round(avg(pd)) : null,
+      proteinOnGoal: pd.filter(function(g) { return g >= goal * 0.9; }).length
+    };
+  }
+  // Sunday shows the week that is ending; any other day shows last week (or this one, if last week was empty).
+  function reportMonday() {
+    var t = todayStr(), mon = mondayOf(t), prev = addDays(mon, -7);
+    if (new Date(t + 'T00:00:00').getDay() === 0) return mon;
+    var trained = function(from) {
+      var to = addDays(from, 6);
+      return Object.keys(entries).some(function(k) { return (entries[k] || []).some(function(s) { return s.date >= from && s.date <= to; }); });
+    };
+    return !trained(prev) && trained(mon) ? mon : prev;
+  }
+  function weekReportHtml() {
+    var mon = reportMonday(), r = weekReport(mon), live = mon === mondayOf(todayStr());
+    var any = r.workouts || r.proteinDays || r.bodyweight != null;
+    var li = [];
+    li.push('<b>' + r.workouts + ' of ' + r.planned + '</b> workouts · <b>' + r.sets + '</b> sets');
+    if (any) {
+      li.push(r.prs.length ? '<b>' + r.prs.length + (r.prs.length === 1 ? ' record' : ' records') + '</b> — ' +
+        r.prs.slice(0, 4).map(function(p) { return esc(p.name) + ' +' + p.gain + ' kg'; }).join(', ') + (r.prs.length > 4 ? '…' : '') + ' (est. 1RM)'
+        : 'No new records — normal from week to week, the trend is what counts.');
+      if (live) {
+        var left = r.volume.filter(function(v) { return v.planned > v.done; });
+        li.push(left.length ? '<b>Still to do this week</b> — ' + left.map(function(v) { return esc(v.muscle) + ' ' + (v.planned - v.done); }).join(', ') + ' sets'
+          : 'Every muscle has its planned sets for the week.');
+      } else {
+        li.push(r.under.length ? '<b>Below plan</b> — ' + r.under.map(function(u) { return esc(u.muscle) + ' ' + u.done + '/' + u.planned; }).join(', ')
+          : 'Every muscle got at least 70% of its planned sets.');
+      }
+      if (r.bodyweight != null) li.push('<b>Bodyweight ' + r.bodyweight + ' kg</b>' + (r.bodyweightChange != null ? ' (' + (r.bodyweightChange >= 0 ? '+' : '') + r.bodyweightChange + ' kg)' : ''));
+      if (r.proteinDays) li.push('<b>Protein</b> — average ' + r.proteinAvg + ' g on ' + r.proteinDays + (r.proteinDays === 1 ? ' day' : ' days') + ' logged, goal reached on ' + r.proteinOnGoal);
+    }
+    var mv = movements(), ups = [], downs = [];
+    routine.forEach(function(d) { d.exercises.forEach(function(e) {
+      var c = coach(e, sortedHist(e.id), (mv[movementKey(e.name)] || {}).sessions);
+      if (c.act === 'up' && c.weight) ups.push(esc(e.name) + ' ' + c.weight + ' kg');
+      else if (c.act === 'down' && c.weight) downs.push(esc(e.name) + ' ' + c.weight + ' kg');
+    }); });
+    if (ups.length) li.push('<b>↑ Next time</b> — ' + ups.join(', '));
+    if (downs.length) li.push('<b>↓ Step back</b> — ' + downs.join(', '));
+    return '<div class="wrep glass"><h3>' + (live ? 'This week so far' : 'Last week') + ' · ' + fmtDate(mon) + ' – ' + fmtDate(r.to) + '</h3>' +
+      '<ul>' + li.map(function(x) { return '<li>' + x + '</li>'; }).join('') + '</ul></div>';
+  }
+
+  // ---------- body tab ----------
+  function lineChart(data, label, unit, id) {
+    data = data.slice(-20);
+    if (data.length < 2) return '';
+    var W = 320, H = 118, pl = 4, pr = 4, pt = 12, pb = 18;
+    var vals = data.map(function(d) { return d.v; });
+    var min = Math.min.apply(null, vals), max = Math.max.apply(null, vals);
+    if (max === min) { max += 1; min -= 1; }
+    var pad = (max - min) * 0.15;
+    min -= pad; max += pad;
+    var x = function(j) { return pl + j * (W - pl - pr) / (data.length - 1); };
+    var y = function(v) { return pt + (1 - (v - min) / (max - min)) * (H - pt - pb); };
+    var line = data.map(function(d, j) { return (j ? 'L' : 'M') + x(j).toFixed(1) + ' ' + y(d.v).toFixed(1); }).join(' ');
+    var base = (H - pb).toFixed(1);
+    var area = line + ' L' + x(data.length - 1).toFixed(1) + ' ' + base + ' L' + x(0).toFixed(1) + ' ' + base + ' Z';
+    var gid = 'gb-' + id;
+    var grid = [pt, (pt + H - pb) / 2, H - pb].map(function(gy) {
+      return '<line x1="0" x2="' + W + '" y1="' + gy + '" y2="' + gy + '" stroke="rgba(255,255,255,.08)" stroke-dasharray="3 4"/>';
+    }).join('');
+    var dots = data.map(function(d, j) {
+      var last = j === data.length - 1;
+      return '<circle cx="' + x(j).toFixed(1) + '" cy="' + y(d.v).toFixed(1) + '" r="' + (last ? 5 : 3.5) + '" fill="' + (last ? '#F8F1EC' : '#1E120E') + '" stroke="#FFA162" stroke-width="2"/>';
+    }).join('');
+    var lastV = data[data.length - 1].v, dec = unit ? 10 : 100;
+    var change = Math.round((lastV - data[0].v) * dec) / dec;
+    return '<div class="chart"><div class="chart-head"><span>' + label + ' · ' + fmtDate(data[data.length - 1].date) + '</span>' +
+        '<span><b>' + lastV + '</b>' + (unit ? ' ' + unit : '') + ' <span style="color:var(--t2);">' + (change >= 0 ? '+' : '') + change + ' since ' + fmtDate(data[0].date) + '</span></span></div>' +
+      '<svg viewBox="0 0 ' + W + ' ' + H + '"><defs><linearGradient id="' + gid + '" x1="0" x2="0" y1="0" y2="1"><stop offset="0" stop-color="#FFA162" stop-opacity=".3"/><stop offset="1" stop-color="#FFA162" stop-opacity="0"/></linearGradient></defs>' +
+        grid + '<path d="' + area + '" fill="url(#' + gid + ')"/>' +
+        '<path d="' + line + '" fill="none" stroke="url(#tgrad)" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"/>' + dots +
+        '<text x="0" y="' + (H - 3) + '" font-size="9" fill="rgba(248,241,236,.4)">' + fmtDate(data[0].date) + '</text>' +
+        '<text x="' + W + '" y="' + (H - 3) + '" font-size="9" fill="rgba(248,241,236,.4)" text-anchor="end">' + fmtDate(data[data.length - 1].date) + '</text>' +
+      '</svg></div>';
+  }
+  function sinceText(f) {
+    var s = measureSeries(f);
+    if (s.length < 2) return '';
+    var cur = s[s.length - 1];
+    var older = s.filter(function(p) { return p.date <= addDays(cur.date, -21); });
+    var p = older.length ? older[older.length - 1] : s[0];
+    var d = f === 'ratio' ? Math.round((cur.v - p.v) * 100) / 100 : round1(cur.v - p.v);
+    return (d >= 0 ? '+' : '') + d + ' since ' + fmtDate(p.date);
+  }
+  function bodyHtml() {
+    var bw = latestOn('weight'), ratio = latestOn('ratio');
+    var h = '<div class="g2">' +
+      '<div class="gstat glass"><small>Bodyweight</small><b>' + (bw ? bw.v + '<span> kg</span>' : '—') + '</b><em>' + (bw ? sinceText('weight') || fmtDate(bw.date) : 'not logged yet') + '</em></div>' +
+      '<div class="gstat glass"><small>V-taper</small><b>' + (ratio ? ratio.v.toFixed(2) : '—') + '</b><em>' + (ratio ? sinceText('ratio') || 'shoulders / waist, higher = wider V' : 'log shoulders and waist') + '</em></div></div>' +
+      '<button class="wide" data-measure="">Log measurements</button>';
+
+    var metrics = MEASURES.map(function(m) { return [m[0], m[1], m[2]]; }).concat([['ratio', 'V-taper (shoulders / waist)', '']]);
+    var avail = metrics.filter(function(m) { return measureSeries(m[0]).length; });
+    if (avail.length) {
+      if (!avail.some(function(m) { return m[0] === bodyMetric; })) bodyMetric = avail[0][0];
+      var sel = metrics.find(function(m) { return m[0] === bodyMetric; });
+      var chart = lineChart(measureSeries(bodyMetric), sel[1], sel[2], bodyMetric);
+      h += '<div class="sech2"><span>Trend</span></div><div class="mchips">' + avail.map(function(m) {
+          return '<button class="' + (m[0] === bodyMetric ? 'on' : '') + '" data-metric="' + m[0] + '">' + (m[0] === 'ratio' ? 'V-taper' : m[1]) + '</button>';
+        }).join('') + '</div>' +
+        '<div class="chartbox glass">' + (chart || '<p class="hint" style="margin:0;">One more measurement and the trend shows up here. Every 1–2 weeks is plenty.</p>') + '</div>';
+    }
+
+    h += '<div class="sech2"><span>Progress photos</span><span>stay on this phone</span></div>' +
+      '<div class="seg glass sm">' + [['front', 'Front'], ['side', 'Side'], ['back', 'Back']].map(function(p) {
+        return '<button class="' + (photoPose === p[0] ? 'on' : '') + '" data-pose="' + p[0] + '">' + p[1] + '</button>';
+      }).join('') + '</div>' +
+      '<div id="photo-slot"></div>' +
+      '<label class="addph">＋ Add ' + photoPose + ' photo<input type="file" accept="image/*" id="photo-in" hidden></label>' +
+      '<p class="hint" style="margin:8px 6px 0;">Same spot, same light, same time of day, about once a month. Photos are not synced and not in backups.</p>';
+
+    var log = sortedMeasures().reverse().slice(0, 12);
+    if (log.length) {
+      h += '<div class="sech2"><span>Measurements</span></div><div class="glist glass">' + log.map(function(m) {
+        var parts = MEASURES.filter(function(f) { return m[f[0]]; }).map(function(f) { return f[0] === 'weight' ? m.weight + ' kg' : f[1].toLowerCase() + ' ' + m[f[0]]; });
+        return '<div class="gli" data-measure="' + m.date + '"><div class="m"><b>' + fmtDate(m.date) + '</b><small>' + esc(parts.join(' · ')) + '</small></div>' + CHEV_R + '</div>';
+      }).join('') + '</div>';
+    }
+    return h;
+  }
+  function bindBody(root) {
+    root.querySelectorAll('[data-measure]').forEach(function(b) {
+      b.addEventListener('click', function() { openMeasureSheet(b.getAttribute('data-measure') || todayStr()); });
+    });
+    root.querySelectorAll('[data-metric]').forEach(function(b) {
+      b.addEventListener('click', function() { bodyMetric = b.getAttribute('data-metric'); render(); });
+    });
+    root.querySelectorAll('[data-pose]').forEach(function(b) {
+      b.addEventListener('click', function() { photoPose = b.getAttribute('data-pose'); photoBefore = null; render(); });
+    });
+    var inp = document.getElementById('photo-in');
+    if (inp) inp.addEventListener('change', function() {
+      var f = inp.files && inp.files[0];
+      if (!f) return;
+      inp.value = '';
+      addPhoto(f, photoPose).then(paintPhotos, function() { alert('Could not save the photo.'); });
+    });
+    paintPhotos();
+  }
+
+  function openMeasureSheet(date) {
+    var wrap = document.getElementById('sheet');
+    var cur = body.measures.find(function(m) { return m.date === date; }) || {};
+    wrap.innerHTML =
+      '<div class="sheet-bg" data-close></div>' +
+      '<div class="sheet"><div class="sheet-grab"></div>' +
+        '<div class="ex-name">Measurements</div>' +
+        '<p class="hint" style="margin:6px 0 4px;">Fill in only what you measured. Tape snug but not tight, always in the same spot.</p>' +
+        '<label class="fld">Date<input type="date" id="ms-date" value="' + date + '" max="' + todayStr() + '" style="margin-top:4px;"></label>' +
+        '<div class="mgrid">' + MEASURES.map(function(f) {
+          return '<label>' + f[1] + ' · ' + f[2] + '<input type="number" inputmode="decimal" step="0.1" min="0" id="ms-' + f[0] + '" value="' + (cur[f[0]] || '') + '" placeholder="' + ((latestOn(f[0]) || {}).v || '') + '"><small>' + f[3] + '</small></label>';
+        }).join('') + '</div>' +
+        '<div class="row2"><button id="ms-save">Save</button>' + (cur.date ? '<button class="ghost" id="ms-del">Delete</button>' : '<button class="ghost" data-close>Cancel</button>') + '</div>' +
+      '</div>';
+    wrap.hidden = false;
+    document.body.style.overflow = 'hidden';
+    wrap.querySelectorAll('[data-close]').forEach(function(el) { el.addEventListener('click', closeSheet); });
+    document.getElementById('ms-date').addEventListener('change', function(e) { if (e.target.value) openMeasureSheet(e.target.value); });
+    document.getElementById('ms-save').addEventListener('click', function() {
+      var d = document.getElementById('ms-date').value || date, rec = { date: d }, n = 0;
+      MEASURES.forEach(function(f) {
+        var v = parseFloat(String(document.getElementById('ms-' + f[0]).value).replace(',', '.'));
+        if (v > 0) { rec[f[0]] = round1(v); n++; }
+      });
+      if (!n) { alert('Enter at least one measurement.'); return; }
+      body.measures = body.measures.filter(function(m) { return m.date !== d; }).concat([rec]);
+      saveBody();
+      closeSheet();
+      render();
+    });
+    var del = document.getElementById('ms-del');
+    if (del) del.addEventListener('click', function() {
+      if (!confirm('Delete the measurements of ' + fmtDate(date) + '?')) return;
+      body.measures = body.measures.filter(function(m) { return m.date !== date; });
+      saveBody();
+      closeSheet();
+      render();
+    });
+  }
+
+  // ---------- progress photos (IndexedDB, this device only) ----------
+  var photoDbP = null, photoCache = null, photoUrls = {};
+  function photoDb() {
+    if (!photoDbP) photoDbP = new Promise(function(res, rej) {
+      if (!window.indexedDB) { rej(new Error('no indexedDB')); return; }
+      var r = indexedDB.open('gymlog-photos', 1);
+      r.onupgradeneeded = function() { r.result.createObjectStore('photos', { keyPath: 'id' }); };
+      r.onsuccess = function() { res(r.result); };
+      r.onerror = function() { rej(r.error); };
+    });
+    return photoDbP;
+  }
+  function photoStore(mode, fn) {
+    return photoDb().then(function(db) {
+      return new Promise(function(res, rej) {
+        var tx = db.transaction('photos', mode), req = fn(tx.objectStore('photos'));
+        tx.oncomplete = function() { res(req ? req.result : undefined); };
+        tx.onerror = function() { rej(tx.error); };
+      });
+    });
+  }
+  function loadPhotos() {
+    if (photoCache) return Promise.resolve(photoCache);
+    return photoStore('readonly', function(st) { return st.getAll(); }).then(function(list) {
+      photoCache = (list || []).sort(function(a, b) { return a.date.localeCompare(b.date) || a.id.localeCompare(b.id); });
+      return photoCache;
+    }, function() { photoCache = []; return photoCache; });
+  }
+  function photoUrl(p) { return photoUrls[p.id] || (photoUrls[p.id] = URL.createObjectURL(p.blob)); }
+  function shrinkImage(file) {
+    return new Promise(function(res, rej) {
+      var url = URL.createObjectURL(file), img = new Image();
+      img.onload = function() {
+        var s = Math.min(1, 1400 / Math.max(img.naturalWidth, img.naturalHeight));
+        var c = document.createElement('canvas');
+        c.width = Math.round(img.naturalWidth * s);
+        c.height = Math.round(img.naturalHeight * s);
+        c.getContext('2d').drawImage(img, 0, 0, c.width, c.height);
+        URL.revokeObjectURL(url);
+        c.toBlob(function(b) { if (b) res(b); else rej(new Error('encode')); }, 'image/jpeg', 0.82);
+      };
+      img.onerror = function() { URL.revokeObjectURL(url); rej(new Error('read')); };
+      img.src = url;
+    });
+  }
+  function addPhoto(file, pose) {
+    return shrinkImage(file).then(function(blob) {
+      var p = { id: uid('ph'), date: todayStr(), pose: pose, blob: blob };
+      return photoStore('readwrite', function(st) { st.put(p); }).then(function() { photoCache = null; });
+    });
+  }
+  function deletePhoto(id) {
+    return photoStore('readwrite', function(st) { st.delete(id); }).then(function() {
+      if (photoUrls[id]) { URL.revokeObjectURL(photoUrls[id]); delete photoUrls[id]; }
+      if (photoBefore === id) photoBefore = null;
+      photoCache = null;
+    });
+  }
+  function paintPhotos() {
+    if (!document.getElementById('photo-slot')) return;
+    loadPhotos().then(function(all) {
+      var slot = document.getElementById('photo-slot');
+      if (!slot) return;
+      var list = all.filter(function(p) { return p.pose === photoPose; });
+      if (!list.length) { slot.innerHTML = '<p class="hint" style="margin:2px 6px 0;">No ' + photoPose + ' photos yet.</p>'; return; }
+      var b = list[list.length - 1];
+      var a = list.find(function(p) { return p.id === photoBefore; }) || list[0];
+      var fig = function(p, cap) { return '<figure data-photo="' + p.id + '"><img src="' + photoUrl(p) + '" alt=""><figcaption>' + cap + ' · ' + fmtDate(p.date) + '</figcaption></figure>'; };
+      var h = '<div class="phcmp">' + fig(a, a === b ? 'Only one' : 'Before') + (a !== b ? fig(b, 'Latest') : '') + '</div>';
+      if (a !== b) {
+        var wk = Math.round((new Date(b.date + 'T00:00:00') - new Date(a.date + 'T00:00:00')) / 604800000);
+        h += '<p class="hint" style="margin:6px 6px 0;">' + (wk >= 1 ? wk + (wk === 1 ? ' week' : ' weeks') + ' apart' : 'Same week') + '. Tap a thumbnail to compare a different “before”.</p>';
+      }
+      if (list.length > 2) h += '<div class="phstrip">' + list.map(function(p) {
+        return '<img src="' + photoUrl(p) + '" alt="' + fmtDate(p.date) + '" data-pick="' + p.id + '"' + (p === a ? ' class="sel"' : '') + '>';
+      }).join('') + '</div>';
+      slot.innerHTML = h;
+      slot.querySelectorAll('[data-photo]').forEach(function(el) {
+        el.addEventListener('click', function() { openPhotoSheet(el.getAttribute('data-photo')); });
+      });
+      slot.querySelectorAll('[data-pick]').forEach(function(el) {
+        el.addEventListener('click', function() { photoBefore = el.getAttribute('data-pick'); paintPhotos(); });
+      });
+    });
+  }
+  function openPhotoSheet(id) {
+    var p = (photoCache || []).find(function(x) { return x.id === id; });
+    if (!p) return;
+    var wrap = document.getElementById('sheet');
+    wrap.innerHTML = '<div class="sheet-bg" data-close></div><div class="sheet"><div class="sheet-grab"></div>' +
+      '<div class="ex-name">' + p.pose.charAt(0).toUpperCase() + p.pose.slice(1) + ' · ' + fmtDate(p.date) + '</div>' +
+      '<img class="phbig" src="' + photoUrl(p) + '" alt="" style="margin-top:12px;">' +
+      '<div class="row2"><button class="ghost" data-close>Close</button><button class="ghost" id="ph-del" style="color:var(--bad);">Delete photo</button></div></div>';
+    wrap.hidden = false;
+    document.body.style.overflow = 'hidden';
+    wrap.querySelectorAll('[data-close]').forEach(function(el) { el.addEventListener('click', closeSheet); });
+    document.getElementById('ph-del').addEventListener('click', function() {
+      if (!confirm('Delete this photo? It is only on this phone, so it cannot be recovered.')) return;
+      deletePhoto(id).then(function() { closeSheet(); paintPhotos(); });
+    });
+  }
+
   // ---------- settings tab ----------
   var PREFS_KEY = 'gymlog-prefs-v1';
   var prefs = readJSON(PREFS_KEY, {});
@@ -4188,7 +4667,8 @@
     gh: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M9 19c-4.3 1.4-4.3-2.5-6-3m12 5v-3.5c0-1 .1-1.4-.5-2 2.8-.3 5.5-1.4 5.5-6a4.6 4.6 0 0 0-1.3-3.2 4.2 4.2 0 0 0-.1-3.2s-1.1-.3-3.5 1.3a12.3 12.3 0 0 0-6.2 0C6.5 2.8 5.4 3.1 5.4 3.1a4.2 4.2 0 0 0-.1 3.2A4.6 4.6 0 0 0 4 9.5c0 4.6 2.7 5.7 5.5 6-.6.6-.6 1.2-.5 2V21"/></svg>',
     down: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4v11M7 10l5 5 5-5M5 20h14"/></svg>',
     copy: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="8" y="8" width="12" height="12" rx="2.5"/><path d="M16 8V6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h2"/></svg>',
-    up: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20V9M7 14l5-5 5 5M5 4h14"/></svg>'
+    up: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20V9M7 14l5-5 5 5M5 4h14"/></svg>',
+    leaf: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M5 19c0-8 5-14 15-14 0 10-6 15-14 15M5 19l7-7"/></svg>'
   };
 
   function renderData() {
@@ -4211,6 +4691,7 @@
         }).join('') + '</div></div>' +
         '<div class="srow">' + tile('bell') + '<div class="m">Sound when rest ends<small>Vibration stays on where the phone supports it</small></div><button class="tgl' + (prefs.sound === false ? '' : ' on') + '" id="pref-sound" aria-label="Sound"></button></div>' +
         '<div class="srow">' + tile('cycle') + '<div class="m">Ask reps left after each set<small>Reps in reserve make the weight suggestions sharper</small></div><button class="tgl' + (prefs.rir === false ? '' : ' on') + '" id="pref-rir" aria-label="Reps left"></button></div>' +
+        '<div class="srow">' + tile('leaf') + '<div class="m">Daily protein goal · g<small>Empty = automatic, 1.8 g per kg of bodyweight</small></div><input type="number" inputmode="numeric" min="0" id="pref-prot" value="' + (prefs.protein || '') + '" placeholder="' + proteinGoal().g + '" style="width:78px;text-align:right;padding:8px 10px;"></div>' +
       '</div>' +
       '<div class="grp">Data</div>' +
       '<div class="glist glass">' +
@@ -4255,6 +4736,12 @@
     });
     document.getElementById('pref-sound').addEventListener('click', function() { prefs.sound = prefs.sound === false; savePrefs(); renderData(); });
     document.getElementById('pref-rir').addEventListener('click', function() { prefs.rir = prefs.rir === false; savePrefs(); renderData(); });
+    document.getElementById('pref-prot').addEventListener('change', function(e) {
+      var v = Math.round(parseFloat(e.target.value) || 0);
+      if (v > 0) prefs.protein = v; else delete prefs.protein;
+      savePrefs();
+      renderData();
+    });
     document.getElementById('sync-row').addEventListener('click', function() { syncOpen = !syncOpen; renderData(); });
     document.getElementById('restore-row').addEventListener('click', function() { restoreOpen = !restoreOpen; renderData(); });
 
@@ -4361,6 +4848,11 @@
     if (data && data.prepost && typeof data.prepost === 'object' && !Array.isArray(data.prepost)) {
       prepost = data.prepost;
       savePrepost();
+    }
+    if (data && data.body && typeof data.body === 'object' && !Array.isArray(data.body)) {
+      body = data.body;
+      normBody();
+      saveBody();
     }
     if (takeRoutine && hasRoutines) {
       // v5 backup: all saved routines

@@ -65,6 +65,25 @@ v18 training tools:
   training cycle is in its last week (not again within 4 weeks). Starting it
   gives 7 days of ~15% lighter suggestions with 3+ reps left.
 
+v19 body and weekly view:
+- **Measurements** — Progress → Body: bodyweight, waist, shoulders, chest,
+  arm and thigh (with how to measure each), a trend chart per measure and the
+  shoulders / waist ratio ("V-taper"). Tap a row to edit or delete it.
+- **Progress photos** — front / side / back, resized on the phone and kept in
+  its IndexedDB only (not synced, not in backups). The first and latest photo
+  of a pose are shown side by side; tap a thumbnail to pick another "before".
+- **Muscle map** — Overview shows front and back silhouettes coloured by the
+  sets done this week against the plan.
+- **Protein** — a card on Today with +20 / +30 / +40 and −10 (tap the number to
+  type it). The goal is 1.8 g per kg of the latest bodyweight, or a fixed value
+  set in Settings.
+- **Weekly report** — on Overview: workouts and sets, new est. 1RM records,
+  muscles below plan (or still to do, for the current week), bodyweight and
+  protein, and which exercises the coach moves up or down next time. Shown for
+  last week, or the current one on Sundays (or when last week had no workouts).
+  The backup / synced `data.json` also carries `body` and the last six weekly
+  `reports`.
+
 The details below describe the features, which are unchanged.
 
 ## What it does
