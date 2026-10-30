@@ -48,6 +48,23 @@ time by a rep per set. The suggested weight and rep targets are pre-filled in
 the set table (the Previous column keeps last time's numbers), a line above
 the table says why, and Today shows each target with ↑ / ↓.
 
+v18 training tools:
+- **Reps in reserve** — after each ticked set, tap how many reps were left
+  (0 · 1 · 2 · 3+; aim 1–2 on heavy compounds, 0–1 on isolation). The coach
+  uses it: top of the range with ~3 left → two steps up; 3+ left without
+  reaching the top → push closer before anything else; a plateau with reps in
+  reserve → push harder before dropping the weight. After the last set the card
+  waits for the answer, then opens the next exercise. Can be turned off in
+  Settings.
+- **Exercise notes** — seat height, grip, machine settings, cues; edited from
+  the ⋯ sheet or the Routine editor, shown under the exercise while you train.
+  Alternatives have their own notes.
+- **Plate calculator** — barbell exercises show the plates per side for the
+  next set (20 kg bar, 10 kg EZ bar), updating as you change the weight.
+- **Deload week** — Today suggests one when 3+ exercises have plateaued or the
+  training cycle is in its last week (not again within 4 weeks). Starting it
+  gives 7 days of ~15% lighter suggestions with 3+ reps left.
+
 The details below describe the features, which are unchanged.
 
 ## What it does

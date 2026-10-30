@@ -616,6 +616,18 @@
   #gymlog .tip { margin: 0 6px 10px; font-size: 12px; color: var(--t2); display: flex; gap: 7px; align-items: flex-start; line-height: 1.4; }
   #gymlog .tip svg { width: 13px; height: 13px; color: var(--acc); flex-shrink: 0; margin-top: 2px; }
   #gymlog .tip b { color: var(--t1); font-weight: 500; }
+  #gymlog .rir-row { display: flex; align-items: center; gap: 5px; padding: 2px 6px 8px 38px; animation: gl-xin .25s ease; }
+  #gymlog .rir-row span { flex: 1; font-size: 11.5px; color: var(--t2); line-height: 1.25; } #gymlog .rir-row span small { display: block; color: var(--t3); font-size: 10.5px; }
+  #gymlog .rir-row button { width: 38px; height: 32px; padding: 0; border-radius: 99px; background: var(--tile); border: .5px solid var(--edge); color: var(--t1); font-size: 13px; font-weight: 500; box-shadow: none; }
+  #gymlog .rir-row button:active { background: var(--grad); color: var(--on); }
+  #gymlog .exc .tgt.rirb { color: var(--acc); font-size: 10px; }
+  #gymlog .plates { margin: -4px 6px 10px; font-size: 12px; color: var(--t2); } #gymlog .plates b { color: var(--t1); font-weight: 500; }
+  #gymlog .xnote { margin: -6px 6px 10px; font-size: 12px; color: var(--t2); display: flex; gap: 7px; align-items: flex-start; line-height: 1.4; white-space: pre-line; }
+  #gymlog .xnote svg { width: 13px; height: 13px; color: var(--t3); flex-shrink: 0; margin-top: 2px; }
+  #gymlog .banner { border-radius: 22px; padding: 14px 16px; margin-top: 12px; }
+  #gymlog .banner b { display: block; font-size: 14.5px; font-weight: 700; } #gymlog .banner p { font-size: 12.5px; color: var(--t2); margin: 4px 0 10px; line-height: 1.45; }
+  #gymlog .banner .row2 { display: flex; gap: 8px; } #gymlog .banner .row2 button { flex: 1; padding: 9px 12px; font-size: 12.5px; }
+  #gymlog .tip.coach-deload svg { color: #FFD59A; }
   #gymlog .tip.coach-up svg { color: var(--acc); } #gymlog .tip.coach-down svg, #gymlog .tip.coach-back svg { color: var(--bad); }
   #gymlog .tip.coach-up, #gymlog .tip.coach-down, #gymlog .tip.coach-back { background: rgba(255,255,255,.04); border-radius: 12px; padding: 8px 10px; margin: 0 2px 10px; }
   #gymlog .gli .r .ar { display: inline-flex; vertical-align: middle; margin-right: 4px; } #gymlog .gli .r .ar svg { width: 13px; height: 13px; }
@@ -1691,7 +1703,7 @@
   function loggedOn(id, date) { return (entries[id] || []).some(function(s) { return s.date === date; }); }
   function altOf(ex, a) {
     return { id: a.id, name: a.name, muscle: a.muscle || ex.muscle, sets: a.sets, repMin: a.repMin, repMax: a.repMax,
-      restSec: a.restSec, priority: ex.priority, ss: ex.ss, main: ex };
+      restSec: a.restSec, priority: ex.priority, ss: ex.ss, note: a.note || '', main: ex };
   }
   function effEx(ex, date) {
     if (!ex.alts) return ex;
@@ -1829,7 +1841,12 @@
         var idx = f.day.exercises.indexOf(f.ex);
         var next = f.day.exercises.slice(idx + 1).find(function(e) { return !exDone(e); }) ||
                    f.day.exercises.find(function(e) { return !exDone(e); });
-        if (next && f.day.id === activeDay) { openCards[next.id] = true; scrollTarget = next.id; if (focusKey === key) focusKey = next.id; }
+        if (next && f.day.id === activeDay) {
+          openCards[next.id] = true;
+          // with the reps-left question on, stay on this card until it's answered, then move on
+          if (focusKey === key && prefs.rir !== false) pendingNext = { from: key, to: next.id };
+          else { scrollTarget = next.id; if (focusKey === key) focusKey = next.id; }
+        }
       }
     }
     if (opts.focus && f && f.day.id === activeDay) { openCards[opts.focus] = true; scrollTarget = opts.focus; if (focusKey === key) focusKey = opts.focus; }
@@ -2984,10 +3001,12 @@
   var SPARK = '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l2.2 6.8L21 11l-6.8 2.2L12 20l-2.2-6.8L3 11l6.8-2.2z"/></svg>';
   var ARR_UP = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19V5M6 11l6-6 6 6"/></svg>';
   var ARR_DOWN = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M6 13l6 6 6-6"/></svg>';
+  var NOTE_ICO = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20h4L19 9l-4-4L4 16v4zM13.5 6.5l4 4"/></svg>';
   var MORE = '<svg viewBox="0 0 24 24" fill="currentColor"><circle cx="5" cy="12" r="1.6"/><circle cx="12" cy="12" r="1.6"/><circle cx="19" cy="12" r="1.6"/></svg>';
   var lastModels = {};
   var inSession = false;   // the active-workout screen is open (otherwise: today's overview)
   var lastScreen = null, lastFocus = null, swipeDir = null;   // for transitions
+  var pendingNext = null;   // { from, to }: exercise to open once the last set's reps-left is answered
 
   function ringSvg(pct, size, stroke) {
     var r = (size - stroke) / 2, c = 2 * Math.PI * r;
@@ -3016,6 +3035,8 @@
     var topW = Math.max.apply(null, L.sets.map(function(s) { return s.weight || 0; }));
     var work = L.sets.filter(function(s) { return (s.weight || 0) === topW; });
     var reps = work.map(function(s) { return s.reps || 0; });
+    var rirs = work.map(function(s) { return s.rir; }).filter(function(v) { return v != null; });
+    var rirAvg = rirs.length && rirs.length >= Math.ceil(work.length / 2) ? avg(rirs) : null;
     var gap = Math.round((new Date(today + 'T00:00:00') - new Date(L.date + 'T00:00:00')) / 86400000);
     var down = function(w) { return Math.max(step, round1(w - step)); };
     var holdReps = [];
@@ -3029,6 +3050,10 @@
     if (!reps.some(function(r) { return r > 0; })) {
       return { act: 'hold', weight: topW, reps: fill(lo), msg: 'No reps were logged last time — log them and the app can tell you when to go up.' };
     }
+    if (deloadOn() && topW > 0) {
+      var dw = round1(Math.max(step, Math.round(topW * 0.85 / step) * step));
+      return { act: 'deload', weight: dw, reps: fill(Math.min(hi, Math.max(lo, reps[0]))), msg: 'Deload week: ' + B(dw) + ' and stop with 3+ reps left. Recover now, push again next week.' };
+    }
     if (gap >= 21 && topW > 0) {
       return { act: 'back', weight: down(topW), reps: fill(hi), msg: 'Back after ' + gap + ' days — ease in at ' + B(down(topW)) + ', then build up again.' };
     }
@@ -3037,20 +3062,28 @@
     }
     if (reps.length >= n && reps.every(function(r) { return r >= hi; })) {
       if (topW === 0) return { act: 'up', weight: 0, reps: fill(hi), msg: 'Top of the range on every set — add a little weight or slow the reps down.' };
-      var jump = reps.every(function(r) { return r >= hi + 3; }) ? 2 : 1;
+      var jump = reps.every(function(r) { return r >= hi + 3; }) || (rirAvg != null && rirAvg >= 2.5) ? 2 : 1;
       var upW = round1(topW + step * jump);
-      return { act: 'up', weight: upW, reps: fill(lo), msg: 'Every set hit ' + hi + (jump > 1 ? '+3' : '') + ' reps last time — go up to ' + B(upW) + ' and aim for ' + lo + '+.' };
+      return { act: 'up', weight: upW, reps: fill(lo), msg: 'Every set hit ' + hi + ' reps last time' + (rirAvg != null && rirAvg >= 2.5 ? ' with ~' + Math.round(rirAvg) + ' left in the tank' : jump > 1 ? '+3' : '') + ' — go up to ' + B(upW) + ' and aim for ' + lo + '+.' };
     }
     var under = reps.filter(function(r) { return r < lo; }).length;
     if (reps[0] < lo || under >= 2) {
       if (topW === 0) return { act: 'down', weight: 0, reps: fill(lo), msg: (reps[0] < lo ? 'Set 1' : 'Two sets') + ' fell below ' + lo + ' reps — use assistance or an easier variation.' };
       return { act: 'down', weight: down(topW), reps: fill(lo), msg: (reps[0] < lo ? 'Set 1' : 'Two sets') + ' fell below ' + lo + ' reps last time — drop to ' + B(down(topW)) + '.' };
     }
+    if (rirAvg != null && rirAvg >= 3) {
+      var pushReps = [];
+      for (var q = 0; q < n; q++) pushReps.push(Math.min(hi, Math.max(lo, (reps[q] != null ? reps[q] : reps[reps.length - 1]) + 2)));
+      return { act: 'hold', weight: topW, reps: pushReps, msg: 'You had 3+ reps left last time — push closer to the limit at ' + B(topW) + ': <b>' + pushReps.join(' · ') + '</b> reps.' };
+    }
     // plateau: also counts the same exercise logged on other days / routines (same name)
     var pool = (same && same.length ? same : before).filter(function(h) { return h.date < today; });
     var last3 = pool.slice(-3).map(avgReps);
     if (last3.length === 3 && topW > 0 && last3.every(function(x) { return x.w === topW; }) && last3[2].r <= last3[0].r + 0.01) {
-      return { act: 'down', weight: down(topW), reps: fill(hi), msg: 'No progress in 3 sessions at ' + B(topW) + ' — drop to ' + B(down(topW)) + ', work up to ' + hi + ' reps on every set, then go back up.' };
+      if (rirAvg != null && rirAvg >= 2) {
+        return { act: 'hold', stall: true, weight: topW, reps: holdReps, msg: 'Stuck at ' + B(topW) + ' but with reps in reserve — take every set to 0–1 left before dropping the weight.' };
+      }
+      return { act: 'down', stall: true, weight: down(topW), reps: fill(hi), msg: 'No progress in 3 sessions at ' + B(topW) + ' — drop to ' + B(down(topW)) + ', work up to ' + hi + ' reps on every set, then go back up.' };
     }
     if (under === 1) {
       return { act: 'hold', weight: topW, reps: holdReps, msg: 'Last set dipped under ' + lo + ' — normal fatigue. Stay at ' + B(topW) + '.' };
@@ -3060,6 +3093,19 @@
   // Weight to aim for today, from the coach.
   function targetWeight(m) {
     return m.coach ? m.coach.weight : null;
+  }
+  // how close to failure to train: heavy compounds leave a rep or two, isolation goes to the limit
+  function rirAim(ex) { return eqOf(ex.name) === 'bb' || ex.restSec >= 150 ? '1–2' : '0–1'; }
+  function deloadOn() { var d = prefs.deload, t = todayStr(); return !!(d && d.from <= t && t <= d.to); }
+  // Per-side plates for a barbell weight (20 kg bar, 10 kg for the EZ bar).
+  function platesText(ex, w) {
+    var bar = /ez/i.test(ex.name) ? 10 : 20;
+    if (!(w > 0)) return '';
+    if (w < bar) return 'Lighter than the ' + bar + ' kg bar';
+    var r2 = function(x) { return Math.round(x * 100) / 100; };
+    var side = r2((w - bar) / 2), out = [];
+    [25, 20, 15, 10, 5, 2.5, 1.25].forEach(function(p) { while (side >= p - 0.001) { out.push(p); side = r2(side - p); } });
+    return out.length ? 'Per side: <b>' + out.join(' + ') + '</b>' + (side > 0.01 ? ' (+' + side + ' kg off)' : '') + ' · bar ' + bar + ' kg' : 'Just the ' + bar + ' kg bar';
   }
   function musclesOf(day) {
     var seen = [];
@@ -3113,6 +3159,7 @@
         h += ppCardHtml(day, 'pre', ppOpen.pre !== undefined ? ppOpen.pre : false);
       }
     }
+    h += deloadBannerHtml();
 
     h += '<div class="sech2"><span>Exercises</span><span>' + (models.some(function(m) { return m.vars.length > 1; }) ? 'alternatives inside' : '') + '</span></div>';
     h += '<div class="glist glass">';
@@ -3139,6 +3186,34 @@
     });
     h += '</div>';
     return h;
+  }
+
+  // Deload: suggested when 3+ exercises of the routine have plateaued, or in the last week of a
+  // training cycle; not again within 4 weeks of the previous one.
+  function deloadBannerHtml() {
+    var t = todayStr();
+    if (deloadOn()) {
+      return '<div class="banner glass"><b>Deload week · until ' + fmtDate(prefs.deload.to) + '</b>' +
+        '<p>Every exercise suggests about 15% less weight and stopping with 3+ reps left. Same exercises, easier effort: joints and nervous system recover, strength comes back higher.</p>' +
+        '<div class="row2"><button class="ghost" data-deload="end">End deload now</button></div></div>';
+    }
+    if (prefs.deloadSnooze && prefs.deloadSnooze >= t) return '';
+    if (prefs.deload && addDays(prefs.deload.to, 28) > t) return '';
+    var mv = movements(), stalled = [];
+    routine.forEach(function(d) {
+      d.exercises.forEach(function(e) {
+        var c = coach(e, sortedHist(e.id), (mv[movementKey(e.name)] || {}).sessions);
+        if (c.stall && stalled.indexOf(e.name) < 0) stalled.push(e.name);
+      });
+    });
+    var info = cycleInfo();
+    var cycleEnd = info && (info.last || info.over);
+    if (stalled.length < 3 && !cycleEnd) return '';
+    var why = stalled.length >= 3 ? stalled.length + ' exercises have stopped progressing (' + esc(stalled.slice(0, 3).join(', ')) + (stalled.length > 3 ? '…' : '') + ').'
+      : 'This is the last week of your training cycle.';
+    return '<div class="banner glass"><b>Time for a deload week?</b>' +
+      '<p>' + why + ' A lighter week — about 15% less weight, 3+ reps left on every set — usually gets progress moving again.</p>' +
+      '<div class="row2"><button data-deload="start">Start deload week</button><button class="ghost" data-deload="snooze">Not now</button></div></div>';
   }
 
   function sessionHtml(day, models, prog, sp) {
@@ -3177,7 +3252,12 @@
         var c = m.coach || {};
         var cIco = c.act === 'up' ? ARR_UP : (c.act === 'down' || c.act === 'back') ? ARR_DOWN : SPARK;
         var tip = c.msg || '';
+        var nextW = m.coach && m.coach.weight;
+        if (m.draft && m.draft.w[m.nDone] !== undefined && m.draft.w[m.nDone] !== '') nextW = parseFloat(m.draft.w[m.nDone]);
+        var plates = eqOf(ex.name) === 'bb' && !m.exComplete ? platesText(ex, nextW) : '';
         h += '<div class="xbody">' + (tip && !m.exComplete ? '<div class="tip coach-' + (c.act || 'hold') + '">' + cIco + '<span>' + tip + '</span></div>' : '') +
+          (ex.note ? '<div class="xnote">' + NOTE_ICO + '<span>' + esc(ex.note) + '</span></div>' : '') +
+          (eqOf(ex.name) === 'bb' && !m.exComplete ? '<div class="plates" id="plates-' + m.key + '">' + plates + '</div>' : '') +
           '<div id="hist-' + m.key + '">' + m.setInputs + '</div>' +
           '<div class="xfoot"><button class="ghost" data-log="' + m.key + '" data-setcount="' + ex.sets + '">' + (m.exComplete ? 'Update session' : 'Log all sets') + '</button></div>' +
           '<div class="draft-note" id="draft-' + m.key + '"' + (m.draft && !m.todaySess ? '' : ' hidden') + '>Not saved yet — tap ✓ or Log all sets</div>' +
@@ -3201,6 +3281,8 @@
         '<p class="hint" style="margin:6px 0 14px;">' + metaOf(m.ex) + ' · rest ' + fmtClock(m.ex.restSec) + (m.ex.muscle ? ' · ' + esc(m.ex.muscle) : '') +
           (m.lastLabel !== '—' ? ' · last ' + esc(m.lastLabel) : '') + '</p>' +
         (m.deltaHtml ? '<div style="margin:-6px 0 12px;">' + m.deltaHtml + '</div>' : '') +
+        '<label class="fld" style="margin-top:0;">Notes · seat, grip, machine settings, cues</label>' +
+        '<textarea id="ex-note" placeholder="e.g. seat 4, pin on 7, elbows tucked" style="height:74px;font-family:inherit;font-size:14px;">' + esc(m.ex.note || '') + '</textarea>' +
         (m.hist.length ? chartHtml(m.key, m.hist) + m.statsHtml + '<div class="grp" style="margin:18px 0 6px;">History</div>' + m.sessionsHtml
           : '<p class="hint">No sessions yet.</p>') +
         '<button class="ghost" data-close style="width:100%;margin-top:16px;">Close</button>' +
@@ -3208,6 +3290,16 @@
     wrap.hidden = false;
     document.body.style.overflow = 'hidden';
     wrap.querySelectorAll('[data-close]').forEach(function(el) { el.addEventListener('click', closeSheet); });
+    var noteEl = document.getElementById('ex-note');
+    if (noteEl) noteEl.addEventListener('change', function() {
+      var src = m.ex.main ? (m.ex.main.alts || []).find(function(a) { return a.id === m.ex.id; }) : m.ex;
+      if (!src) return;
+      var v = noteEl.value.trim();
+      if (v) src.note = v; else delete src.note;
+      m.ex.note = v;
+      saveRoutine();
+      render();
+    });
     wrap.querySelectorAll('[data-mv-from]').forEach(function(el) {
       el.addEventListener('click', function() {
         openExPicker(el.getAttribute('data-mv-main'), { from: el.getAttribute('data-mv-from'), date: el.getAttribute('data-mv-date') });
@@ -3388,6 +3480,7 @@
           tgt = '<span class="tgt" data-e="' + E.toFixed(2) + '">' + fmtTarget(predReps(E, parseFloat(pw))) + '</span>';
         }
         var ps = prevSess && prevSess.sets[i - 1];
+        if (isDone && src && src.rir != null) tgt = '<span class="tgt rirb" title="Reps left">' + (src.rir >= 3 ? '3+' : src.rir) + ' left</span>';
         setInputs +=
           '<div class="set-row' + (isDone ? ' done' : '') + (isNext ? ' next' : '') + (pop ? ' pop' : '') + '">' +
             '<div class="set-label">' + i + '</div>' +
@@ -3397,6 +3490,11 @@
             '<button class="set-check' + (isNext ? ' next' : '') + '" data-check="' + key + '" data-i="' + i + '" aria-label="Set ' + i + ' done"' +
               ((isDone && i !== nDone) || (!isDone && !isNext) ? ' disabled' : '') + '>' + CHECK + '</button>' +
           '</div>';
+        // just-finished set: how many more reps were in the tank?
+        if (isDone && i === nDone && src && src.rir == null && prefs.rir !== false) {
+          setInputs += '<div class="rir-row"><span>Reps left? <small>aim ' + rirAim(ex) + '</small></span>' +
+            [0, 1, 2, 3].map(function(v) { return '<button data-rir="' + key + '" data-i="' + i + '" data-v="' + v + '">' + (v === 3 ? '3+' : v) + '</button>'; }).join('') + '</div>';
+        }
         if (isNext && !exComplete) {
           var ws = weightStep(ex);
           setInputs += '<div class="step-row"><span></span><span></span>' +
@@ -3532,6 +3630,33 @@
     root.querySelectorAll('[data-more]').forEach(function(el) {
       el.addEventListener('click', function(e) { e.stopPropagation(); openMoreSheet(el.getAttribute('data-more')); });
     });
+    root.querySelectorAll('[data-deload]').forEach(function(b) {
+      b.addEventListener('click', function() {
+        var a = b.getAttribute('data-deload'), t = todayStr();
+        if (a === 'start') prefs.deload = { from: t, to: addDays(t, 6) };
+        else if (a === 'snooze') prefs.deloadSnooze = addDays(t, 7);
+        else if (a === 'end' && prefs.deload) prefs.deload.to = addDays(t, -1);
+        savePrefs();
+        render();
+      });
+    });
+    root.querySelectorAll('[data-rir]').forEach(function(b) {
+      b.addEventListener('click', function(e) {
+        e.stopPropagation();
+        var key = b.getAttribute('data-rir'), i = parseInt(b.getAttribute('data-i'), 10);
+        var ts = todaySession(key);
+        if (!ts || !ts.sets[i - 1]) return;
+        ts.sets[i - 1].rir = parseInt(b.getAttribute('data-v'), 10);
+        saveEntries();
+        if (navigator.vibrate) navigator.vibrate(8);
+        if (pendingNext && pendingNext.from === key) {
+          var to = pendingNext.to;
+          pendingNext = null;
+          if (focusKey === key) { focusKey = to; render(); var el = document.querySelector('[data-card="' + to + '"]'); if (el) setTimeout(function() { el.scrollIntoView({ behavior: 'smooth', block: 'start' }); }, 80); return; }
+        }
+        render();
+      });
+    });
     root.querySelectorAll('[data-daypick]').forEach(function(el) {
       el.addEventListener('click', function(e) { e.stopPropagation(); openDayPicker(); });
     });
@@ -3572,6 +3697,9 @@
         captureDraft(key, parseInt(inp.getAttribute('data-setcount'), 10));
         // weight changed on an open row: refresh its rep target
         if (inp.id.indexOf('w-') === 0) {
+          var pl = document.getElementById('plates-' + key);
+          var lex = lastModels[key] && lastModels[key].ex;
+          if (pl && lex && inp.closest('.set-row').classList.contains('next')) pl.innerHTML = platesText(lex, parseFloat(inp.value));
           var t = inp.closest('.set-row').querySelector('.tgt[data-e]');
           if (t) t.textContent = fmtTarget(predReps(parseFloat(t.getAttribute('data-e')), parseFloat(inp.value)));
           var wu = document.getElementById('wu-' + key);
@@ -3864,6 +3992,7 @@
           '<label class="fld" style="margin:0;">Superset<select data-f="ss" style="margin-top:4px;">' + ['', 'A', 'B', 'C', 'D'].map(function(l) { return '<option value="' + l + '"' + ((ex.ss || '') === l ? ' selected' : '') + '>' + (l || 'None') + '</option>'; }).join('') + '</select></label>' +
         '</div>' +
         '<div class="srow" style="padding:14px 2px 0;"><div class="m">Priority<small>Highlighted, and counted as the block\'s focus in Progress</small></div><button class="tgl' + (ex.priority ? ' on' : '') + '" data-prio="1" aria-label="Priority"></button></div>' +
+        '<label class="fld">Notes · seat, grip, machine settings, cues</label><textarea data-f="note" style="height:64px;font-family:inherit;font-size:14px;">' + esc(ex.note || '') + '</textarea>' +
         altsHtml +
         '<button class="ghost" data-alt-add="1" style="width:100%;margin-top:14px;">+ Add alternative</button>' +
         '<div class="row2"><button class="ghost" data-mv="-1"' + (i === 0 ? ' disabled' : '') + '>Move up</button><button class="ghost" data-mv="1"' + (i === day.exercises.length - 1 ? ' disabled' : '') + '>Move down</button><button class="danger" data-exdel="1">Delete</button></div>' +
@@ -3878,6 +4007,7 @@
       inp.addEventListener('change', function() {
         var f = inp.getAttribute('data-f');
         if (f === 'name') { var v = inp.value.trim(); if (!v) { inp.value = ex.name; return; } ex.name = v; }
+        else if (f === 'note') { var nv = inp.value.trim(); if (nv) ex.note = nv; else delete ex.note; }
         else if (f === 'muscle') ex.muscle = inp.value;
         else if (f === 'ss') { if (inp.value) ex.ss = inp.value; else delete ex.ss; }
         else { var n = parseInt(inp.value, 10); if (isNaN(n) || n < 0) { inp.value = ex[f]; return; } ex[f] = n; }
@@ -4080,6 +4210,7 @@
           return '<button class="rd' + (restDaysOf(plan).indexOf(d) >= 0 ? ' on' : '') + '" data-rd="' + d + '" style="flex:1;">' + DAYN[d].charAt(0) + '</button>';
         }).join('') + '</div></div>' +
         '<div class="srow">' + tile('bell') + '<div class="m">Sound when rest ends<small>Vibration stays on where the phone supports it</small></div><button class="tgl' + (prefs.sound === false ? '' : ' on') + '" id="pref-sound" aria-label="Sound"></button></div>' +
+        '<div class="srow">' + tile('cycle') + '<div class="m">Ask reps left after each set<small>Reps in reserve make the weight suggestions sharper</small></div><button class="tgl' + (prefs.rir === false ? '' : ' on') + '" id="pref-rir" aria-label="Reps left"></button></div>' +
       '</div>' +
       '<div class="grp">Data</div>' +
       '<div class="glist glass">' +
@@ -4123,6 +4254,7 @@
       });
     });
     document.getElementById('pref-sound').addEventListener('click', function() { prefs.sound = prefs.sound === false; savePrefs(); renderData(); });
+    document.getElementById('pref-rir').addEventListener('click', function() { prefs.rir = prefs.rir === false; savePrefs(); renderData(); });
     document.getElementById('sync-row').addEventListener('click', function() { syncOpen = !syncOpen; renderData(); });
     document.getElementById('restore-row').addEventListener('click', function() { restoreOpen = !restoreOpen; renderData(); });
 
