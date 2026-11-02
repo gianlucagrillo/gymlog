@@ -3228,8 +3228,7 @@
   }
 
   function todayHtml(day, models, prog, sp, complete) {
-    var dateTxt = new Date(todayStr() + 'T00:00:00').toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long' });
-    var h = '<div class="vhead"><div><div class="ov">' + dateTxt + '</div><h1 class="ttl">Today</h1></div>' +
+    var h = '<div class="vhead">' +
       '<span class="pillg glass"><span class="d"></span>' + weekPillText() + '</span></div>';
     h += weekStripHtml();
 
