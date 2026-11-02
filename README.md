@@ -84,6 +84,15 @@ v19 body and weekly view:
   The backup / synced `data.json` also carries `body` and the last six weekly
   `reports`.
 
+v20 day and variant picks:
+- **Rotation restarts on Monday** — Today offers the first day of the routine
+  not trained yet this week, so on Monday it is always the first day (Upper A);
+  days skipped last week are dropped, not carried over. The week strip lists the
+  remaining days in routine order; once all are done it keeps rotating.
+- **Last-used variant first** — an exercise with alternatives opens on the one
+  done most recently (e.g. the machine chest press), with its own suggested
+  weight. Choosing another from ⇄, including the planned one, sticks for the day.
+
 The details below describe the features, which are unchanged.
 
 ## What it does

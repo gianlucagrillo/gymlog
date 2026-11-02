@@ -1499,10 +1499,22 @@
 
   // ---------- which day to open on ----------
   // Open the day you trained today, or else the one after the last day you trained.
+  // The rotation restarts every Monday: today gets the first day of the routine not trained yet this week
+  // (skipped days are dropped, not carried over); once every day is done it keeps rotating.
+  function trainedThisWeek(day) {
+    var mon = mondayOf(todayStr());
+    return day.exercises.some(function(ex) {
+      return variants(ex).some(function(v) { return (entries[v.id] || []).some(function(s) { return s.date >= mon && s.date < todayStr(); }); });
+    });
+  }
   function pickStartDay() {
     var lastDate = null;
     for (var k in entries) (entries[k] || []).forEach(function(s) { if (!lastDate || s.date > lastDate) lastDate = s.date; });
     if (!lastDate) return routine[0].id;
+    if (lastDate !== todayStr()) {
+      var open = routine.find(function(d) { return !trainedThisWeek(d); });
+      if (open) return open.id;
+    }
 
     var idx = -1, bestHits = 0;
     routine.forEach(function(d, i) {
@@ -1770,8 +1782,14 @@
     if (done) return altOf(ex, done);
     if (loggedOn(ex.id, date) || date !== todayStr()) return ex;
     var pid = pickedAlt(ex.id);
+    if (pid === ex.id) return ex;
     var picked = pid && ex.alts.find(function(a) { return a.id === pid; });
-    return picked ? altOf(ex, picked) : ex;
+    if (picked) return altOf(ex, picked);
+    // nothing picked today: start from the variant done most recently
+    var lastOf = function(id) { var d = ''; (entries[id] || []).forEach(function(s) { if (s.date < date && s.date > d) d = s.date; }); return d; };
+    var best = null, bestDate = lastOf(ex.id);
+    ex.alts.forEach(function(a) { var d = lastOf(a.id); if (d > bestDate) { bestDate = d; best = a; } });
+    return best ? altOf(ex, best) : ex;
   }
   function effDay(day, date) {
     var d = {};
@@ -2144,7 +2162,7 @@
           saveEntries();
         } else {
           if (id === cur.id) { closeSheet(); return; }
-          setPicked(main.id, id === main.id ? null : id);
+          setPicked(main.id, id);
           if (timer && timer.key === cur.id) stopTimer();
         }
         openCards[id] = true;
@@ -3026,6 +3044,9 @@
     var todayId = todayTrained ? pickStartDay() : activeDay;
     var idx = Math.max(0, routine.findIndex(function(d) { return d.id === todayId; }));
     var cursor = todayRest && !todayTrained ? idx - 1 : idx;
+    // the rest of the week follows the days not trained yet, in routine order
+    var queue = routine.filter(function(d, j) { return j !== idx && !trainedThisWeek(d); });
+    if (todayRest && !todayTrained && routine[idx] && !trainedThisWeek(routine[idx])) queue.unshift(routine[idx]);
     var cells = [];
     for (var i = 0; i < 7; i++) {
       var date = addDays(mon, i), dow = new Date(date + 'T00:00:00').getDay();
@@ -3043,7 +3064,8 @@
       } else if (isRest) {
         c.cls = 'rest'; c.sub = 'rest';
       } else if (n) {
-        cursor = (cursor + 1 + n) % n;
+        if (queue.length) { var q = queue.shift(); cursor = routine.indexOf(q); }
+        else cursor = (cursor + 1 + n) % n;
         c.sub = abbr(routine[cursor].label); c.day = routine[cursor].id;
       }
       cells.push(c);
