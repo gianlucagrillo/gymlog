@@ -93,6 +93,16 @@ v20 day and variant picks:
   done most recently (e.g. the machine chest press), with its own suggested
   weight. Choosing another from ⇄, including the planned one, sticks for the day.
 
+v21 fixes:
+- **Rep targets after a weight increase** — the table is pre-filled with the
+  reps expected at the new weight (from last time's reps and reps left, Epley),
+  not the bottom of the range; the tip says "expect about N, do every clean rep
+  up to the top". The Reps column header shows the exercise's range.
+- **Last set of the day** — the workout no longer closes before the reps-left
+  question: it waits for the answer, then opens the summary.
+- Data fix: the 2 Nov row was a seated cable row without chest support; it now
+  has its own alternative in Upper A and that session was moved onto it.
+
 The details below describe the features, which are unchanged.
 
 ## What it does
