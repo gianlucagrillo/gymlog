@@ -950,10 +950,17 @@
   #gymlog .exc.xph.done > .pbg { filter: grayscale(.85) brightness(.55); }
   #gymlog .exc.xph.done > .pglow { opacity: .18; filter: blur(24px) grayscale(1); }
   #gymlog .hero2.hph { min-height: 236px; }
-  /* landing page: the workout card alone fills the screen down to the tab bar */
-  #gymlog .hero2.solo.hph { min-height: max(320px, calc(100vh - 275px)); min-height: max(320px, calc(100dvh - 275px)); display: flex; flex-direction: column; }
-  #gymlog .hero2.solo.hph .cta { margin-top: auto; }
-  #gymlog .hero2.solo.hph .hero-day { align-self: flex-start; }
+  /* landing page: the workout card alone fills the screen down to the tab bar, with no scrolling */
+  html.is-landing, html.is-landing body { height: 100%; overflow: hidden; }
+  html.is-landing body { box-sizing: border-box; min-height: 0; }
+  #gymlog.landing { box-sizing: border-box; height: calc(100vh - max(8px, var(--sat))); height: calc(100dvh - max(8px, var(--sat)));
+    display: flex; flex-direction: column; overflow: hidden; padding-bottom: calc(100px + env(safe-area-inset-bottom)); }
+  #gymlog.landing.timer-on { padding-bottom: calc(180px + env(safe-area-inset-bottom)); }
+  #gymlog.landing #view { flex: 1; min-height: 0; display: flex; flex-direction: column; }
+  #gymlog.landing #backup-note { display: none; }
+  #gymlog.landing .hero2.solo { flex: 1; min-height: 0; display: flex; flex-direction: column; }
+  #gymlog .hero2.solo .cta { margin-top: auto; }
+  #gymlog .hero2.solo .hero-day { align-self: flex-start; }
   #gymlog .hero2.hph .ring b { color: var(--t1); }
   #gymlog .plist { display: grid; gap: 22px; }
   #gymlog .pcard { position: relative; border-radius: 22px; padding: 16px 18px 14px; min-height: 138px; cursor: pointer; border: none; background: var(--glass); box-shadow: 0 26px 40px -20px rgba(0,0,0,.85); }
@@ -3103,6 +3110,10 @@
     else if (view === 'edit') renderEdit();
     else renderData();
     app.classList.toggle('in-session', view === 'log' && inSession);
+    // Today with just the workout card: a single screen that doesn't scroll
+    var landing = view === 'log' && !inSession && !SHOW_TODAY_LIST;
+    app.classList.toggle('landing', landing);
+    document.documentElement.classList.toggle('is-landing', landing);
     // a new screen (tab, or today ↔ active workout) fades in; re-renders of the same screen don't
     var screen = view + (view === 'log' ? (inSession ? ':s' : ':t') : '');
     if (screen !== lastScreen) {

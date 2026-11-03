@@ -170,6 +170,9 @@ v38: Today shows only the workout card (big, down to the tab bar) and the deload
 it applies; warm-up/cool-down and the exercise list are hidden (`SHOW_TODAY_LIST = false`) —
 the exercises appear after "Start workout".
 
+v39: Today is a single screen that doesn't scroll — the workout card stretches to just above the
+tab bar on any phone height (`#gymlog.landing` flex layout, backup note hidden there).
+
 The details below describe the features, which are unchanged.
 
 ## What it does
