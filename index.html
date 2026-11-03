@@ -884,7 +884,6 @@
   #gymlog .exc.xph.open::after { background: linear-gradient(90deg, rgba(var(--bg-rgb),.9) 0%, rgba(var(--bg-rgb),.72) 45%, rgba(var(--bg-rgb),.3) 100%), linear-gradient(0deg, rgba(var(--bg-rgb),.75), transparent 70%); }
   #gymlog .exc.xph.open .pglow { top: calc(100% - 34px); bottom: -26px; }
   #gymlog .exc.xph + .exc.xph { margin-top: 18px; }
-  #gymlog .exc.xph .tile { background: rgba(var(--bg-rgb),.45); -webkit-backdrop-filter: blur(8px); backdrop-filter: blur(8px); }
   #gymlog .exc.xph.done .pbg { filter: grayscale(.85) brightness(.55); }
   #gymlog .exc.xph.done .pglow { opacity: .18; filter: blur(24px) grayscale(1); }
   #gymlog .hero2.hph { min-height: 236px; }
@@ -2236,7 +2235,6 @@
       var h = sortedHist(v.id), last = h[h.length - 1];
       var lastTxt = last ? 'Last ' + fmtDate(last.date) + ': ' + last.sets.map(fmtSet).join(' · ') : 'No history yet';
       return '<button class="tpl-opt pick-opt has-tile' + (isCur ? ' sel' : '') + '" data-pick-id="' + v.id + '"' + (dis ? ' disabled' : '') + '>' +
-        tileHtml(v.name) +
         '<div class="po-mid">' +
           '<b>' + esc(v.name) + (idx === 0 ? '<em>Planned</em>' : '') + (isCur ? CHECK : '') + '</b>' +
           '<span>' + metaOf(v) + ' · rest ' + fmtClock(v.restSec) + '</span>' +
@@ -2710,7 +2708,6 @@
       var sub = e ? 'est. 1RM ' + e + ' kg' : m.sessions.length + (m.sessions.length === 1 ? ' session' : ' sessions');
       if (vals.length >= 3 && Math.max.apply(null, vals.slice(-3)) - Math.min.apply(null, vals.slice(-3)) < 0.01) sub += ' · flat lately';
       return '<div class="gli' + (m.key === liftSel ? ' sel' : '') + '" data-lift="' + esc(m.key) + '">' +
-        '<div class="tile">' + EQ_ICON[eqOf(m.name)] + '</div>' +
         '<div class="m"><b>' + esc(m.name) + '</b><small>' + sub + '</small></div>' + sparkSvg(vals) + '</div>';
     }).join('') + '</div>';
     var sel = mv[liftSel];
@@ -3395,7 +3392,7 @@
         return;
       }
       h += '<div class="gli' + (m.exComplete ? ' done' : '') + '" data-card="' + m.key + '" data-open="' + m.key + '">' +
-        '<div class="tile' + (m.exComplete ? ' ok' : '') + '">' + (m.exComplete ? CHECK : EQ_ICON[eqOf(ex.name)]) + '</div>' +
+        (m.exComplete ? '<div class="tile ok">' + CHECK + '</div>' : '') +
         '<div class="m"><b>' + (m.ssLabel ? '<span class="ss-tag">' + m.ssLabel + '</span>' : '') + esc(ex.name) + m.prHtml + '</b>' +
           '<small>' + esc(cap) + '</small>' +
           (ex.main ? '<em>Alternative to ' + esc(ex.main.name) + '</em>' : '') + '</div>' +
@@ -3463,7 +3460,7 @@
       }
       h += '<div class="exc glass' + (ph ? ' xph' : '') + (open ? ' open' : ' collapsed') + (m.exComplete ? ' done' : '') + '" data-card="' + m.key + '"' + (open ? '' : ' data-expand="' + m.key + '"') + '>' + ph +
         '<div class="exh">' +
-          '<div class="tile' + (m.exComplete ? ' ok' : '') + '">' + (m.exComplete ? CHECK : EQ_ICON[eqOf(ex.name)]) + '</div>' +
+          (m.exComplete ? '<div class="tile ok">' + CHECK + '</div>' : '') +
           '<div class="m"><b>' + (m.ssLabel ? '<span class="ss-tag">' + m.ssLabel + '</span>' : '') + esc(ex.name) + m.prHtml + '</b>' +
             '<small>' + esc(sub) + '</small>' +
             (ex.main ? '<em>Alternative to ' + esc(ex.main.name) + '</em>' : '') + '</div>' +
@@ -4131,7 +4128,7 @@
           if (ex.alts && ex.alts.length) bits.push(ex.alts.length + (ex.alts.length === 1 ? ' alternative' : ' alternatives'));
           if (ex.ss) bits.push('superset ' + ex.ss);
           if (ex.priority) bits.push('priority');
-          return '<div class="gli" data-exed="' + i + '"><div class="tile">' + EQ_ICON[eqOf(ex.name)] + '</div>' +
+          return '<div class="gli" data-exed="' + i + '">' +
             '<div class="m"><b>' + esc(ex.name) + '</b><small>' + esc(bits.join(' · ')) + '</small></div>' + CHEV_R + '</div>';
         }).join('') + '</div>' +
         '<div class="dacts"><button class="ghost" data-addex="1">+ Exercise</button><button class="ghost" data-drename="1">Rename</button><button class="ghost" data-ddel="1">Delete</button></div>' +

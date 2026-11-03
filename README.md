@@ -134,6 +134,9 @@ visible on the dark background.
 v28: the workout screen uses the same photos as Today — full photo on the closed
 exercise cards, and behind the header of the open one, fading out before the set rows.
 
+v29: no equipment icons next to exercise names (workout, Today list, Lifts, routine
+editor, alternative picker); finished exercises keep the check.
+
 The details below describe the features, which are unchanged.
 
 ## What it does
