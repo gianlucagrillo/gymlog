@@ -157,6 +157,8 @@ all the data from the sync repo. The service worker no longer touches GitHub API
 v34: in the app the page also fills the area around the camera; the app passes the cutout height
 (`GymlogApp.topInset()` → `--app-top`) so the content starts just below it.
 
+v35: no "This week · n of 5" pill at the top of Today (the week strip already shows it).
+
 The details below describe the features, which are unchanged.
 
 ## What it does

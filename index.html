@@ -3434,18 +3434,9 @@
     var s = seen.slice(0, 5).join(', ');
     return s.charAt(0).toUpperCase() + s.slice(1);
   }
-  function weekPillText() {
-    var info = cycleInfo();
-    var mon = mondayOf(todayStr()), days = {};
-    for (var k in entries) (entries[k] || []).forEach(function(s) { if (s.date >= mon) days[s.date] = 1; });
-    var n = Object.keys(days).length + ' of ' + routine.length;
-    return info && info.week && !info.over ? 'Week ' + info.week + ' · ' + n : 'This week · ' + n;
-  }
 
   function todayHtml(day, models, prog, sp, complete) {
-    var h = '<div class="vhead">' +
-      '<span class="pillg glass"><span class="d"></span>' + weekPillText() + '</span></div>';
-    h += weekStripHtml();
+    var h = weekStripHtml();
 
     var dow = new Date(todayStr() + 'T00:00:00').getDay();
     var restToday = restDaysOf(activePlan()).indexOf(dow) >= 0 && !prog.started;
