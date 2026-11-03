@@ -1379,6 +1379,7 @@
     'biceps': ['boxer-blue', 64], 'triceps': ['boxer-blue', 64], 'abs': ['hike-sunset', 62], 'other': ['hike-sunset', 62]
   };
   function photosOn() { return prefs.photos !== false; }
+  var SHOW_PROTEIN_CARD = false;
   function photoBg(p, y) {
     return p ? '<i class="pbg" style="background-image:url(img/' + p[0] + '.jpg);background-position:' + p[1] + '% ' + (y || 45) + '%"></i>' : '';
   }
@@ -3342,7 +3343,8 @@
       }
     }
     h += deloadBannerHtml();
-    h += proteinCardHtml();
+    // protein card hidden for now (Gianluca, 3 Nov 2026): protein logging and the weekly report stay in place
+    if (SHOW_PROTEIN_CARD) h += proteinCardHtml();
 
     h += '<div class="sech2"><span>Exercises</span><span>' + (models.some(function(m) { return m.vars.length > 1; }) ? 'alternatives inside' : '') + '</span></div>';
     var withPh = photosOn(), usedPh = {};

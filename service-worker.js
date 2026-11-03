@@ -1,4 +1,4 @@
-const CACHE_NAME = 'gymlog-cache-v25';
+const CACHE_NAME = 'gymlog-cache-v26';
 const ASSETS = ['./', './index.html', './manifest.json', './icon-192.png', './icon-512.png',
   './img/run-road.jpg', './img/hike-sunset.jpg', './img/rain-night.jpg', './img/boxer-backlit.jpg', './img/boxer-blue.jpg',
   './img/shadowbox-sunset.jpg', './img/battle-ropes.jpg', './img/cyclist-climb.jpg', './img/surf-barrel.jpg', './img/high-kick.jpg'];
