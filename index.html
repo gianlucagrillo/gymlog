@@ -864,24 +864,28 @@
   @keyframes gl-barin { from { transform: translateY(18px); opacity: 0; } }
   #gymlog .hero2 .ring circle { transition: stroke-dashoffset .6s ease; }
 
-  /* photo backgrounds */
-  #gymlog .pbg { position: absolute; inset: 0; z-index: -2; background-size: cover; background-repeat: no-repeat; border-radius: inherit; }
+  /* photo backgrounds: photo and darkening gradient (--ov) are one layer, with no card fill underneath,
+     so the rounded edge doesn't show a light anti-aliasing rim */
+  #gymlog .pbg { position: absolute; inset: 0; z-index: -2; border-radius: inherit; background-repeat: no-repeat;
+    background-image: var(--ov, none), var(--ph); background-size: 100% 100%, cover; background-position: 0 0, var(--pp); }
   #gymlog .hph, #gymlog .pcard { isolation: isolate; }
+  #gymlog .glass.hph, #gymlog .pcard, #gymlog .exc.xph.collapsed { background: transparent; -webkit-backdrop-filter: none; backdrop-filter: none; }
+  #gymlog .hph, #gymlog .pcard { --ov: linear-gradient(90deg, rgba(var(--bg-rgb),.93) 0%, rgba(var(--bg-rgb),.80) 36%, rgba(var(--bg-rgb),.28) 68%, rgba(var(--bg-rgb),.04) 100%), linear-gradient(0deg, rgba(var(--bg-rgb),.45), transparent 55%); }
   /* projected shadow: a blurred copy of the card's own photo, offset below it, so it shows on a dark background */
   #gymlog .pglow { position: absolute; left: 8%; right: 8%; top: 45%; bottom: -26px; z-index: -3; border-radius: inherit; background-size: cover; background-repeat: no-repeat;
+    background-image: var(--ph); background-position: var(--pp);
     filter: blur(22px) saturate(1.6) brightness(1.15); opacity: .8; pointer-events: none; transform: translateZ(0); }
   #gymlog .hph .pglow { left: 7%; right: 7%; top: 50%; bottom: -30px; filter: blur(28px) saturate(1.6) brightness(1.15); opacity: .75; }
   #gymlog .pcard.done .pglow { opacity: .18; filter: blur(24px) grayscale(1); }
-  #gymlog .hph::after, #gymlog .pcard::after { content: ''; position: absolute; inset: 0; z-index: -1; border-radius: inherit; pointer-events: none;
-    background: linear-gradient(90deg, rgba(var(--bg-rgb),.93) 0%, rgba(var(--bg-rgb),.80) 36%, rgba(var(--bg-rgb),.28) 68%, rgba(var(--bg-rgb),.04) 100%), linear-gradient(0deg, rgba(var(--bg-rgb),.45), transparent 55%); }
   /* workout cards: collapsed = full photo like Today; open = photo behind the header, fading out before the set rows */
-  #gymlog .exc.xph { position: relative; isolation: isolate; box-shadow: 0 26px 40px -20px rgba(0,0,0,.85); }
+  #gymlog .exc.xph { position: relative; isolation: isolate; box-shadow: 0 26px 40px -20px rgba(0,0,0,.85);
+    --ov: linear-gradient(90deg, rgba(var(--bg-rgb),.92) 0%, rgba(var(--bg-rgb),.78) 40%, rgba(var(--bg-rgb),.25) 75%, rgba(var(--bg-rgb),.05) 100%); }
   #gymlog .exc.xph.collapsed { padding-top: 18px; padding-bottom: 18px; }
-  #gymlog .exc.xph::after { content: ''; position: absolute; inset: 0; z-index: -1; border-radius: inherit; pointer-events: none;
-    background: linear-gradient(90deg, rgba(var(--bg-rgb),.92) 0%, rgba(var(--bg-rgb),.78) 40%, rgba(var(--bg-rgb),.25) 75%, rgba(var(--bg-rgb),.05) 100%); }
-  #gymlog .exc.xph.open .pbg, #gymlog .exc.xph.open::after { bottom: auto; height: 190px;
+  /* open: the glass fill starts below the rounded corners, where the photo is still fully opaque */
+  #gymlog .exc.xph.open { background: linear-gradient(180deg, transparent 32px, var(--glass) 32px);
+    --ov: linear-gradient(90deg, rgba(var(--bg-rgb),.9) 0%, rgba(var(--bg-rgb),.72) 45%, rgba(var(--bg-rgb),.3) 100%), linear-gradient(0deg, rgba(var(--bg-rgb),.75), transparent 70%); }
+  #gymlog .exc.xph.open .pbg { bottom: auto; height: 190px;
     -webkit-mask-image: linear-gradient(180deg, #000 20%, transparent 92%); mask-image: linear-gradient(180deg, #000 20%, transparent 92%); }
-  #gymlog .exc.xph.open::after { background: linear-gradient(90deg, rgba(var(--bg-rgb),.9) 0%, rgba(var(--bg-rgb),.72) 45%, rgba(var(--bg-rgb),.3) 100%), linear-gradient(0deg, rgba(var(--bg-rgb),.75), transparent 70%); }
   #gymlog .exc.xph.open .pglow { top: calc(100% - 34px); bottom: -26px; }
   #gymlog .exc.xph + .exc.xph { margin-top: 18px; }
   #gymlog .exc.xph.done .pbg { filter: grayscale(.85) brightness(.55); }
@@ -1399,7 +1403,7 @@
   var SHOW_PROTEIN_CARD = false;
   function photoBg(p, y) {
     if (!p) return '';
-    var st = 'background-image:url(img/' + p[0] + '.jpg);background-position:' + p[1] + '% ' + (y || 45) + '%';
+    var st = '--ph:url(img/' + p[0] + '.jpg);--pp:' + p[1] + '% ' + (y || 45) + '%';
     return '<i class="pglow" style="' + st + '"></i><i class="pbg" style="' + st + '"></i>';
   }
   function exPhoto(ex) { return PHOTO_BY_MUSCLE[String(ex.muscle || 'other').toLowerCase()] || PHOTO_BY_MUSCLE.other; }

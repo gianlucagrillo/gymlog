@@ -137,6 +137,9 @@ exercise cards, and behind the header of the open one, fading out before the set
 v29: no equipment icons next to exercise names (workout, Today list, Lifts, routine
 editor, alternative picker); finished exercises keep the check.
 
+v30: photo cards no longer show a faint light rim on the rounded corners (photo and
+darkening are drawn as one layer, with no card fill underneath).
+
 The details below describe the features, which are unchanged.
 
 ## What it does
