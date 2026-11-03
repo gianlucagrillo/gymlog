@@ -122,6 +122,11 @@ required):
   - `img/surf-barrel.jpg` — https://images.unsplash.com/photo-1760755958481-076d0bf01599
   - `img/high-kick.jpg` — https://images.unsplash.com/photo-1633378453111-55462debb3f4
 
+v24 colours: Settings → Colours switches between Ember (the original warm theme)
+and four Petrol themes — the same deep petrol-blue base (#020F12) with a different
+accent: Salsedine, Acqua luminosa, Ghiaccio or Lime. The choice is applied at once
+and remembered on the phone; all colours come from CSS variables.
+
 The details below describe the features, which are unchanged.
 
 ## What it does
