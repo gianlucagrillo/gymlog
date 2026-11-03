@@ -540,7 +540,9 @@
   #gymlog.timer-on { padding-bottom: calc(180px + env(safe-area-inset-bottom)); }
   #gymlog .head { display: none; }
   #gymlog .glass, #gymlog .card, #gymlog .pp, #gymlog .tpl-opt { background: var(--glass); backdrop-filter: blur(28px) saturate(160%); -webkit-backdrop-filter: blur(28px) saturate(160%);
-    border: .5px solid var(--edge); box-shadow: inset 0 .5px 0 var(--hi), 0 18px 40px -20px rgba(0,0,0,.65); }
+    border: none; box-shadow: 0 18px 40px -20px rgba(0,0,0,.65); }
+  /* pills and segmented controls keep a hairline so they still read as controls */
+  #gymlog .pillg.glass, #gymlog .seg.glass { border: .5px solid var(--edge); box-shadow: inset 0 .5px 0 var(--hi); }
   #gymlog .card { border-radius: 24px; padding: 18px; margin-bottom: 12px; }
   #gymlog .ex-name { font-weight: 700; letter-spacing: -.01em; }
   #gymlog .hint { color: var(--t3); font-size: 12px; }
@@ -709,7 +711,7 @@
   #gymlog .pick-opt.has-tile .tile { width: 36px; height: 36px; }
   #gymlog .pick-opt[disabled] { opacity: .35; box-shadow: none; }
   #gymlog .sheet .stats { gap: 8px; }
-  #gymlog .stat { background: var(--tile); border: .5px solid var(--edge); border-radius: 16px; color: var(--t3); font-size: 10.5px; letter-spacing: .08em; text-transform: uppercase; }
+  #gymlog .stat { background: var(--tile); border: none; border-radius: 16px; color: var(--t3); font-size: 10.5px; letter-spacing: .08em; text-transform: uppercase; }
   #gymlog .stat b { font-size: 20px; font-weight: 300; color: var(--t1); letter-spacing: -.02em; text-transform: none; }
   #gymlog .session { border-bottom: .5px solid var(--line); }
   #gymlog .session-head { color: var(--t2); }
@@ -724,13 +726,13 @@
   #gymlog .sum-title { font-size: 40px; font-weight: 700; letter-spacing: -.035em; margin: 10px 0 6px; }
   #gymlog .sum-date { color: var(--t2); }
   #gymlog .sum-grid { gap: 10px; margin: 22px 0 12px; }
-  #gymlog .sum-stat { background: var(--tile); border: .5px solid var(--edge); border-radius: 20px; padding: 14px 16px; color: var(--t3); font-size: 10.5px; letter-spacing: .1em; text-transform: uppercase; display: flex; flex-direction: column-reverse; justify-content: flex-end; gap: 6px; }
+  #gymlog .sum-stat { background: var(--tile); border: none; border-radius: 20px; padding: 14px 16px; color: var(--t3); font-size: 10.5px; letter-spacing: .1em; text-transform: uppercase; display: flex; flex-direction: column-reverse; justify-content: flex-end; gap: 6px; }
   #gymlog .sum-stat b { font-size: 30px; font-weight: 300; letter-spacing: -.03em; color: var(--t1); margin: 0; text-transform: none; }
   #gymlog .sum-stat b small { font-size: 13px; color: var(--t3); }
   #gymlog .sum-stat.hl b { background: var(--grad); -webkit-background-clip: text; background-clip: text; color: transparent; }
   #gymlog .sum-vs { color: var(--t2); } #gymlog .sum-vs .up { color: var(--acc); } #gymlog .sum-vs .down { color: var(--bad); }
   #gymlog .sum-pp { color: var(--t2); } #gymlog .sum-pp .ok { color: var(--acc); }
-  #gymlog .sum-pr { background: var(--tile); border: .5px solid var(--edge); border-radius: 18px; padding: 12px 14px; }
+  #gymlog .sum-pr { background: var(--tile); border: none; border-radius: 18px; padding: 12px 14px; }
   #gymlog .sum-pr svg { width: 34px; height: 34px; padding: 8px; border-radius: 50%; background: var(--grad); color: var(--on); }
   #gymlog .sum-ex { border-top: .5px solid var(--line); }
   #gymlog .sum-ex-sets { color: var(--t2); }
@@ -760,7 +762,7 @@
   #gymlog .tfull.done .tfull-clock { color: var(--acc); }
   #gymlog .tfull-sub { color: var(--t3); }
   #gymlog .tfull-name { color: var(--t2); font-weight: 500; }
-  #gymlog .tfull-next { background: var(--glass); border: .5px solid var(--edge); border-radius: 22px; box-shadow: inset 0 .5px 0 var(--hi); }
+  #gymlog .tfull-next { background: var(--glass); border: none; border-radius: 22px; box-shadow: none; }
   #gymlog .tfull-next b { font-weight: 300; color: var(--t1); letter-spacing: -.02em; }
   #gymlog .tfull-next small { color: var(--t3); } #gymlog .tfull-next span { color: var(--t2); }
   #gymlog .tfull-actions button { background: var(--glass); border: .5px solid var(--edge); color: var(--t1); border-radius: 99px; box-shadow: inset 0 .5px 0 var(--hi); font-weight: 500; }
@@ -808,7 +810,7 @@
   #gymlog .pair-dot { background: var(--acc); box-shadow: 0 0 0 3px rgba(var(--bg-rgb),.9); } #gymlog .pair-dot.off { background: var(--bad); }
   #gymlog .pair-verdict { color: var(--acc); } #gymlog .pair-verdict.off { color: var(--bad); }
   #gymlog .mv-row { border-top: .5px solid var(--line); color: var(--t2); }
-  #gymlog .presult { background: var(--tile); border: .5px solid var(--edge); }
+  #gymlog .presult { background: var(--tile); border: none; }
   #gymlog .presult .big { color: var(--t1); font-weight: 300; } #gymlog .presult .big small { color: var(--t3); }
   #gymlog .conf.good { background: rgba(var(--acc-rgb),.15); color: var(--acc); }
   #gymlog .dayc { border-radius: 24px; padding: 16px 18px; margin-bottom: 10px; cursor: pointer; }
@@ -870,7 +872,7 @@
   #gymlog .hero2.hph { min-height: 236px; }
   #gymlog .hero2.hph .ring b { color: var(--t1); }
   #gymlog .plist { display: grid; gap: 10px; }
-  #gymlog .pcard { position: relative; border-radius: 22px; padding: 16px 18px 14px; min-height: 138px; cursor: pointer; border: .5px solid var(--edge); background: var(--glass); }
+  #gymlog .pcard { position: relative; border-radius: 22px; padding: 16px 18px 14px; min-height: 138px; cursor: pointer; border: none; background: var(--glass); }
   #gymlog .pcard .pk { font-size: 10.5px; letter-spacing: .14em; text-transform: uppercase; color: var(--acc); font-weight: 700; }
   #gymlog .pcard .pk .ss-tag { letter-spacing: 0; }
   #gymlog .pcard b { display: block; font-size: 17px; font-weight: 700; letter-spacing: -.01em; line-height: 1.25; margin-top: 6px; max-width: 74%; }
