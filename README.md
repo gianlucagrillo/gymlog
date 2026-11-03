@@ -103,6 +103,25 @@ v21 fixes:
 - Data fix: the 2 Nov row was a seated cable row without chest support; it now
   has its own alternative in Upper A and that session was moved onto it.
 
+v23 photo backgrounds: Today's day card and each exercise card show a
+motivational photo (running, boxing, martial arts, battle ropes, cycling,
+surfing; no recognisable faces) under a dark fade, chosen by the exercise's
+muscle; within a day no photo repeats. Settings → Photo backgrounds turns them
+off. The photos are in `img/` (about 470 KB) and cached for offline use.
+Source: Unsplash, under the Unsplash License (free to use, no attribution
+required):
+
+  - `img/run-road.jpg` — https://images.unsplash.com/photo-1502224562085-639556652f33
+  - `img/hike-sunset.jpg` — https://images.unsplash.com/photo-1683009427513-28e163402d16
+  - `img/rain-night.jpg` — https://images.unsplash.com/photo-1647419671408-ca9d45214595
+  - `img/boxer-backlit.jpg` — https://images.unsplash.com/photo-1607702713064-0143212236ae
+  - `img/boxer-blue.jpg` — https://images.unsplash.com/photo-1570877920464-4c2d38501303
+  - `img/shadowbox-sunset.jpg` — https://images.unsplash.com/photo-1646270719264-2d29b44e0bea
+  - `img/battle-ropes.jpg` — https://images.unsplash.com/photo-1599058917212-d750089bc07e
+  - `img/cyclist-climb.jpg` — https://images.unsplash.com/photo-1790796141224-c046e9c9ff20
+  - `img/surf-barrel.jpg` — https://images.unsplash.com/photo-1760755958481-076d0bf01599
+  - `img/high-kick.jpg` — https://images.unsplash.com/photo-1633378453111-55462debb3f4
+
 The details below describe the features, which are unchanged.
 
 ## What it does
@@ -204,7 +223,7 @@ To restore from GitHub, download `data.json` from the repo and import it.
 
 ## Deploy
 
-Five files get published: `index.html`, `manifest.json`, `service-worker.js`,
+These files get published: `index.html`, `manifest.json`, `service-worker.js`, the `img/` folder,
 `icon-192.png`, `icon-512.png`.
 
 On GitHub Pages: Settings → Pages → Source "Deploy from a branch", branch `main`,
