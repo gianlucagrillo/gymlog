@@ -140,6 +140,12 @@ editor, alternative picker); finished exercises keep the check.
 v30: photo cards no longer show a faint light rim on the rounded corners (photo and
 darkening are drawn as one layer, with no card fill underneath).
 
+v31: the workout screen shows one exercise at a time, full screen, with a large photo
+header. A strip at the top has one segment per exercise (tap to jump). Swiping drags
+the card with your finger while the next/previous exercise slides in beside it; the
+buttons at the bottom do the same. Opening an exercise from Today grows its photo and
+name into the full screen (View Transitions), and the back button shrinks it back.
+
 The details below describe the features, which are unchanged.
 
 ## What it does

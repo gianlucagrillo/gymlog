@@ -882,14 +882,69 @@
     --ov: linear-gradient(90deg, rgba(var(--bg-rgb),.92) 0%, rgba(var(--bg-rgb),.78) 40%, rgba(var(--bg-rgb),.25) 75%, rgba(var(--bg-rgb),.05) 100%); }
   #gymlog .exc.xph.collapsed { padding-top: 18px; padding-bottom: 18px; }
   /* open: the glass fill starts below the rounded corners, where the photo is still fully opaque */
-  #gymlog .exc.xph.open { background: linear-gradient(180deg, transparent 32px, var(--glass) 32px);
-    --ov: linear-gradient(90deg, rgba(var(--bg-rgb),.9) 0%, rgba(var(--bg-rgb),.72) 45%, rgba(var(--bg-rgb),.3) 100%), linear-gradient(0deg, rgba(var(--bg-rgb),.75), transparent 70%); }
-  #gymlog .exc.xph.open .pbg { bottom: auto; height: 190px;
-    -webkit-mask-image: linear-gradient(180deg, #000 20%, transparent 92%); mask-image: linear-gradient(180deg, #000 20%, transparent 92%); }
+  #gymlog .exc.xph.open { background: linear-gradient(180deg, transparent 32px, var(--glass) 32px); }
+  #gymlog .exc.xph.open, #gymlog .xpeek.xph {
+    --ov: linear-gradient(90deg, rgba(var(--bg-rgb),.85) 0%, rgba(var(--bg-rgb),.55) 50%, rgba(var(--bg-rgb),.15) 100%), linear-gradient(0deg, rgba(var(--bg-rgb),.85), transparent 75%); }
+  #gymlog .exc.xph.open .pbg, #gymlog .xpeek .pbg { bottom: auto; height: 250px;
+    -webkit-mask-image: linear-gradient(180deg, #000 45%, transparent 100%); mask-image: linear-gradient(180deg, #000 45%, transparent 100%); }
+
+  /* full-screen exercise */
+  #gymlog .wtop { gap: 10px; }
+  #gymlog .wmid { flex: 1; min-width: 0; text-align: center; }
+  #gymlog .wmid b { display: block; font-size: 15px; font-weight: 700; letter-spacing: -.01em; }
+  #gymlog .wmid small { display: block; font-size: 11.5px; color: var(--t3); margin-top: 2px; }
+  #gymlog .xstrip { display: flex; gap: 5px; margin: 14px 2px 0; }
+  #gymlog button.xseg { flex: 1; height: 20px; padding: 0; background: none; box-shadow: none; border-radius: 0; position: relative; }
+  #gymlog button.xseg::before, #gymlog button.xseg i { content: ''; position: absolute; left: 0; top: 8px; height: 4px; border-radius: 2px; }
+  #gymlog button.xseg::before { right: 0; background: rgba(var(--t-rgb),.14); transition: background-color .25s; }
+  #gymlog button.xseg i { background: var(--grad); transition: width .35s ease; }
+  #gymlog button.xseg.cur::before { background: rgba(var(--t-rgb),.42); }
+  #gymlog button.xseg:active { transform: none; }
+  #gymlog .xmeta { display: flex; justify-content: space-between; font-size: 11.5px; color: var(--t3); margin: 2px 4px 12px; }
+  #gymlog .xstage { margin: 0 -16px; padding: 0 16px 30px; overflow-x: clip; }
+  #gymlog .exc.xfull { margin-top: 0; padding: 0 12px 14px; touch-action: pan-y; min-height: calc(100vh - 250px); min-height: calc(100dvh - 250px); display: flex; flex-direction: column; }
+  #gymlog.timer-on .exc.xfull { min-height: calc(100vh - 330px); min-height: calc(100dvh - 330px); }
+  #gymlog .xhero { position: relative; min-height: 200px; display: flex; flex-direction: column; justify-content: flex-end; padding: 16px 8px 16px; }
+  #gymlog .exc.xfull:not(.xph) .xhero { min-height: 0; padding-top: 22px; }
+  #gymlog .xhero .xbtns { position: absolute; top: 14px; right: 4px; display: flex; gap: 8px; }
+  #gymlog .xph .xhero .xbtns button.sm { background: rgba(var(--bg-rgb),.45); -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px); color: var(--t1); }
+  #gymlog .xhero .pk { display: flex; align-items: center; gap: 6px; font-size: 10.5px; letter-spacing: .14em; text-transform: uppercase; color: var(--acc); font-weight: 700; }
+  #gymlog .xhero .pk .ss-tag { letter-spacing: 0; }
+  #gymlog .xhero .xok { width: 18px; height: 18px; border-radius: 50%; background: var(--grad); color: var(--on); display: inline-flex; align-items: center; justify-content: center; }
+  #gymlog .xhero .xok svg { width: 11px; height: 11px; }
+  #gymlog .xhero h2 { font-size: 26px; font-weight: 700; letter-spacing: -.02em; line-height: 1.15; margin: 6px 0 0; max-width: 88%; }
+  #gymlog .xhero small { display: block; font-size: 12.5px; color: var(--t2); margin-top: 5px; }
+  #gymlog .xhero em { display: block; font-style: normal; font-size: 11.5px; color: var(--acc); margin-top: 3px; }
+  #gymlog .exc.xfull.done > .xhero h2 { color: var(--t2); }
+  #gymlog .exc.xfull .xbody { padding-top: 4px; }
+  #gymlog .xnav { display: flex; justify-content: space-between; gap: 10px; margin: auto 6px 0; padding-top: 22px; }
+  #gymlog .xnav button { max-width: 48%; display: inline-flex; align-items: center; gap: 4px; padding: 9px 12px; font-size: 12.5px; white-space: nowrap; }
+  #gymlog .xnav button span { overflow: hidden; text-overflow: ellipsis; }
+  #gymlog .xnav .chev { width: 15px; height: 15px; flex-shrink: 0; }
+  #gymlog .xhint { text-align: center; margin: 10px 0 0; }
+  /* the neighbours wait just off screen and come in with the card while you swipe */
+  #gymlog .xpeek { position: absolute; top: 0; width: 100%; height: 250px; border-radius: inherit; pointer-events: none; isolation: isolate;
+    background: linear-gradient(180deg, transparent 32px, var(--glass) 32px);
+    -webkit-mask-image: linear-gradient(180deg, #000 70%, transparent); mask-image: linear-gradient(180deg, #000 70%, transparent); }
+  #gymlog .xpeek.next { left: calc(100% + 24px); } #gymlog .xpeek.prev { right: calc(100% + 24px); }
+  #gymlog .xpeek .xhero { padding: 16px 20px; }
+  #gymlog .xpeek .pglow, #gymlog .exc.xfull > .pglow { display: none; }
+  #gymlog .xpeek.done .pbg { filter: grayscale(.85) brightness(.55); }
+  #gymlog .xpeek.done .xhero h2 { color: var(--t2); }
+  #gymlog .exc.xfull.x-in-l { animation: gl-xcl .4s cubic-bezier(.2,.8,.2,1); }
+  #gymlog .exc.xfull.x-in-r { animation: gl-xcr .4s cubic-bezier(.2,.8,.2,1); }
+  @keyframes gl-xcl { from { transform: translateX(45%); opacity: 0; } }
+  @keyframes gl-xcr { from { transform: translateX(-45%); opacity: 0; } }
+  #gymlog .x-peeked .xbody, #gymlog .x-peeked .xnav, #gymlog .x-peeked .xbtns, #gymlog .x-peeked .xhint { animation: gl-xfade .34s cubic-bezier(.2,.8,.2,1) both; }
+  @keyframes gl-xfade { from { opacity: 0; transform: translateY(12px); } }
+  ::view-transition-group(xph), ::view-transition-group(xname) { animation-duration: .45s; animation-timing-function: cubic-bezier(.2,.8,.2,1); }
+  ::view-transition-old(xph), ::view-transition-new(xph) { height: 100%; object-fit: cover; }
+  ::view-transition-old(root), ::view-transition-new(root) { animation-duration: .28s; }
+  @media (prefers-reduced-motion: reduce) { #gymlog .exc.xfull.x-in-l, #gymlog .exc.xfull.x-in-r, #gymlog .x-peeked .xbody, #gymlog .x-peeked .xnav { animation: none; } }
   #gymlog .exc.xph.open .pglow { top: calc(100% - 34px); bottom: -26px; }
   #gymlog .exc.xph + .exc.xph { margin-top: 18px; }
-  #gymlog .exc.xph.done .pbg { filter: grayscale(.85) brightness(.55); }
-  #gymlog .exc.xph.done .pglow { opacity: .18; filter: blur(24px) grayscale(1); }
+  #gymlog .exc.xph.done > .pbg { filter: grayscale(.85) brightness(.55); }
+  #gymlog .exc.xph.done > .pglow { opacity: .18; filter: blur(24px) grayscale(1); }
   #gymlog .hero2.hph { min-height: 236px; }
   #gymlog .hero2.hph .ring b { color: var(--t1); }
   #gymlog .plist { display: grid; gap: 22px; }
@@ -2047,7 +2102,8 @@
     if (scrollTarget) {
       var el = document.querySelector('[data-card="' + scrollTarget + '"]');
       scrollTarget = null;
-      if (el) setTimeout(function() { el.scrollIntoView({ behavior: 'smooth', block: 'start' }); }, 80);
+      if (inSession) window.scrollTo(0, 0);
+      else if (el) setTimeout(function() { el.scrollIntoView({ behavior: 'smooth', block: 'start' }); }, 80);
     }
     if (dayDone && !snap.dayDone) {
       stopTimer();
@@ -3009,8 +3065,7 @@
     if (screen !== lastScreen) {
       var v = document.getElementById('view');
       v.classList.remove('v-in');
-      void v.offsetWidth;
-      v.classList.add('v-in');
+      if (!inMorph) { void v.offsetWidth; v.classList.add('v-in'); }
       lastScreen = screen;
     }
     paintSticky();
@@ -3114,6 +3169,27 @@
   // ---------- workout screen: today's list and the full-screen exercise ----------
   var focusKey = null;   // exercise shown full screen; null = today's list
   var listScroll = 0;
+  function reduceMotion() { return !!(window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches); }
+  // shared-element transition (View Transitions API): the exercise's photo and name morph between
+  // its card on Today and the full-screen exercise; without support the screen simply fades in
+  var inMorph = false;
+  function morph(key, update) {
+    if (!document.startViewTransition || reduceMotion()) { update(); return; }
+    var tag = function() {
+      var c = key && document.querySelector('#view [data-card="' + key + '"]');
+      if (!c) return;
+      var p = c.querySelector(':scope > .pbg'), n = c.querySelector(':scope > .xhero .xname, :scope > .xname');
+      if (p) p.style.viewTransitionName = 'xph';
+      if (n) n.style.viewTransitionName = 'xname';
+    };
+    var untag = function() {
+      document.querySelectorAll('#view .pbg, #view .xname').forEach(function(el) { el.style.viewTransitionName = ''; });
+    };
+    tag();
+    inMorph = true;
+    var t = document.startViewTransition(function() { untag(); update(); tag(); });
+    t.finished.then(function() { inMorph = false; untag(); }, function() { inMorph = false; untag(); });
+  }
 
   var EQ_ICON = {
     bb: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M2 12h20"/><rect x="4" y="7" width="3" height="10" rx="1"/><rect x="17" y="7" width="3" height="10" rx="1"/></svg>',
@@ -3193,6 +3269,7 @@
   }
 
   var CHEV_R = '<svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"/></svg>';
+  var CHEV_L = '<svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M15 6l-6 6 6 6"/></svg>';
   var CHEV_D = '<svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg>';
   var SPARK = '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l2.2 6.8L21 11l-6.8 2.2L12 20l-2.2-6.8L3 11l6.8-2.2z"/></svg>';
   var ARR_UP = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19V5M6 11l6-6 6 6"/></svg>';
@@ -3388,7 +3465,7 @@
         h += '<div class="pcard' + (m.exComplete ? ' done' : '') + '" data-card="' + m.key + '" data-open="' + m.key + '">' + photoBg(pickPhoto(ex, usedPh)) +
           (m.exComplete ? '<span class="pok">' + CHECK + '</span>' : '') +
           '<div class="pk">' + (m.ssLabel ? '<span class="ss-tag">' + m.ssLabel + '</span>' : '') + esc(ex.muscle || 'Other') + '</div>' +
-          '<b>' + esc(ex.name) + m.prHtml + '</b>' +
+          '<b class="xname">' + esc(ex.name) + m.prHtml + '</b>' +
           '<small>' + esc(cap) + '</small>' +
           (ex.main ? '<em>Alternative to ' + esc(ex.main.name) + '</em>' : '') +
           '<div class="pw' + (right ? '' : ' empty') + '">' + (right || '—') + '</div>' +
@@ -3438,39 +3515,52 @@
   function sessionHtml(day, models, prog, sp) {
     var vol = 0;
     models.forEach(function(m) { if (m.todaySess) vol += volumeOf(m.todaySess) || 0; });
-    var exN = Math.min(prog.done + 1, prog.total);
+    var fi = Math.max(0, models.findIndex(function(m) { return m.key === focusKey; }));
     var h = '<div class="wtop">' +
         '<button class="ib" data-back="1" aria-label="Back to today">' + CHEV_D.replace('class="chev"', '') + '</button>' +
+        '<div class="wmid"><b>' + esc(day.label) + '</b><small>' + (sessStart ? 'In progress · <span id="sess-clock"></span>' : 'Ready when you are') + '</small></div>' +
         '<button class="fin" data-finish="1"><span class="gtext">Finish</span></button>' +
       '</div>' +
-      '<div class="wt"><div class="ov">' + (sessStart ? 'In progress · <span id="sess-clock"></span>' : 'Ready when you are') + '</div>' +
-        '<h1 class="ttl">' + esc(day.label) + '</h1>' +
-        '<div class="kpis"><div><small>Volume</small><b>' + Math.round(vol).toLocaleString('en-GB') + '<span> kg</span></b></div>' +
-          '<div><small>Sets</small><b>' + sp.done + '<span> / ' + sp.total + '</span></b></div>' +
-          '<div><small>Exercise</small><b>' + exN + '<span> / ' + prog.total + '</span></b></div></div></div>' +
-      '<div class="track"><i style="width:' + (sp.total ? Math.round(sp.done / sp.total * 100) : 0) + '%"></i></div>';
+      // one segment per exercise: filled = done, partly filled = started; tap to jump
+      '<div class="xstrip">' + models.map(function(m, i) {
+        var f = m.exComplete ? 100 : Math.round(m.nDone / Math.max(1, m.ex.sets) * 100);
+        return '<button class="xseg' + (i === fi ? ' cur' : '') + (m.exComplete ? ' done' : '') + '" data-jump="' + m.key + '" aria-label="' + esc(m.ex.name) + '"><i style="width:' + f + '%"></i></button>';
+      }).join('') + '</div>' +
+      '<div class="xmeta"><span>Exercise ' + (fi + 1) + ' of ' + models.length + '</span><span>' + sp.done + ' / ' + sp.total + ' sets · ' + Math.round(vol).toLocaleString('en-GB') + ' kg</span></div>';
     // same photos as the Today list, in the same order
-    var withPh = photosOn(), usedPh = {};
+    var withPh = photosOn(), usedPh = {}, phOf = {};
     if (withPh && day.exercises.length) usedPh[dayPhoto(day)[0]] = true;
-    models.forEach(function(m) {
-      var ex = m.ex, open = m.key === focusKey;
-      var ph = withPh ? photoBg(pickPhoto(ex, usedPh), open ? 40 : 45) : '';
-      var sub;
+    if (withPh) models.forEach(function(m) { phOf[m.key] = pickPhoto(m.ex, usedPh); });
+    var heroOf = function(m, peek) {
+      var ex = m.ex, sub;
       if (m.exComplete && m.todaySess) {
         var t = topSet(m.todaySess);
         sub = '✓ ' + m.todaySess.sets.length + ' sets' + (t ? ' · best ' + fmtSet(t) : '');
       } else {
         sub = metaOf(ex) + ' · rest ' + fmtClock(ex.restSec) + (m.nDone ? ' · ' + m.nDone + ' of ' + ex.sets + ' done' : '');
       }
-      h += '<div class="exc glass' + (ph ? ' xph' : '') + (open ? ' open' : ' collapsed') + (m.exComplete ? ' done' : '') + '" data-card="' + m.key + '"' + (open ? '' : ' data-expand="' + m.key + '"') + '>' + ph +
-        '<div class="exh">' +
-          (m.exComplete ? '<div class="tile ok">' + CHECK + '</div>' : '') +
-          '<div class="m"><b>' + (m.ssLabel ? '<span class="ss-tag">' + m.ssLabel + '</span>' : '') + esc(ex.name) + m.prHtml + '</b>' +
-            '<small>' + esc(sub) + '</small>' +
-            (ex.main ? '<em>Alternative to ' + esc(ex.main.name) + '</em>' : '') + '</div>' +
+      return '<div class="xhero">' +
+        (peek ? '' : '<div class="xbtns">' +
           (m.vars.length > 1 && !m.todaySess ? '<button class="sm" data-pick="' + m.mainId + '" aria-label="Substitute">' + SWAP_ICO + '</button>' : '') +
-          '<button class="sm" data-more="' + m.key + '" aria-label="Details">' + MORE + '</button>' +
-        '</div>';
+          '<button class="sm" data-more="' + m.key + '" aria-label="Details">' + MORE + '</button></div>') +
+        '<div class="pk">' + (m.exComplete ? '<span class="xok">' + CHECK + '</span>' : '') + (m.ssLabel ? '<span class="ss-tag">' + m.ssLabel + '</span>' : '') + esc(ex.muscle || 'Other') + '</div>' +
+        '<h2 class="xname">' + esc(ex.name) + (peek ? '' : m.prHtml) + '</h2>' +
+        '<small>' + esc(sub) + '</small>' +
+        (ex.main ? '<em>Alternative to ' + esc(ex.main.name) + '</em>' : '') +
+      '</div>';
+    };
+    var prevM = models[fi - 1], nextM = models[fi + 1];
+    var peekOf = function(m, side) {
+      if (!m) return '';
+      return '<div class="xpeek ' + side + (withPh ? ' xph' : '') + (m.exComplete ? ' done' : '') + '" aria-hidden="true">' + (withPh ? photoBg(phOf[m.key], 40) : '') + heroOf(m, true) + '</div>';
+    };
+    h += '<div class="xstage">';
+    models.forEach(function(m) {
+      var ex = m.ex, open = m.key === focusKey;
+      if (!open) return;
+      var ph = withPh ? photoBg(phOf[m.key], 40) : '';
+      h += '<div class="exc xfull glass open' + (ph ? ' xph' : '') + (m.exComplete ? ' done' : '') + '" data-card="' + m.key + '">' + ph +
+        peekOf(prevM, 'prev') + peekOf(nextM, 'next') + heroOf(m, false);
       if (open) {
         var c = m.coach || {};
         var cIco = c.act === 'up' ? ARR_UP : (c.act === 'down' || c.act === 'back') ? ARR_DOWN : SPARK;
@@ -3484,11 +3574,16 @@
           '<div id="hist-' + m.key + '">' + m.setInputs + '</div>' +
           '<div class="xfoot"><button class="ghost" data-log="' + m.key + '" data-setcount="' + ex.sets + '">' + (m.exComplete ? 'Update session' : 'Log all sets') + '</button></div>' +
           '<div class="draft-note" id="draft-' + m.key + '"' + (m.draft && !m.todaySess ? '' : ' hidden') + '>Not saved yet — tap ✓ or Log all sets</div>' +
-          (!prefs.swiped && models.length > 1 ? '<p class="hint" style="text-align:center;margin:10px 0 0;">‹ swipe sideways for the previous / next exercise ›</p>' : '') + '</div>';
+          '</div>' +
+          '<div class="xnav">' +
+            (prevM ? '<button class="ghost" data-jump="' + prevM.key + '">' + CHEV_L + '<span>' + esc(prevM.ex.name) + '</span></button>' : '<i></i>') +
+            (nextM ? '<button class="ghost" data-jump="' + nextM.key + '"><span>' + esc(nextM.ex.name) + '</span>' + CHEV_R + '</button>' : '<i></i>') +
+          '</div>' +
+          (!prefs.swiped && models.length > 1 ? '<p class="hint xhint">swipe sideways for the previous / next exercise</p>' : '');
       }
       h += '</div>';
     });
-    return h;
+    return h + '</div>';
   }
 
   // Exercise details: numbers, chart and every past session (move / delete).
@@ -3778,56 +3873,112 @@
     root.innerHTML = html;
     paintSessClock();
     paintSticky();
-    // the exercise that just opened slides in (from the side when reached by swiping)
-    if (inSession && focusKey !== lastFocus) {
-      var xb = root.querySelector('.exc.open .xbody');
-      if (xb && lastFocus) xb.classList.add(swipeDir === 'l' ? 'x-in-l' : swipeDir === 'r' ? 'x-in-r' : 'x-in');
+    var fi = models.findIndex(function(m) { return m.key === focusKey; });
+    // arriving at another exercise: after a swipe the neighbour's preview has already slid into place,
+    // so only the body fades in ('peek'); otherwise the card slides in from the side it comes from
+    if (inSession && lastFocus && focusKey !== lastFocus) {
+      var card0 = root.querySelector('.exc.xfull');
+      var dir = swipeDir;
+      if (!dir) {
+        var a0 = models.findIndex(function(m) { return m.key === lastFocus; });
+        dir = a0 < 0 ? null : fi > a0 ? 'l' : 'r';
+      }
+      if (card0 && dir) card0.classList.add(dir === 'peek' ? 'x-peeked' : dir === 'l' ? 'x-in-l' : 'x-in-r');
     }
     lastFocus = inSession ? focusKey : null;
     swipeDir = null;
 
+    // Today ↔ exercise: the tapped card's photo and name grow into the full-screen exercise (and back)
     var enter = function(key) {
-      if (!inSession) listScroll = window.scrollY;
-      inSession = true;
-      focusKey = key;
-      render();
-      var card = document.querySelector('[data-card="' + key + '"]');
-      if (card && card.getBoundingClientRect().top > window.innerHeight * 0.5) card.scrollIntoView({ block: 'start', behavior: 'smooth' });
-      else if (!card) window.scrollTo(0, 0);
+      morph(key, function() {
+        if (!inSession) listScroll = window.scrollY;
+        inSession = true;
+        focusKey = key;
+        render();
+        window.scrollTo(0, 0);
+      });
     };
     root.querySelectorAll('[data-open]').forEach(function(el) {
-      el.addEventListener('click', function() { window.scrollTo(0, 0); enter(el.getAttribute('data-open')); });
+      el.addEventListener('click', function() { enter(el.getAttribute('data-open')); });
     });
-    root.querySelectorAll('[data-expand]').forEach(function(el) {
-      el.addEventListener('click', function() { enter(el.getAttribute('data-expand')); });
+    // the card slides off to one side; the neighbour waiting just off screen slides into its place
+    var slideTo = function(key, sgn) {
+      var c = root.querySelector('.exc.xfull');
+      var atTop = window.scrollY < 60;
+      var fin = function() {
+        if (!c) return;
+        c = null;
+        swipeDir = atTop ? 'peek' : sgn < 0 ? 'l' : 'r';
+        focusKey = key;
+        window.scrollTo(0, 0);
+        render();
+      };
+      if (!c || reduceMotion()) { fin(); return; }
+      c.style.transition = 'transform .3s cubic-bezier(.25,.8,.25,1)';
+      c.style.transform = 'translateX(' + sgn * (c.offsetWidth + 24) + 'px)';
+      c.addEventListener('transitionend', function(e) { if (e.target === c) fin(); });
+      setTimeout(fin, 380);
+    };
+    root.querySelectorAll('[data-jump]').forEach(function(b) {
+      b.addEventListener('click', function(e) {
+        e.stopPropagation();
+        var k = b.getAttribute('data-jump'), j = models.findIndex(function(m) { return m.key === k; });
+        if (j < 0 || k === focusKey) return;
+        if (Math.abs(j - fi) === 1) slideTo(k, j > fi ? -1 : 1);
+        else { swipeDir = j > fi ? 'l' : 'r'; focusKey = k; window.scrollTo(0, 0); render(); }
+      });
     });
-    // swipe left / right on the open exercise to move to the next / previous one
-    var openCard = inSession && root.querySelector('.exc.open');
+    // swipe: the card follows the finger; past a third of the width (or a quick flick) it moves on
+    var openCard = inSession && root.querySelector('.exc.xfull');
     if (openCard) {
-      var sx = 0, sy = 0, st = 0, ok = false;
+      var sx = 0, sy = 0, st = 0, ok = false, axis = null, dx = 0, dragged = 0;
+      var springBack = function() {
+        openCard.style.transition = 'transform .4s cubic-bezier(.2,1.25,.4,1)';
+        openCard.style.transform = '';
+      };
       openCard.addEventListener('touchstart', function(e) {
         var t = e.touches[0];
-        ok = e.touches.length === 1 && !e.target.closest('input, button, select, textarea, label');
+        ok = e.touches.length === 1 && !e.target.closest('input, select, textarea');
+        axis = null; dx = 0;
         sx = t.clientX; sy = t.clientY; st = Date.now();
       }, { passive: true });
-      openCard.addEventListener('touchend', function(e) {
+      openCard.addEventListener('touchmove', function(e) {
         if (!ok) return;
-        var t = e.changedTouches[0], dx = t.clientX - sx, dy = t.clientY - sy;
-        if (Math.abs(dx) < 60 || Math.abs(dy) > Math.abs(dx) * 0.6 || Date.now() - st > 800) return;
-        var idx = models.findIndex(function(m) { return m.key === focusKey; });
-        var j = idx + (dx < 0 ? 1 : -1);
-        if (j < 0 || j >= models.length) return;
-        swipeDir = dx < 0 ? 'l' : 'r';
-        if (!prefs.swiped) { prefs.swiped = true; savePrefs(); }
-        if (navigator.vibrate) navigator.vibrate(8);
-        enter(models[j].key);
+        var t = e.touches[0], mx = t.clientX - sx, my = t.clientY - sy;
+        if (!axis) {
+          if (Math.abs(mx) < 8 && Math.abs(my) < 8) return;
+          axis = Math.abs(mx) > Math.abs(my) * 1.2 ? 'x' : 'y';
+          if (axis === 'x') openCard.style.transition = 'none';
+        }
+        if (axis !== 'x') return;
+        dx = mx;
+        var edge = (dx > 0 && fi === 0) || (dx < 0 && fi === models.length - 1);
+        openCard.style.transform = 'translateX(' + (edge ? dx * 0.3 : dx) + 'px)';
+      }, { passive: true });
+      openCard.addEventListener('touchend', function() {
+        if (!ok || axis !== 'x') return;
+        dragged = Date.now();
+        var v = Math.abs(dx) / Math.max(1, Date.now() - st);
+        var j = fi + (dx < 0 ? 1 : -1);
+        if (j >= 0 && j < models.length && (Math.abs(dx) > openCard.offsetWidth * 0.3 || (Math.abs(dx) > 40 && v > 0.5))) {
+          if (!prefs.swiped) { prefs.swiped = true; savePrefs(); }
+          if (navigator.vibrate) navigator.vibrate(8);
+          slideTo(models[j].key, dx < 0 ? -1 : 1);
+        } else springBack();
       });
+      openCard.addEventListener('touchcancel', function() { if (axis === 'x') springBack(); });
+      // a drag that started on a button must not also press it
+      openCard.addEventListener('click', function(e) {
+        if (Date.now() - dragged < 400) { e.stopPropagation(); e.preventDefault(); }
+      }, true);
     }
     root.querySelectorAll('[data-back]').forEach(function(el) {
       el.addEventListener('click', function() {
-        inSession = false;
-        render();
-        window.scrollTo(0, listScroll || 0);
+        morph(focusKey, function() {
+          inSession = false;
+          render();
+          window.scrollTo(0, listScroll || 0);
+        });
       });
     });
     root.querySelectorAll('[data-finish]').forEach(function(el) {
@@ -3846,7 +3997,6 @@
       el.addEventListener('click', function() {
         var next = day.exercises.find(function(e) { return !exDone(e); }) || day.exercises[0];
         if (!next) return;
-        window.scrollTo(0, 0);
         enter(next.id);
       });
     });
@@ -3886,7 +4036,7 @@
         if (pendingNext && pendingNext.from === key) {
           var to = pendingNext.to;
           pendingNext = null;
-          if (focusKey === key) { focusKey = to; render(); var el = document.querySelector('[data-card="' + to + '"]'); if (el) setTimeout(function() { el.scrollIntoView({ behavior: 'smooth', block: 'start' }); }, 80); return; }
+          if (focusKey === key) { focusKey = to; window.scrollTo(0, 0); render(); return; }
         }
         render();
       });
