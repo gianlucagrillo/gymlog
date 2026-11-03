@@ -127,6 +127,10 @@ and four Petrol themes — the same deep petrol-blue base (#020F12) with a diffe
 accent: Salsedine, Acqua luminosa, Ghiaccio or Lime. The choice is applied at once
 and remembered on the phone; all colours come from CSS variables.
 
+v27 shadows: cards have no border and cast a shadow on the background. Photo cards
+also project a soft, blurred glow of their own photo underneath, so the shadow stays
+visible on the dark background.
+
 The details below describe the features, which are unchanged.
 
 ## What it does
