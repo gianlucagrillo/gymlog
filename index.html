@@ -961,6 +961,7 @@
   #gymlog.landing .hero2.solo { flex: 1; min-height: 0; display: flex; flex-direction: column; }
   #gymlog .hero2.solo .cta { margin-top: auto; }
   #gymlog .hero2.solo .hero-day { align-self: flex-start; }
+  #gymlog .hero2.solo .ttl { margin-top: 2px; }
   #gymlog .hero2.hph .ring b { color: var(--t1); }
   #gymlog .plist { display: grid; gap: 22px; }
   #gymlog .pcard { position: relative; border-radius: 22px; padding: 16px 18px 14px; min-height: 138px; cursor: pointer; border: none; background: var(--glass); box-shadow: 0 26px 40px -20px rgba(0,0,0,.85); }
@@ -3456,18 +3457,11 @@
   function todayHtml(day, models, prog, sp, complete) {
     var h = weekStripHtml();
 
-    var dow = new Date(todayStr() + 'T00:00:00').getDay();
-    var restToday = restDaysOf(activePlan()).indexOf(dow) >= 0 && !prog.started;
-    var otherDone = !prog.started && Object.keys(entries).some(function(k) { return loggedOn(k, todayStr()); });
-    var kicker = complete ? 'Done today' : prog.started ? 'In progress' : otherDone ? 'Next up' : restToday ? 'Rest day · next up' : 'Up next';
     var meta, cta;
     if (complete) {
-      var took = sp.start && sp.end - sp.start >= 60000 ? fmtMins(Math.round((sp.end - sp.start) / 60000)) : '';
-      kicker += took ? ' · ' + took : '';
       meta = sp.total + ' sets · ' + day.exercises.length + ' exercises';
       cta = '<button class="cta" data-summary="1">View summary</button>';
     } else {
-      kicker += ' · ' + (prog.started && sp.start ? '<span id="sess-clock"></span>' : '≈' + estimateMin(day) + ' min');
       meta = day.exercises.length + ' exercises · ' + sp.total + ' sets' + (musclesOf(day) ? '<br>' + esc(musclesOf(day)) : '');
       cta = day.exercises.length ? '<button class="cta" data-start="1">' + (prog.started ? 'Continue workout' : 'Start workout') + ' ' + ARROW + '</button>' : '';
     }
@@ -3475,7 +3469,6 @@
     var heroPh = photosOn() && day.exercises.length;
     // the landing page is just the workout card: the exercises appear once the workout starts
     h += '<div class="hero2 glass solo' + (heroPh ? ' hph' : '') + '">' + (heroPh ? photoBg(dayPhoto(day), 55) : '') +
-      '<div class="ov">' + kicker + '</div>' +
       '<button class="hero-day" data-daypick="1"><span class="ttl">' + esc(day.label) + '</span>' + CHEV_D + '</button>' +
       '<div class="meta">' + meta + '</div>' +
       '<div class="ring">' + ringSvg(pct, 56, 2.5) + '<b>' + sp.done + '/' + sp.total + '</b></div>' +

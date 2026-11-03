@@ -173,6 +173,8 @@ the exercises appear after "Start workout".
 v39: Today is a single screen that doesn't scroll — the workout card stretches to just above the
 tab bar on any phone height (`#gymlog.landing` flex layout, backup note hidden there).
 
+v40: the workout card has no "Rest day · next up · ≈42 min" line above the title.
+
 The details below describe the features, which are unchanged.
 
 ## What it does
