@@ -163,6 +163,9 @@ v36: the service worker fetches the page with `cache: 'no-cache'` (GitHub Pages 
 10 minutes, so right after a deploy the app could reload into the old version); the app's
 reload-on-return uses a fresh `?v=` address for the same reason.
 
+v37: Today starts higher (less space above the week strip; in the app no extra top padding
+besides the camera cutout).
+
 The details below describe the features, which are unchanged.
 
 ## What it does

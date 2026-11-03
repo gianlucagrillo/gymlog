@@ -30,6 +30,7 @@
   :root { --sat: max(env(safe-area-inset-top, 0px), var(--app-top, 0px)); }
   html, body { margin: 0; padding: 0; background: #131518; min-height: 100vh; }
   html.in-app body::before { display: none; }
+  html.in-app #gymlog { padding-top: 0; }
   body { padding: var(--sat) env(safe-area-inset-right) 0 env(safe-area-inset-left); padding-top: max(8px, var(--sat)); -webkit-tap-highlight-color: transparent; }
   /* keeps content scrolling under the sticky day bar from showing through a translucent status bar */
   body::before { content: ''; position: fixed; left: 0; right: 0; top: 0; height: var(--sat); background: #131518; z-index: 30; }
@@ -570,7 +571,7 @@
   #gymlog .chev { width: 15px; height: 15px; color: var(--t3); flex-shrink: 0; }
 
   /* week strip */
-  #gymlog .week { display: grid; grid-template-columns: repeat(7,1fr); gap: 0; margin: 22px -2px 0; }
+  #gymlog .week { display: grid; grid-template-columns: repeat(7,1fr); gap: 0; margin: 4px -2px 0; }
   #gymlog .wd { background: transparent; border: none; box-shadow: none; color: var(--t1); border-radius: 16px; padding: 8px 0 9px; margin: 0 3px; text-align: center; font-weight: 400; min-width: 0; }
   #gymlog .wd b { display: block; font-size: 10px; font-weight: 500; color: var(--t3); letter-spacing: .06em; }
   #gymlog .wd span { display: block; font-family: var(--f); font-size: 16px; font-weight: 500; color: var(--t2); margin-top: 5px; line-height: 1.2; }
