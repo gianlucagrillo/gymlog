@@ -3188,6 +3188,9 @@
     tag();
     inMorph = true;
     var t = document.startViewTransition(function() { untag(); update(); tag(); });
+    // a skipped or timed-out transition still applies the update; just swallow the rejections
+    if (t.ready) t.ready.catch(function() {});
+    if (t.updateCallbackDone) t.updateCallbackDone.catch(function() {});
     t.finished.then(function() { inMorph = false; untag(); }, function() { inMorph = false; untag(); });
   }
 
@@ -3532,20 +3535,13 @@
     if (withPh && day.exercises.length) usedPh[dayPhoto(day)[0]] = true;
     if (withPh) models.forEach(function(m) { phOf[m.key] = pickPhoto(m.ex, usedPh); });
     var heroOf = function(m, peek) {
-      var ex = m.ex, sub;
-      if (m.exComplete && m.todaySess) {
-        var t = topSet(m.todaySess);
-        sub = '✓ ' + m.todaySess.sets.length + ' sets' + (t ? ' · best ' + fmtSet(t) : '');
-      } else {
-        sub = metaOf(ex) + ' · rest ' + fmtClock(ex.restSec) + (m.nDone ? ' · ' + m.nDone + ' of ' + ex.sets + ' done' : '');
-      }
+      var ex = m.ex;
       return '<div class="xhero">' +
         (peek ? '' : '<div class="xbtns">' +
           (m.vars.length > 1 && !m.todaySess ? '<button class="sm" data-pick="' + m.mainId + '" aria-label="Substitute">' + SWAP_ICO + '</button>' : '') +
           '<button class="sm" data-more="' + m.key + '" aria-label="Details">' + MORE + '</button></div>') +
         '<div class="pk">' + (m.exComplete ? '<span class="xok">' + CHECK + '</span>' : '') + (m.ssLabel ? '<span class="ss-tag">' + m.ssLabel + '</span>' : '') + esc(ex.muscle || 'Other') + '</div>' +
         '<h2 class="xname">' + esc(ex.name) + (peek ? '' : m.prHtml) + '</h2>' +
-        '<small>' + esc(sub) + '</small>' +
         (ex.main ? '<em>Alternative to ' + esc(ex.main.name) + '</em>' : '') +
       '</div>';
     };
