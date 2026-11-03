@@ -146,6 +146,8 @@ the card with your finger while the next/previous exercise slides in beside it; 
 buttons at the bottom do the same. Opening an exercise from Today grows its photo and
 name into the full screen (View Transitions), and the back button shrinks it back.
 
+v32: the exercise header shows only muscle and name (no sets × reps · rest line).
+
 The details below describe the features, which are unchanged.
 
 ## What it does
