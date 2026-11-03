@@ -131,6 +131,9 @@ v27 shadows: cards have no border and cast a shadow on the background. Photo car
 also project a soft, blurred glow of their own photo underneath, so the shadow stays
 visible on the dark background.
 
+v28: the workout screen uses the same photos as Today — full photo on the closed
+exercise cards, and behind the header of the open one, fading out before the set rows.
+
 The details below describe the features, which are unchanged.
 
 ## What it does

@@ -874,6 +874,19 @@
   #gymlog .pcard.done .pglow { opacity: .18; filter: blur(24px) grayscale(1); }
   #gymlog .hph::after, #gymlog .pcard::after { content: ''; position: absolute; inset: 0; z-index: -1; border-radius: inherit; pointer-events: none;
     background: linear-gradient(90deg, rgba(var(--bg-rgb),.93) 0%, rgba(var(--bg-rgb),.80) 36%, rgba(var(--bg-rgb),.28) 68%, rgba(var(--bg-rgb),.04) 100%), linear-gradient(0deg, rgba(var(--bg-rgb),.45), transparent 55%); }
+  /* workout cards: collapsed = full photo like Today; open = photo behind the header, fading out before the set rows */
+  #gymlog .exc.xph { position: relative; isolation: isolate; box-shadow: 0 26px 40px -20px rgba(0,0,0,.85); }
+  #gymlog .exc.xph.collapsed { padding-top: 18px; padding-bottom: 18px; }
+  #gymlog .exc.xph::after { content: ''; position: absolute; inset: 0; z-index: -1; border-radius: inherit; pointer-events: none;
+    background: linear-gradient(90deg, rgba(var(--bg-rgb),.92) 0%, rgba(var(--bg-rgb),.78) 40%, rgba(var(--bg-rgb),.25) 75%, rgba(var(--bg-rgb),.05) 100%); }
+  #gymlog .exc.xph.open .pbg, #gymlog .exc.xph.open::after { bottom: auto; height: 190px;
+    -webkit-mask-image: linear-gradient(180deg, #000 20%, transparent 92%); mask-image: linear-gradient(180deg, #000 20%, transparent 92%); }
+  #gymlog .exc.xph.open::after { background: linear-gradient(90deg, rgba(var(--bg-rgb),.9) 0%, rgba(var(--bg-rgb),.72) 45%, rgba(var(--bg-rgb),.3) 100%), linear-gradient(0deg, rgba(var(--bg-rgb),.75), transparent 70%); }
+  #gymlog .exc.xph.open .pglow { top: calc(100% - 34px); bottom: -26px; }
+  #gymlog .exc.xph + .exc.xph { margin-top: 18px; }
+  #gymlog .exc.xph .tile { background: rgba(var(--bg-rgb),.45); -webkit-backdrop-filter: blur(8px); backdrop-filter: blur(8px); }
+  #gymlog .exc.xph.done .pbg { filter: grayscale(.85) brightness(.55); }
+  #gymlog .exc.xph.done .pglow { opacity: .18; filter: blur(24px) grayscale(1); }
   #gymlog .hero2.hph { min-height: 236px; }
   #gymlog .hero2.hph .ring b { color: var(--t1); }
   #gymlog .plist { display: grid; gap: 22px; }
@@ -3435,8 +3448,12 @@
           '<div><small>Sets</small><b>' + sp.done + '<span> / ' + sp.total + '</span></b></div>' +
           '<div><small>Exercise</small><b>' + exN + '<span> / ' + prog.total + '</span></b></div></div></div>' +
       '<div class="track"><i style="width:' + (sp.total ? Math.round(sp.done / sp.total * 100) : 0) + '%"></i></div>';
+    // same photos as the Today list, in the same order
+    var withPh = photosOn(), usedPh = {};
+    if (withPh && day.exercises.length) usedPh[dayPhoto(day)[0]] = true;
     models.forEach(function(m) {
       var ex = m.ex, open = m.key === focusKey;
+      var ph = withPh ? photoBg(pickPhoto(ex, usedPh), open ? 40 : 45) : '';
       var sub;
       if (m.exComplete && m.todaySess) {
         var t = topSet(m.todaySess);
@@ -3444,7 +3461,7 @@
       } else {
         sub = metaOf(ex) + ' · rest ' + fmtClock(ex.restSec) + (m.nDone ? ' · ' + m.nDone + ' of ' + ex.sets + ' done' : '');
       }
-      h += '<div class="exc glass' + (open ? ' open' : ' collapsed') + (m.exComplete ? ' done' : '') + '" data-card="' + m.key + '"' + (open ? '' : ' data-expand="' + m.key + '"') + '>' +
+      h += '<div class="exc glass' + (ph ? ' xph' : '') + (open ? ' open' : ' collapsed') + (m.exComplete ? ' done' : '') + '" data-card="' + m.key + '"' + (open ? '' : ' data-expand="' + m.key + '"') + '>' + ph +
         '<div class="exh">' +
           '<div class="tile' + (m.exComplete ? ' ok' : '') + '">' + (m.exComplete ? CHECK : EQ_ICON[eqOf(ex.name)]) + '</div>' +
           '<div class="m"><b>' + (m.ssLabel ? '<span class="ss-tag">' + m.ssLabel + '</span>' : '') + esc(ex.name) + m.prHtml + '</b>' +
