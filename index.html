@@ -5409,7 +5409,12 @@
     readSwVersion().then(function(v) {
       if (!v) return;
       if (!swVersion) { swVersion = v; return; }
-      if (v !== swVersion && !timer && !document.getElementById('sheet').innerHTML) location.reload();
+      if (v !== swVersion && !timer && !document.getElementById('sheet').innerHTML) {
+        // a new address skips any copy of the old page kept by the phone's cache
+        var q = new URLSearchParams(location.search);
+        q.set('v', v.replace('gymlog-cache-', ''));
+        location.replace(location.pathname + '?' + q.toString());
+      }
     });
   };
 

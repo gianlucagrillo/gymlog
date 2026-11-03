@@ -1,4 +1,4 @@
-const CACHE_NAME = 'gymlog-cache-v35';
+const CACHE_NAME = 'gymlog-cache-v36';
 const ASSETS = ['./', './index.html', './manifest.json', './icon-192.png', './icon-512.png',
   './img/run-road.jpg', './img/hike-sunset.jpg', './img/rain-night.jpg', './img/boxer-backlit.jpg', './img/boxer-blue.jpg',
   './img/shadowbox-sunset.jpg', './img/battle-ropes.jpg', './img/cyclist-climb.jpg', './img/surf-barrel.jpg', './img/high-kick.jpg'];
@@ -31,8 +31,10 @@ self.addEventListener('fetch', (event) => {
   const isDoc = req.mode === 'navigate' || (req.destination === 'document');
 
   if (isDoc) {
+    // 'no-cache': always ask GitHub Pages whether the page changed (it allows reusing it for 10 min,
+    // so a plain fetch could hand back the previous version right after a deploy)
     event.respondWith(
-      fetch(req)
+      fetch(new Request(req.url, { cache: 'no-cache', credentials: 'same-origin' }))
         .then((res) => {
           const copy = res.clone();
           caches.open(CACHE_NAME).then((cache) => cache.put(req, copy));

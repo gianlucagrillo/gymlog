@@ -159,6 +159,10 @@ v34: in the app the page also fills the area around the camera; the app passes t
 
 v35: no "This week · n of 5" pill at the top of Today (the week strip already shows it).
 
+v36: the service worker fetches the page with `cache: 'no-cache'` (GitHub Pages allows reusing it for
+10 minutes, so right after a deploy the app could reload into the old version); the app's
+reload-on-return uses a fresh `?v=` address for the same reason.
+
 The details below describe the features, which are unchanged.
 
 ## What it does
