@@ -166,6 +166,10 @@ reload-on-return uses a fresh `?v=` address for the same reason.
 v37: Today starts higher (less space above the week strip; in the app no extra top padding
 besides the camera cutout).
 
+v38: Today shows only the workout card (big, down to the tab bar) and the deload banner when
+it applies; warm-up/cool-down and the exercise list are hidden (`SHOW_TODAY_LIST = false`) —
+the exercises appear after "Start workout".
+
 The details below describe the features, which are unchanged.
 
 ## What it does

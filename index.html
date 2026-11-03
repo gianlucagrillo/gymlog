@@ -950,6 +950,10 @@
   #gymlog .exc.xph.done > .pbg { filter: grayscale(.85) brightness(.55); }
   #gymlog .exc.xph.done > .pglow { opacity: .18; filter: blur(24px) grayscale(1); }
   #gymlog .hero2.hph { min-height: 236px; }
+  /* landing page: the workout card alone fills the screen down to the tab bar */
+  #gymlog .hero2.solo.hph { min-height: max(320px, calc(100vh - 275px)); min-height: max(320px, calc(100dvh - 275px)); display: flex; flex-direction: column; }
+  #gymlog .hero2.solo.hph .cta { margin-top: auto; }
+  #gymlog .hero2.solo.hph .hero-day { align-self: flex-start; }
   #gymlog .hero2.hph .ring b { color: var(--t1); }
   #gymlog .plist { display: grid; gap: 22px; }
   #gymlog .pcard { position: relative; border-radius: 22px; padding: 16px 18px 14px; min-height: 138px; cursor: pointer; border: none; background: var(--glass); box-shadow: 0 26px 40px -20px rgba(0,0,0,.85); }
@@ -1460,6 +1464,8 @@
   };
   function photosOn() { return prefs.photos !== false; }
   var SHOW_PROTEIN_CARD = false;
+  // Today shows only the workout card (Gianluca, 3 Nov 2026); true brings back warm-up/cool-down and the exercise list
+  var SHOW_TODAY_LIST = false;
   function photoBg(p, y) {
     if (!p) return '';
     var st = '--ph:url(img/' + p[0] + '.jpg);--pp:' + p[1] + '% ' + (y || 45) + '%';
@@ -3456,13 +3462,16 @@
     }
     var pct = sp.total ? sp.done / sp.total * 100 : 0;
     var heroPh = photosOn() && day.exercises.length;
-    h += '<div class="hero2 glass' + (heroPh ? ' hph' : '') + '">' + (heroPh ? photoBg(dayPhoto(day), 55) : '') +
+    // the landing page is just the workout card: the exercises appear once the workout starts
+    h += '<div class="hero2 glass solo' + (heroPh ? ' hph' : '') + '">' + (heroPh ? photoBg(dayPhoto(day), 55) : '') +
       '<div class="ov">' + kicker + '</div>' +
       '<button class="hero-day" data-daypick="1"><span class="ttl">' + esc(day.label) + '</span>' + CHEV_D + '</button>' +
       '<div class="meta">' + meta + '</div>' +
       '<div class="ring">' + ringSvg(pct, 56, 2.5) + '<b>' + sp.done + '/' + sp.total + '</b></div>' +
       cta +
     '</div>';
+    h += deloadBannerHtml();
+    if (!SHOW_TODAY_LIST) return h;
 
     if (day.exercises.length) {
       if (complete) {
@@ -3471,7 +3480,6 @@
         h += ppCardHtml(day, 'pre', ppOpen.pre !== undefined ? ppOpen.pre : false);
       }
     }
-    h += deloadBannerHtml();
     // protein card hidden for now (Gianluca, 3 Nov 2026): protein logging and the weekly report stay in place
     if (SHOW_PROTEIN_CARD) h += proteinCardHtml();
 
