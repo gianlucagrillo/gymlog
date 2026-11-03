@@ -26,10 +26,13 @@
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700&family=Inter:wght@400;500;600&display=swap">
 <link rel="stylesheet" href="https://api.fontshare.com/v2/css?f[]=satoshi@300,400,500,700&display=swap">
 <style>
+  /* top inset: the browser's safe area, or the camera cutout passed in by the Android app (--app-top) */
+  :root { --sat: max(env(safe-area-inset-top, 0px), var(--app-top, 0px)); }
   html, body { margin: 0; padding: 0; background: #131518; min-height: 100vh; }
-  body { padding: env(safe-area-inset-top) env(safe-area-inset-right) 0 env(safe-area-inset-left); padding-top: max(8px, env(safe-area-inset-top)); -webkit-tap-highlight-color: transparent; }
+  html.in-app body::before { display: none; }
+  body { padding: var(--sat) env(safe-area-inset-right) 0 env(safe-area-inset-left); padding-top: max(8px, var(--sat)); -webkit-tap-highlight-color: transparent; }
   /* keeps content scrolling under the sticky day bar from showing through a translucent status bar */
-  body::before { content: ''; position: fixed; left: 0; right: 0; top: 0; height: env(safe-area-inset-top, 0px); background: #131518; z-index: 30; }
+  body::before { content: ''; position: fixed; left: 0; right: 0; top: 0; height: var(--sat); background: #131518; z-index: 30; }
 
   #gymlog * { box-sizing: border-box; font-family: 'Inter', system-ui, sans-serif; }
   #gymlog h1, #gymlog .num, #gymlog .weight-badge, #gymlog .timer-clock, #gymlog .stat b, #gymlog .vol-num { font-family: 'Barlow Condensed', 'Inter', sans-serif; }
@@ -78,7 +81,7 @@
   #gymlog .today-line { font-size: 12px; color: #8C8A82; margin: 0 0 12px; display: flex; align-items: center; gap: 8px; font-variant-numeric: tabular-nums; }
   #gymlog .today-line b { color: #EDEBE3; font-weight: 600; }
   /* day tabs + progress stay on screen while scrolling */
-  #gymlog .sticky-top { position: sticky; top: env(safe-area-inset-top, 0px); z-index: 15; margin: 10px -14px 12px; padding: 8px 14px 0; background: #131518; transition: box-shadow .2s; }
+  #gymlog .sticky-top { position: sticky; top: var(--sat); z-index: 15; margin: 10px -14px 12px; padding: 8px 14px 0; background: #131518; transition: box-shadow .2s; }
   #gymlog .sticky-top.stuck { box-shadow: 0 10px 14px -10px rgba(0,0,0,.75); }
   /* covers the sub-pixel sliver of scrolled content that can show above a stuck bar at fractional scroll offsets;
      it overlaps the bar by 1px so there's no anti-aliased seam */
@@ -87,7 +90,7 @@
   #gymlog .sticky-top .today-line { margin: 0; padding: 9px 0; }
   #gymlog .prog-rail { height: 3px; margin: 0 -14px; background: #1F2226; }
   #gymlog .prog-rail i { display: block; height: 100%; background: #7FBF7F; border-radius: 0 2px 2px 0; transition: width .3s; }
-  #gymlog .card, #gymlog .ss-group, #gymlog .session { scroll-margin-top: calc(var(--stick, 0px) + env(safe-area-inset-top, 0px) + 10px); }
+  #gymlog .card, #gymlog .ss-group, #gymlog .session { scroll-margin-top: calc(var(--stick, 0px) + var(--sat) + 10px); }
   #gymlog .set-head, #gymlog .set-row { display: grid; grid-template-columns: 34px 1fr 1fr; gap: 8px; align-items: center; }
   #gymlog .set-head { font-size: 10px; font-weight: 600; letter-spacing: .06em; text-transform: uppercase; color: #5C5A52; margin-bottom: 6px; }
   #gymlog .set-head span:not(:first-child) { padding-left: 12px; }
@@ -223,7 +226,7 @@
   #gymlog .sum-pp .ok { color: #7FBF7F; font-weight: 600; }
 
   /* ----- PR toast + confetti ----- */
-  #gymlog .toast { position: fixed; left: 12px; right: 12px; top: max(12px, env(safe-area-inset-top)); z-index: 60; max-width: 496px; margin: 0 auto; background: var(--acc0); color: #16181B; border-radius: 16px; padding: 12px 16px; display: flex; gap: 12px; align-items: center; box-shadow: 0 12px 32px rgba(0,0,0,.5); animation: gl-drop .45s cubic-bezier(.2,1.4,.4,1); }
+  #gymlog .toast { position: fixed; left: 12px; right: 12px; top: max(12px, var(--sat)); z-index: 60; max-width: 496px; margin: 0 auto; background: var(--acc0); color: #16181B; border-radius: 16px; padding: 12px 16px; display: flex; gap: 12px; align-items: center; box-shadow: 0 12px 32px rgba(0,0,0,.5); animation: gl-drop .45s cubic-bezier(.2,1.4,.4,1); }
   #gymlog .toast.out { animation: gl-up .3s ease forwards; }
   #gymlog .toast-ico svg { width: 30px; height: 30px; display: block; }
   #gymlog .toast b { display: block; font-size: 15px; }
@@ -272,8 +275,8 @@
 
   /* ----- full-screen rest timer ----- */
   #gymlog .timer-bar-inner { cursor: pointer; }
-  #gymlog .tfull { position: fixed; inset: 0; z-index: 40; background: radial-gradient(circle at 50% 38%, #24282E 0%, #131518 72%); display: flex; flex-direction: column; align-items: center; justify-content: center; padding: max(24px, env(safe-area-inset-top)) 24px max(24px, env(safe-area-inset-bottom)); animation: gl-fade .2s ease; }
-  #gymlog .tfull-close { position: absolute; top: max(12px, env(safe-area-inset-top)); left: 8px; background: none; color: #8C8A82; padding: 12px; }
+  #gymlog .tfull { position: fixed; inset: 0; z-index: 40; background: radial-gradient(circle at 50% 38%, #24282E 0%, #131518 72%); display: flex; flex-direction: column; align-items: center; justify-content: center; padding: max(24px, var(--sat)) 24px max(24px, env(safe-area-inset-bottom)); animation: gl-fade .2s ease; }
+  #gymlog .tfull-close { position: absolute; top: max(12px, var(--sat)); left: 8px; background: none; color: #8C8A82; padding: 12px; }
   #gymlog .tfull-close svg { width: 28px; height: 28px; display: block; }
   #gymlog .tfull-name { font-size: 15px; font-weight: 600; color: #B7B4A9; text-align: center; max-width: 320px; }
   #gymlog .tfull-ring { position: relative; width: min(76vw, 300px); aspect-ratio: 1; margin: 24px 0; }
@@ -1698,6 +1701,11 @@
   // real vibration, keeping the screen on, a rest-end alarm that also works with the screen off,
   // saving files and the back button. In Chrome none of this exists and the web APIs are used.
   var APP = window.GymlogApp || null;
+  if (APP) {
+    // full screen: the page goes under the camera cutout, so keep the content just below it
+    document.documentElement.classList.add('in-app');
+    try { if (APP.topInset) document.documentElement.style.setProperty('--app-top', APP.topInset() + 'px'); } catch (e) {}
+  }
   var APK_URL = 'https://github.com/gianlucagrillo/gymlog-android/releases/latest/download/gymlog.apk';
   function vib(p) {
     try {

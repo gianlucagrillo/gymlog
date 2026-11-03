@@ -154,6 +154,9 @@ saving backups to Downloads and the back button; it reloads itself on return whe
 is out. Settings → GitHub sync → "Open in the app" hands the connection to the app, which loads
 all the data from the sync repo. The service worker no longer touches GitHub API calls.
 
+v34: in the app the page also fills the area around the camera; the app passes the cutout height
+(`GymlogApp.topInset()` → `--app-top`) so the content starts just below it.
+
 The details below describe the features, which are unchanged.
 
 ## What it does
