@@ -148,6 +148,12 @@ name into the full screen (View Transitions), and the back button shrinks it bac
 
 v32: the exercise header shows only muscle and name (no sets × reps · rest line).
 
+v33: Android app (repo gymlog-android). Inside the app the page uses `window.GymlogApp` for
+vibration, keeping the screen on while resting, a rest-end alarm that rings with the screen off,
+saving backups to Downloads and the back button; it reloads itself on return when a new version
+is out. Settings → GitHub sync → "Open in the app" hands the connection to the app, which loads
+all the data from the sync repo. The service worker no longer touches GitHub API calls.
+
 The details below describe the features, which are unchanged.
 
 ## What it does

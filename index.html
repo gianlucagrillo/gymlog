@@ -1693,6 +1693,22 @@
     localStorage.setItem(BACKUP_KEY, new Date().toISOString());
     paintBackupNote();
   }
+  // ---------- Android app ----------
+  // Inside the Android app (repo gymlog-android) the page talks to the phone through window.GymlogApp:
+  // real vibration, keeping the screen on, a rest-end alarm that also works with the screen off,
+  // saving files and the back button. In Chrome none of this exists and the web APIs are used.
+  var APP = window.GymlogApp || null;
+  var APK_URL = 'https://github.com/gianlucagrillo/gymlog-android/releases/latest/download/gymlog.apk';
+  function vib(p) {
+    try {
+      if (APP) APP.vibrate(JSON.stringify(Array.isArray(p) ? p : [p]));
+      else if (navigator.vibrate) navigator.vibrate(p);
+    } catch (e) {}
+  }
+  function appCall(fn) {
+    if (!APP || typeof APP[fn] !== 'function') return;
+    try { APP[fn].apply(APP, Array.prototype.slice.call(arguments, 1)); } catch (e) {}
+  }
   // ---------- GitHub sync ----------
   // sync = { repo: 'owner/name', token, lastAt, lastErr, dirty }. Never part of a backup.
   var SYNC_KEY = 'gymlog-sync-v1';
@@ -2023,7 +2039,7 @@
       (entries[key] = entries[key] || []).push(ts);
     }
     row.set.at = Date.now();
-    if (navigator.vibrate) navigator.vibrate(14);
+    vib(14);
     ts.sets.push(row.set);
     var easyEl = document.getElementById('easy-' + key);
     ts.easy = !!(easyEl && easyEl.checked);
@@ -2130,7 +2146,7 @@
     if (lines.length) celebrate(name, lines);
   }
   function celebrate(title, lines) {
-    if (navigator.vibrate) navigator.vibrate([60, 40, 60, 40, 160]);
+    vib([60, 40, 60, 40, 160]);
     confetti();
     var old = document.getElementById('toast');
     if (old) old.remove();
@@ -2868,6 +2884,7 @@
   // Keep the screen on while resting: a locked phone suspends JS, so the
   // end-of-rest vibration/beep would never fire.
   function acquireWakeLock() {
+    appCall('keepAwake', true);
     try {
       if (!('wakeLock' in navigator) || wakeLock || document.visibilityState !== 'visible') return;
       navigator.wakeLock.request('screen').then(function(l) {
@@ -2877,8 +2894,15 @@
     } catch (e) {}
   }
   function releaseWakeLock() {
+    appCall('keepAwake', false);
     try { if (wakeLock) wakeLock.release(); } catch (e) {}
     wakeLock = null;
+  }
+  // in the app: a phone alarm at the end of the rest, so it rings even with the screen off
+  function scheduleRestAlarm() {
+    if (!APP || !timer) return;
+    var f = findEx(timer.key);
+    appCall('restAlarm', String(timer.endAt), 'Rest over', (f ? f.ex.name + ' · ' : '') + (nextUpShort() || 'next set'));
   }
 
   function timerRemaining() {
@@ -2889,6 +2913,7 @@
     timer = { key: key, name: name || '', endAt: Date.now() + restSec * 1000, restSec: restSec, alerted: false };
     localStorage.setItem(TIMER_KEY, JSON.stringify(timer));
     acquireWakeLock();
+    scheduleRestAlarm();
     ensureTicker();
     paintTimers();
   }
@@ -2900,6 +2925,7 @@
     if (sec > 0) timer.alerted = false;
     localStorage.setItem(TIMER_KEY, JSON.stringify(timer));
     acquireWakeLock();
+    scheduleRestAlarm();
     ensureTicker();
     paintTimers();
   }
@@ -2943,6 +2969,7 @@
   function stopTimer() {
     timer = null;
     localStorage.removeItem(TIMER_KEY);
+    appCall('cancelRest');
     releaseWakeLock();
     paintTimers();
   }
@@ -2989,8 +3016,9 @@
     if (timer && remaining <= 0 && !timer.alerted) {
       timer.alerted = true;
       // Only alert if the rest ended just now, not when reopening the app much later.
-      if (Date.now() - timer.endAt < 15000) {
-        if (navigator.vibrate) navigator.vibrate([250, 100, 250]);
+      // In the app with the screen off, the phone's rest alarm rings instead.
+      if (Date.now() - timer.endAt < 15000 && !(APP && document.hidden)) {
+        vib([250, 100, 250]);
         beep();
       }
       releaseWakeLock();
@@ -3958,7 +3986,7 @@
         var j = fi + (dx < 0 ? 1 : -1);
         if (j >= 0 && j < models.length && (Math.abs(dx) > openCard.offsetWidth * 0.3 || (Math.abs(dx) > 40 && v > 0.5))) {
           if (!prefs.swiped) { prefs.swiped = true; savePrefs(); }
-          if (navigator.vibrate) navigator.vibrate(8);
+          vib(8);
           slideTo(models[j].key, dx < 0 ? -1 : 1);
         } else springBack();
       });
@@ -4018,7 +4046,7 @@
         if (!ts || !ts.sets[i - 1]) return;
         ts.sets[i - 1].rir = parseInt(b.getAttribute('data-v'), 10);
         saveEntries();
-        if (navigator.vibrate) navigator.vibrate(8);
+        vib(8);
         if (pendingFinish && pendingFinish.from === key) {
           var fin = pendingFinish.day;
           pendingFinish = null;
@@ -4606,7 +4634,7 @@
         var v = Math.max(0, (body.protein[t] || 0) + parseInt(b.getAttribute('data-prot'), 10));
         if (v) body.protein[t] = v; else delete body.protein[t];
         saveBody();
-        if (navigator.vibrate) navigator.vibrate(8);
+        vib(8);
         render();
       });
     });
@@ -5029,7 +5057,9 @@
         '<div class="srow tap" id="sync-row">' + tile('gh') + '<div class="m">GitHub sync<small>' + (syncOn() ? esc(sync.repo) : 'Off') + '</small></div><span class="v' + (syncOn() ? ' gtext' : '') + '">' + (syncOn() ? 'On' : 'Set up') + '</span>' + (syncOpen ? CHEV_D : CHEV_R) + '</div>' +
         (syncOpen ? '<div class="sbody">' +
           (syncOn()
-            ? '<p class="hint" id="sync-state" style="margin:0 0 10px;"></p><div style="display:flex;gap:8px;"><button id="sync-now" style="flex:1;">Sync now</button><button class="ghost" id="sync-off" style="flex:1;">Disconnect</button></div>'
+            ? '<p class="hint" id="sync-state" style="margin:0 0 10px;"></p><div style="display:flex;gap:8px;"><button id="sync-now" style="flex:1;">Sync now</button><button class="ghost" id="sync-off" style="flex:1;">Disconnect</button></div>' +
+              (APP ? '' : '<p class="hint" style="margin:14px 0 8px;">Android app: install it, then open it from here — it receives this connection and loads all your data.</p>' +
+                '<div style="display:flex;gap:8px;"><a class="btn-link" href="' + APK_URL + '" style="flex:1;"><button class="ghost" style="width:100%;">Download app</button></a><button class="ghost" id="to-app" style="flex:1;">Open in the app</button></div>')
             : '<p class="hint" style="margin:0 0 10px;">Saves everything to a private repo after each workout and whenever you leave the app with unsaved changes.</p>' +
               '<input id="sync-repo" placeholder="owner/repo" value="gianlucagrillo/gymlog-data" autocapitalize="off" autocorrect="off" spellcheck="false">' +
               '<input id="sync-token" type="password" placeholder="Fine-grained token (github_pat_…)" autocapitalize="off" autocorrect="off" spellcheck="false" style="margin-top:8px;">' +
@@ -5082,6 +5112,16 @@
 
     paintSyncState();
     if (syncOpen && syncOn()) {
+      var toApp = document.getElementById('to-app');
+      if (toApp) toApp.addEventListener('click', function() {
+        // send the latest data to GitHub first: the app loads it from there
+        pushSync(true).then(function(ok) {
+          if (!ok) return;
+          var p = {};
+          ['theme', 'photos', 'sound', 'rir', 'protein', 'swiped', 'fixCableRow1102'].forEach(function(k) { if (k in prefs) p[k] = prefs[k]; });
+          location.href = 'gymlog://connect#connect=' + encodeURIComponent(sync.token) + '&prefs=' + encodeURIComponent(JSON.stringify(p));
+        });
+      });
       document.getElementById('sync-now').addEventListener('click', function() {
         pushSync(true).then(function(ok) { if (ok) renderData(); });
       });
@@ -5109,11 +5149,19 @@
     }
 
     document.getElementById('do-export').addEventListener('click', function() {
+      var name = 'gymlog-backup-' + todayStr() + '.json';
+      if (APP && typeof APP.saveFile === 'function') {
+        // the app's WebView can't download blobs: the phone saves the file in Downloads
+        appCall('saveFile', name, JSON.stringify(exportPayload(), null, 2));
+        markBackedUp();
+        renderData();
+        return;
+      }
       var blob = new Blob([JSON.stringify(exportPayload(), null, 2)], { type: 'application/json' });
       var url = URL.createObjectURL(blob);
       var a = document.createElement('a');
       a.href = url;
-      a.download = 'gymlog-backup-' + todayStr() + '.json';
+      a.download = name;
       document.body.appendChild(a);
       a.click();
       document.body.removeChild(a);
@@ -5269,6 +5317,102 @@
   window.addEventListener('scroll', paintSticky, { passive: true });
   setInterval(paintSessClock, 15000);
   window.addEventListener('online', function() { if (sync.dirty) pushSync(); });
+
+  // ---------- Android app: first connection, back button, coming back to the app ----------
+  // Replaces everything on this phone with what's in the synced file (the app starts empty).
+  function loadPayload(data) {
+    if (!data || !data.entries || typeof data.entries !== 'object' || Array.isArray(data.entries)) throw 'bad file';
+    entries = data.entries;
+    saveEntries();
+    if (data.prepost && typeof data.prepost === 'object' && !Array.isArray(data.prepost)) { prepost = data.prepost; savePrepost(); }
+    if (data.body && typeof data.body === 'object' && !Array.isArray(data.body)) { body = data.body; normBody(); saveBody(); }
+    if (data.routines && Array.isArray(data.routines.list) && data.routines.list.length) {
+      data.routines.list.forEach(function(p) { fillMeta(p.days); });
+      store = data.routines;
+      routine = activePlan().days;
+      saveRoutine();
+    }
+    activeDay = pickStartDay();
+    inSession = false;
+    view = 'log';
+  }
+  function pullFromSync() {
+    var hadData = Object.keys(entries).some(function(k) { return entries[k] && entries[k].length; });
+    return fetch('https://api.github.com/repos/' + sync.repo + '/contents/' + SYNC_PATH, {
+      cache: 'no-store',
+      headers: { 'Authorization': 'Bearer ' + sync.token, 'Accept': 'application/vnd.github.raw' }
+    }).then(function(r) {
+      if (!r.ok) throw r.status;
+      return r.text();
+    }).then(function(txt) {
+      var data = JSON.parse(txt);
+      if (hadData && !confirm('Load your data from GitHub? What is on this phone now will be replaced.')) return;
+      loadPayload(data);
+      var n = 0;
+      for (var k in entries) n += entries[k].length;
+      sync.sha = '';
+      sync.lastAt = new Date().toISOString();
+      sync.lastErr = '';
+      sync.dirty = false;
+      saveSync();
+      render();
+      alert('Connected — ' + n + ' sessions loaded from GitHub.');
+    }).catch(function(err) {
+      // without the data, the first sync from here would overwrite GitHub with an empty log: disconnect
+      var why = typeof err === 'number' ? syncErrText(err) : 'network error';
+      sync = {};
+      saveSync();
+      render();
+      alert('Could not load your data from GitHub (' + why + '). Open the link from Chrome again to retry.');
+    });
+  }
+  // gymlog://connect#connect=TOKEN&prefs=… opens the app with the page at …/#connect=…
+  (function() {
+    var m = location.hash.match(/^#connect=([^&]+)(?:&prefs=([^&]*))?/);
+    if (!m) return;
+    history.replaceState(null, '', location.pathname + location.search);
+    if (m[2]) {
+      try {
+        var p = JSON.parse(decodeURIComponent(m[2]));
+        ['theme', 'photos', 'sound', 'rir', 'protein', 'swiped', 'fixCableRow1102'].forEach(function(k) { if (k in p) prefs[k] = p[k]; });
+        savePrefs();
+        applyTheme();
+      } catch (e) {}
+    }
+    sync = { repo: 'gianlucagrillo/gymlog-data', token: decodeURIComponent(m[1]) };
+    saveSync();
+    pullFromSync();
+  })();
+  // Android back button: close what's open, step back towards Today; false = leave the app
+  window.onAppBack = function() {
+    var sh = document.getElementById('sheet');
+    if (sh && !sh.hidden) { var c = sh.querySelector('[data-close]'); if (c) c.click(); else closeSheet(); return true; }
+    if (tfullOpen) { closeTimerFull(); return true; }
+    if (view === 'log' && inSession) { var b = document.querySelector('[data-back]'); if (b) { b.click(); return true; } }
+    if (view !== 'log') { view = 'log'; render(); window.scrollTo(0, 0); return true; }
+    return false;
+  };
+  // Coming back to the app: refresh the timer; if a new version was published meanwhile, reload
+  // (never during a rest). The version is the cache name in service-worker.js.
+  var swVersion = null;
+  function readSwVersion() {
+    return fetch('service-worker.js?check=' + Date.now(), { cache: 'no-store' })
+      .then(function(r) { return r.text(); })
+      .then(function(t) { var m = t.match(/gymlog-cache-v\d+/); return m ? m[0] : null; })
+      .catch(function() { return null; });
+  }
+  if (APP) readSwVersion().then(function(v) { swVersion = v; });
+  window.onAppResume = function() {
+    if (timer && timerRemaining() > 0) { acquireWakeLock(); ensureTicker(); }
+    paintTimers();
+    paintSessClock();
+    if (sync.dirty) pushSync();
+    readSwVersion().then(function(v) {
+      if (!v) return;
+      if (!swVersion) { swVersion = v; return; }
+      if (v !== swVersion && !timer && !document.getElementById('sheet').innerHTML) location.reload();
+    });
+  };
 
   render();
   if (sync.dirty) pushSync();

@@ -1,4 +1,4 @@
-const CACHE_NAME = 'gymlog-cache-v32';
+const CACHE_NAME = 'gymlog-cache-v33';
 const ASSETS = ['./', './index.html', './manifest.json', './icon-192.png', './icon-512.png',
   './img/run-road.jpg', './img/hike-sunset.jpg', './img/rain-night.jpg', './img/boxer-backlit.jpg', './img/boxer-blue.jpg',
   './img/shadowbox-sunset.jpg', './img/battle-ropes.jpg', './img/cyclist-climb.jpg', './img/surf-barrel.jpg', './img/high-kick.jpg'];
@@ -25,6 +25,8 @@ self.addEventListener('activate', (event) => {
 self.addEventListener('fetch', (event) => {
   const req = event.request;
   if (req.method !== 'GET') return;
+  // only the app's own files: GitHub sync calls must always reach the network
+  if (new URL(req.url).origin !== self.location.origin) return;
 
   const isDoc = req.mode === 'navigate' || (req.destination === 'document');
 
