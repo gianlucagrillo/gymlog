@@ -962,6 +962,13 @@
   #gymlog .hero2.solo .cta { margin-top: auto; }
   #gymlog .hero2.solo .hero-day { align-self: flex-start; }
   #gymlog .hero2.solo .ttl { margin-top: 2px; }
+  /* the tall card shows the whole photo: darker only behind the title (top) and the button (bottom) */
+  #gymlog .hero2.solo.hph { --ov: linear-gradient(180deg, rgba(var(--bg-rgb),.82) 0%, rgba(var(--bg-rgb),.45) 22%, rgba(var(--bg-rgb),.08) 45%, rgba(var(--bg-rgb),.12) 70%, rgba(var(--bg-rgb),.78) 100%); }
+  #gymlog .hero2.solo.hph .pglow { opacity: .55; }
+  /* a photo that starts lower (y in px): the band above it is the card's own dark colour, on the same layer */
+  #gymlog .hero2.solo.hph .pbg { background-color: #141110;
+    background-image: var(--ovx, linear-gradient(transparent, transparent)), var(--ov, none), var(--ph);
+    background-size: 100% 100%, 100% 100%, cover; background-position: 0 0, 0 0, var(--pp); }
   #gymlog .hero2.hph .ring b { color: var(--t1); }
   #gymlog .plist { display: grid; gap: 22px; }
   #gymlog .pcard { position: relative; border-radius: 22px; padding: 16px 18px 14px; min-height: 138px; cursor: pointer; border: none; background: var(--glass); box-shadow: 0 26px 40px -20px rgba(0,0,0,.85); }
@@ -1476,7 +1483,10 @@
   var SHOW_TODAY_LIST = false;
   function photoBg(p, y) {
     if (!p) return '';
-    var st = '--ph:url(img/' + p[0] + '.jpg);--pp:' + p[1] + '% ' + (y || 45) + '%';
+    var py = p[2] == null ? (y || 45) + '%' : typeof p[2] === 'string' ? p[2] : p[2] + '%';
+    var st = '--ph:url(img/' + p[0] + '.jpg);--pp:' + p[1] + '% ' + py;
+    // a photo pushed down by px: fade its top edge into the dark band above it
+    if (typeof p[2] === 'string') st += ';--ovx:linear-gradient(180deg,#141110 ' + p[2] + ',rgba(20,17,16,0) calc(' + p[2] + ' + 90px))';
     return '<i class="pglow" style="' + st + '"></i><i class="pbg" style="' + st + '"></i>';
   }
   function exPhoto(ex) { return PHOTO_BY_MUSCLE[String(ex.muscle || 'other').toLowerCase()] || PHOTO_BY_MUSCLE.other; }
@@ -1489,7 +1499,22 @@
     used[p[0]] = true;
     return p;
   }
-  function dayPhoto(day) { return isLowerDay(day) ? ['hike-sunset', 64] : ['boxer-backlit', 58]; }
+  // one photo per workout day (Gianluca, 3 Nov 2026): Ali, Goggins, Jon Jones, Kobe — see README for credits.
+  // [file, x%, y] — y in px starts the photo lower, so a face near the top isn't hidden behind the title
+  var DAY_PHOTO = {
+    ua: ['day-ali-liston', 20, '84px'], la: ['day-goggins-badwater', 10, 50], ub: ['day-jon-jones', 50, 40],
+    lb: ['day-kobe-drive', 50, 45], da: ['day-ali-london', 62, 50]
+  };
+  var DAY_PHOTO_ORDER = ['ua', 'la', 'ub', 'lb', 'da'];
+  function dayPhoto(day) {
+    var p = DAY_PHOTO[day.id];
+    if (!p) {
+      // a day of another routine: same set of photos, by position in the week
+      var i = Math.max(0, routine.indexOf(day));
+      p = DAY_PHOTO[DAY_PHOTO_ORDER[i % DAY_PHOTO_ORDER.length]];
+    }
+    return p;
+  }
   function ppList(day, kind) { return PP_LISTS[kind + (isLowerDay(day) ? 'Lower' : 'Upper')]; }
   function ppTicked(date, kind) { return (prepost[date] && prepost[date][kind]) || []; }
   function ppCount(day, date, kind) {

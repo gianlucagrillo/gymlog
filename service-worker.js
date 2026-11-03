@@ -1,7 +1,8 @@
-const CACHE_NAME = 'gymlog-cache-v40';
+const CACHE_NAME = 'gymlog-cache-v41';
 const ASSETS = ['./', './index.html', './manifest.json', './icon-192.png', './icon-512.png',
   './img/run-road.jpg', './img/hike-sunset.jpg', './img/rain-night.jpg', './img/boxer-backlit.jpg', './img/boxer-blue.jpg',
-  './img/shadowbox-sunset.jpg', './img/battle-ropes.jpg', './img/cyclist-climb.jpg', './img/surf-barrel.jpg', './img/high-kick.jpg'];
+  './img/shadowbox-sunset.jpg', './img/battle-ropes.jpg', './img/cyclist-climb.jpg', './img/surf-barrel.jpg', './img/high-kick.jpg',
+  './img/day-ali-liston.jpg', './img/day-goggins-badwater.jpg', './img/day-jon-jones.jpg', './img/day-kobe-drive.jpg', './img/day-ali-london.jpg'];
 
 self.addEventListener('install', (event) => {
   event.waitUntil(

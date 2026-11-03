@@ -122,6 +122,18 @@ required):
   - `img/surf-barrel.jpg` — https://images.unsplash.com/photo-1760755958481-076d0bf01599
   - `img/high-kick.jpg` — https://images.unsplash.com/photo-1633378453111-55462debb3f4
 
+  Workout-day photos (v41), from Wikimedia Commons, resized:
+  - `img/day-ali-liston.jpg` (Upper A) — Muhammad Ali over Sonny Liston, 1965, John Rooney / AP — public domain —
+    https://commons.wikimedia.org/wiki/File:Muhammad_Ali_shouts_and_beckons_at_Sonny_Liston_AP.jpg
+  - `img/day-goggins-badwater.jpg` (Lower A) — David Goggins at Badwater 2007, U.S. Navy photo by MCSN Brandon Rogers — public domain —
+    https://commons.wikimedia.org/wiki/File:US_Navy_070723-N-6138R-001_U.S._Navy_SEAL,_Petty_Officer_1st_Class_David_Goggins_runs_135_miles_through_Death_Valley,_California_in_the_Kiehl%27s_Badwater_Ultra_Marathon.jpg
+  - `img/day-jon-jones.jpg` (Upper B) — Jon Jones, by NomadPHY — CC BY-SA 4.0 (this resized copy is under the same licence) —
+    https://commons.wikimedia.org/wiki/File:JonBonesJones.jpg
+  - `img/day-kobe-drive.jpg` (Lower B) — Kobe Bryant, by Keith Allison — CC BY-SA 3.0 (this resized copy is under the same licence) —
+    https://commons.wikimedia.org/wiki/File:Kobe_Bryant_Drives2.jpg
+  - `img/day-ali-london.jpg` (Delts & Arms) — Muhammad Ali vs Brian London, 1966, PA — public domain —
+    https://commons.wikimedia.org/wiki/File:Muhammad_Ali_fights_Brian_London_on_August_6,_1966.jpg
+
 v24 colours: Settings → Colours switches between Ember (the original warm theme)
 and four Petrol themes — the same deep petrol-blue base (#020F12) with a different
 accent: Salsedine, Acqua luminosa, Ghiaccio or Lime. The choice is applied at once
@@ -174,6 +186,9 @@ v39: Today is a single screen that doesn't scroll — the workout card stretches
 tab bar on any phone height (`#gymlog.landing` flex layout, backup note hidden there).
 
 v40: the workout card has no "Rest day · next up · ≈42 min" line above the title.
+
+v41: each of the five workouts has its own photo on Today (`DAY_PHOTO`): Ali over Liston,
+Goggins at Badwater, Jon Jones, Kobe, Ali vs London. The tall card darkens only top and bottom.
 
 The details below describe the features, which are unchanged.
 
