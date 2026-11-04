@@ -195,6 +195,8 @@ on the next start (sets, warm-up/cool-down, protein, measurements, progress phot
 
 v43: slightly lighter background — Ember #0B0605 → #16100D, Petrol #020F12 → #08191D.
 
+v44: the PR badge is a single accent colour instead of the gradient.
+
 The details below describe the features, which are unchanged.
 
 ## What it does
