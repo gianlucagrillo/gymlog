@@ -202,6 +202,9 @@ v45: no "swipe sideways…" hint under the exercise.
 v46: no "Log all sets" / "Update session" button — sets are logged one by one with ✓ (unticking the
 last one undoes it).
 
+v47: the −/+ weight and reps buttons under the next set are hidden (`SHOW_STEP_BUTTONS = false`)
+while a better control is designed.
+
 The details below describe the features, which are unchanged.
 
 ## What it does

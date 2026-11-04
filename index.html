@@ -1481,6 +1481,7 @@
   var SHOW_PROTEIN_CARD = false;
   // Today shows only the workout card (Gianluca, 3 Nov 2026); true brings back warm-up/cool-down and the exercise list
   var SHOW_TODAY_LIST = false;
+  var SHOW_STEP_BUTTONS = false;
   function photoBg(p, y) {
     if (!p) return '';
     var py = p[2] == null ? (y || 45) + '%' : typeof p[2] === 'string' ? p[2] : p[2] + '%';
@@ -3872,7 +3873,8 @@
           setInputs += '<div class="rir-row"><span>Reps left? <small>aim ' + rirAim(ex) + '</small></span>' +
             [0, 1, 2, 3].map(function(v) { return '<button data-rir="' + key + '" data-i="' + i + '" data-v="' + v + '">' + (v === 3 ? '3+' : v) + '</button>'; }).join('') + '</div>';
         }
-        if (isNext && !exComplete) {
+        // −/+ buttons under the next set: hidden for now (Gianluca, 4 Nov 2026) until a better control is designed
+        if (SHOW_STEP_BUTTONS && isNext && !exComplete) {
           var ws = weightStep(ex);
           setInputs += '<div class="step-row"><span></span><span></span>' +
             '<div class="step-pair">' + (bwOnly ? '' : stepBtn(key, i, 'w', -ws) + stepBtn(key, i, 'w', ws)) + '</div>' +
