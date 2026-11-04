@@ -222,6 +222,16 @@ v51: the open exercise is a fixed screen, like Today — the page doesn't scroll
 the photo header shrinks first; if the sets still don't fit they scroll inside the card, with the
 set to do next kept in view.
 
+v52: the coach looks wider. It reads the last session of the movement wherever it was done — same
+exercise name on any day, routine or alternative — in a rep range close to this one (midpoints
+within 2 reps); if it was only done in a different range, it carries the strength over through the
+estimated 1RM and suggests a starting weight. A session under the bottom of the range that is
+clearly weaker (5%+) than the 2–3 before is treated as an off day: stay, don't drop. Besides three
+sessions at the same weight without more reps, a plateau is also strength (est. 1RM, counting reps
+in reserve, deload week left out) no higher over the last four sessions across 2+ weeks — unless
+the weight was already lowered. Breaks are measured from the last time the movement was done
+anywhere. Under each tip a small line says which session it's based on (date · day).
+
 The details below describe the features, which are unchanged.
 
 ## What it does

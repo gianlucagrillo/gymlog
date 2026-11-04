@@ -644,6 +644,7 @@
   #gymlog .tip { margin: 0 6px 10px; font-size: 12px; color: var(--t2); display: flex; gap: 7px; align-items: flex-start; line-height: 1.4; }
   #gymlog .tip svg { width: 13px; height: 13px; color: var(--acc); flex-shrink: 0; margin-top: 2px; }
   #gymlog .tip b { color: var(--t1); font-weight: 500; }
+  #gymlog .tip .tip-src { display: block; margin-top: 3px; font-size: 10.5px; color: var(--t3); }
   #gymlog .rir-row { display: flex; align-items: center; gap: 5px; padding: 2px 6px 8px 38px; animation: gl-xin .25s ease; }
   #gymlog .rir-row span { flex: 1; font-size: 11.5px; color: var(--t2); line-height: 1.25; } #gymlog .rir-row span small { display: block; color: var(--t3); font-size: 10.5px; }
   #gymlog .rir-row button { width: 38px; height: 32px; padding: 0; border-radius: 99px; background: var(--tile); border: .5px solid var(--edge); color: var(--t1); font-size: 13px; font-weight: 500; box-shadow: none; }
@@ -3433,26 +3434,85 @@
   function topSet(sess) { return sess ? sess.sets.reduce(function(b, s) { return !b || (s.weight || 0) > (b.weight || 0) ? s : b; }, null) : null; }
 
   // ---------- progression coach ----------
-  // Double progression on the last session before today: every working set at the top of the rep
-  // range → more weight; the first set (or two sets) under the bottom → less; a plateau over three
-  // sessions → a step down to build back up; otherwise the same weight with one more rep per set.
-  function coach(ex, hist, same) {
+  // Where an exercise id lives (active routine first), for the day name and rep range of its sessions.
+  function exWhere(id) {
+    var act = activePlan();
+    var plans = [{ name: act.name, days: routine }].concat(store.list.filter(function(p) { return p !== act; }));
+    for (var i = 0; i < plans.length; i++) {
+      for (var j = 0; j < plans[i].days.length; j++) {
+        var d = plans[i].days[j];
+        for (var k = 0; k < d.exercises.length; k++) {
+          var e = d.exercises[k];
+          if (e.id === id) return { ex: e, day: d, other: i > 0 ? plans[i].name : '' };
+          var a = (e.alts || []).find(function(x) { return x.id === id; });
+          if (a) return { ex: altOf(e, a), day: d, other: i > 0 ? plans[i].name : '' };
+        }
+      }
+    }
+    return null;
+  }
+  // Every session before today of this movement — same name on any day, routine or alternative —
+  // oldest first, each with the rep range and day it was done in.
+  function coachPool(ex) {
+    var k = movementKey(ex.name), today = todayStr(), ids = [ex.id], out = [];
+    allExercises().forEach(function(e) { if (movementKey(e.name) === k && ids.indexOf(e.id) < 0) ids.push(e.id); });
+    ids.forEach(function(id) {
+      var w = exWhere(id), src = id === ex.id ? ex : (w && w.ex) || ex;
+      var label = w ? (w.day.label || w.day.name || '') + (w.other ? ' (' + w.other + ')' : '') : '';
+      (entries[id] || []).forEach(function(s) {
+        if (s.date < today && s.sets && s.sets.length) out.push({ date: s.date, sets: s.sets, lo: src.repMin, hi: src.repMax, label: label, own: id === ex.id });
+      });
+    });
+    return out.sort(function(a, b) { return a.date.localeCompare(b.date) || (a.own ? 1 : 0) - (b.own ? 1 : 0); });
+  }
+  // A session's strength: best estimated 1RM, counting the reps that were left in the tank.
+  function sessE(s) {
+    var b = 0;
+    s.sets.forEach(function(x) { if (x.weight > 0 && x.reps > 0) b = Math.max(b, x.weight * (1 + (x.reps + (x.rir != null ? Math.min(3, x.rir) : 0)) / 30)); });
+    return b;
+  }
+  // Double progression on the last session in this rep range, wherever it was done: every working
+  // set at the top of the range → more weight; the first set (or two sets) under the bottom → less,
+  // unless the sessions before show it was an off day; no progress over three to four sessions →
+  // a step down to build back up; otherwise the same weight with one more rep per set.
+  function coach(ex) {
     var today = todayStr();
-    var before = hist.filter(function(h) { return h.date < today; });
-    var L = before[before.length - 1];
+    var pool = coachPool(ex);
     var n = ex.sets, lo = ex.repMin, hi = ex.repMax, step = weightStep(ex);
     var fill = function(r) { var a = []; for (var i = 0; i < n; i++) a.push(r); return a; };
     var B = function(w) { return '<b>' + (w === 0 ? 'bodyweight' : round1(w) + ' kg') + '</b>'; };
-    if (!L || !L.sets.length) {
-      var aim = Math.max(lo, hi - 2);
+    var aim = Math.max(lo, hi - 2);
+    var dayGap = function(a, b) { return Math.round((new Date(b + 'T00:00:00') - new Date(a + 'T00:00:00')) / 86400000); };
+    var srcOf = function(s, extra) { return 'Based on ' + fmtDate(s.date) + (s.label ? ' · ' + esc(s.label) : '') + (extra || ''); };
+    if (!pool.length) {
       return { act: 'new', weight: null, reps: fill(aim), msg: 'First time: pick a weight you can do for about <b>' + aim + '</b> clean reps.' };
     }
+    var latest = pool[pool.length - 1];
+    var gap = dayGap(latest.date, today);
+    // strength trend in any rep range, leaving out the lighter deload week
+    var dl = prefs.deload;
+    var trend = pool.filter(function(s) { return sessE(s) > 0 && !(dl && dl.from <= s.date && s.date <= dl.to); });
+    var near = pool.filter(function(s) { return Math.abs((s.lo + s.hi) / 2 - (lo + hi) / 2) <= 2; });
+    if (!near.length) {
+      // only done in another rep range so far: carry the strength over through the estimated 1RM
+      var E = sessE(latest);
+      if (!E) return { act: 'new', weight: null, reps: fill(aim), src: srcOf(latest), msg: 'First time for ' + lo + '–' + hi + ' reps: pick a weight you can do for about <b>' + aim + '</b> clean reps.' };
+      var cw = round1(Math.max(step, Math.round(E / (1 + (aim + 1) / 30) / step) * step));
+      return { act: 'carry', weight: cw, reps: fill(aim), src: srcOf(latest),
+        msg: 'Last done for ' + latest.lo + '–' + latest.hi + ' reps. For ' + lo + '–' + hi + ' here, start at ' + B(cw) + ' for about <b>' + aim + '</b> reps.' };
+    }
+    var L = near[near.length - 1];
+    var res = coachRules(ex, L, near, trend, gap, fill, B, step);
+    if (!res.src) res.src = srcOf(L, res.srcMore || '');
+    return res;
+  }
+  function coachRules(ex, L, near, trend, gap, fill, B, step) {
+    var n = ex.sets, lo = ex.repMin, hi = ex.repMax;
     var topW = Math.max.apply(null, L.sets.map(function(s) { return s.weight || 0; }));
     var work = L.sets.filter(function(s) { return (s.weight || 0) === topW; });
     var reps = work.map(function(s) { return s.reps || 0; });
     var rirs = work.map(function(s) { return s.rir; }).filter(function(v) { return v != null; });
     var rirAvg = rirs.length && rirs.length >= Math.ceil(work.length / 2) ? avg(rirs) : null;
-    var gap = Math.round((new Date(today + 'T00:00:00') - new Date(L.date + 'T00:00:00')) / 86400000);
     var down = function(w) { return Math.max(step, round1(w - step)); };
     var holdReps = [];
     for (var i = 0; i < n; i++) holdReps.push(Math.min(hi, Math.max(lo, (reps[i] != null ? reps[i] : reps[reps.length - 1]) + 1)));
@@ -3490,22 +3550,41 @@
     }
     var under = reps.filter(function(r) { return r < lo; }).length;
     if (reps[0] < lo || under >= 2) {
-      if (topW === 0) return { act: 'down', weight: 0, reps: fill(lo), msg: (reps[0] < lo ? 'Set 1' : 'Two sets') + ' fell below ' + lo + ' reps — use assistance or an easier variation.' };
-      return { act: 'down', weight: down(topW), reps: fill(lo), msg: (reps[0] < lo ? 'Set 1' : 'Two sets') + ' fell below ' + lo + ' reps last time — drop to ' + B(down(topW)) + '.' };
+      var fell = (reps[0] < lo ? 'Set 1' : 'Two sets') + ' fell below ' + lo + ' reps';
+      if (topW === 0) return { act: 'down', weight: 0, reps: fill(lo), msg: fell + ' — use assistance or an easier variation.' };
+      // much weaker than the sessions just before: an off day, not a weight that is too heavy
+      var prior = trend.filter(function(s) { return s.date < L.date; }).slice(-3).map(sessE).sort(function(a, b) { return a - b; });
+      var eL = sessE(L);
+      if (eL && prior.length >= 2 && eL < 0.95 * prior[Math.floor(prior.length / 2)]) {
+        return { act: 'hold', weight: topW, reps: fill(lo), srcMore: ' and the ' + prior.length + ' sessions before',
+          msg: fell + ' last time, but the sessions before were stronger — likely an off day. Stay at ' + B(topW) + ' and aim for <b>' + lo + '</b>+.' };
+      }
+      return { act: 'down', weight: down(topW), reps: fill(lo), msg: fell + ' last time — drop to ' + B(down(topW)) + '.' };
     }
     if (rirAvg != null && rirAvg >= 3) {
       var pushReps = [];
       for (var q = 0; q < n; q++) pushReps.push(Math.min(hi, Math.max(lo, (reps[q] != null ? reps[q] : reps[reps.length - 1]) + 2)));
       return { act: 'hold', weight: topW, reps: pushReps, msg: 'You had 3+ reps left last time — push closer to the limit at ' + B(topW) + ': <b>' + pushReps.join(' · ') + '</b> reps.' };
     }
-    // plateau: also counts the same exercise logged on other days / routines (same name)
-    var pool = (same && same.length ? same : before).filter(function(h) { return h.date < today; });
-    var last3 = pool.slice(-3).map(avgReps);
-    if (last3.length === 3 && topW > 0 && last3.every(function(x) { return x.w === topW; }) && last3[2].r <= last3[0].r + 0.01) {
+    // plateau: three sessions in this range at the same weight without more reps, or strength
+    // (est. 1RM, any range) no higher over the last four sessions spread across 2+ weeks
+    var last3 = near.slice(-3).map(avgReps);
+    var flat3 = last3.length === 3 && topW > 0 && last3.every(function(x) { return x.w === topW; }) && last3[2].r <= last3[0].r + 0.01;
+    var t4 = trend.slice(-4);
+    var topOf = function(s) { return Math.max.apply(null, s.sets.map(function(x) { return x.weight || 0; })); };
+    // already stepped down from a heavier weight: that is the rebuild, not a plateau
+    var flat4 = !flat3 && topW > 0 && t4.length === 4 && t4[3].date >= L.date &&
+      topW >= Math.max(topOf(t4[0]), topOf(t4[1]), topOf(t4[2])) &&
+      t4.filter(function(s) { return near.indexOf(s) >= 0; }).length >= 2 &&
+      Math.round((new Date(t4[3].date) - new Date(t4[0].date)) / 86400000) >= 14 &&
+      Math.max(sessE(t4[1]), sessE(t4[2]), sessE(t4[3])) <= sessE(t4[0]) * 1.01;
+    if (flat3 || flat4) {
+      var stuck = flat3 ? 'No progress in 3 sessions at ' + B(topW) : 'No stronger in your last 4 sessions';
+      var more = flat3 ? ' and the 2 sessions before' : ' and the 3 sessions before';
       if (rirAvg != null && rirAvg >= 2) {
-        return { act: 'hold', stall: true, weight: topW, reps: holdReps, msg: 'Stuck at ' + B(topW) + ' but with reps in reserve — take every set to 0–1 left before dropping the weight.' };
+        return { act: 'hold', stall: true, weight: topW, reps: holdReps, srcMore: more, msg: stuck + ', but with reps in reserve — take every set to 0–1 left before dropping the weight.' };
       }
-      return { act: 'down', stall: true, weight: down(topW), reps: fill(hi), msg: 'No progress in 3 sessions at ' + B(topW) + ' — drop to ' + B(down(topW)) + ', work up to ' + hi + ' reps on every set, then go back up.' };
+      return { act: 'down', stall: true, weight: down(topW), reps: fill(hi), srcMore: more, msg: stuck + ' — drop to ' + B(down(topW)) + ', work up to ' + hi + ' reps on every set, then go back up.' };
     }
     if (under === 1) {
       return { act: 'hold', weight: topW, reps: holdReps, msg: 'Last set dipped under ' + lo + ' — normal fatigue. Stay at ' + B(topW) + '.' };
@@ -3624,7 +3703,7 @@
     var mv = movements(), stalled = [];
     routine.forEach(function(d) {
       d.exercises.forEach(function(e) {
-        var c = coach(e, sortedHist(e.id), (mv[movementKey(e.name)] || {}).sessions);
+        var c = coach(e);
         if (c.stall && stalled.indexOf(e.name) < 0) stalled.push(e.name);
       });
     });
@@ -3687,7 +3766,7 @@
         var nextW = m.coach && m.coach.weight;
         if (m.draft && m.draft.w[m.nDone] !== undefined && m.draft.w[m.nDone] !== '') nextW = parseFloat(m.draft.w[m.nDone]);
         var plates = eqOf(ex.name) === 'bb' && !m.exComplete ? platesText(ex, nextW) : '';
-        h += '<div class="xbody">' + (tip && !m.exComplete ? '<div class="tip coach-' + (c.act || 'hold') + '">' + cIco + '<span>' + tip + '</span></div>' : '') +
+        h += '<div class="xbody">' + (tip && !m.exComplete ? '<div class="tip coach-' + (c.act || 'hold') + '">' + cIco + '<span>' + tip + (c.src ? '<small class="tip-src">' + c.src + '</small>' : '') + '</span></div>' : '') +
           (ex.note ? '<div class="xnote">' + NOTE_ICO + '<span>' + esc(ex.note) + '</span></div>' : '') +
           (eqOf(ex.name) === 'bb' && !m.exComplete ? '<div class="plates" id="plates-' + m.key + '">' + plates + '</div>' : '') +
           '<div id="hist-' + m.key + '">' + m.setInputs + '</div>' +
@@ -3881,7 +3960,7 @@
       var nDone = todaySess ? todaySess.sets.length : 0;
       var exComplete = exDone(ex);
       var strengths = setStrength(mvMap[movementKey(ex.name)], ex.sets);
-      var plan = coach(ex, hist, (mvMap[movementKey(ex.name)] || {}).sessions);
+      var plan = coach(ex);
       var setInputs = '';
       if (!nDone) setInputs += '<div class="set-hint">Tap ✓ after each set — the rest timer starts on its own.' + (strengths ? ' ≈ = reps your recent sessions predict at that weight.' : '') + '</div>';
       setInputs += '<div class="set-head"><span>Set</span><span>Previous</span><span>kg</span><span>Reps <small style="opacity:.7;">' + ex.repMin + '–' + ex.repMax + '</small></span><span></span></div>';
@@ -4844,7 +4923,7 @@
     }
     var mv = movements(), ups = [], downs = [];
     routine.forEach(function(d) { d.exercises.forEach(function(e) {
-      var c = coach(e, sortedHist(e.id), (mv[movementKey(e.name)] || {}).sessions);
+      var c = coach(e);
       if (c.act === 'up' && c.weight) ups.push(esc(e.name) + ' ' + c.weight + ' kg');
       else if (c.act === 'down' && c.weight) downs.push(esc(e.name) + ' ' + c.weight + ' kg');
     }); });
