@@ -190,6 +190,9 @@ v40: the workout card has no "Rest day · next up · ≈42 min" line above the t
 v41: each of the five workouts has its own photo on Today (`DAY_PHOTO`): Ali over Liston,
 Goggins at Badwater, Jon Jones, Kobe, Ali vs London. The tall card darkens only top and bottom.
 
+v42: one-off cleanup (`prefs.wipe1103`): everything dated 3 Nov 2026 — Android app tests — is removed
+on the next start (sets, warm-up/cool-down, protein, measurements, progress photos, rest timer).
+
 The details below describe the features, which are unchanged.
 
 ## What it does

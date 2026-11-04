@@ -5320,6 +5320,34 @@
     prefs.fixCableRow1102 = true;
     savePrefs();
   })();
+  // One-off cleanup (4 Nov 2026): everything logged on 3 Nov was a test of the Android app — remove it
+  // (sets, warm-up/cool-down, protein, measurements, progress photos and a leftover rest timer).
+  (function() {
+    if (prefs.wipe1103) return;
+    var D = '2026-11-03', changed = false;
+    Object.keys(entries).forEach(function(k) {
+      var keep = (entries[k] || []).filter(function(s) { return s.date !== D; });
+      if (keep.length !== (entries[k] || []).length) { changed = true; if (keep.length) entries[k] = keep; else delete entries[k]; }
+    });
+    if (changed) saveEntries();
+    if (prepost && prepost[D]) { delete prepost[D]; savePrepost(); }
+    var bodyChanged = false;
+    if (body.protein && body.protein[D]) { delete body.protein[D]; bodyChanged = true; }
+    if (Array.isArray(body.measures)) {
+      var m = body.measures.filter(function(x) { return !(x && String(x.date || '').slice(0, 10) === D); });
+      if (m.length !== body.measures.length) { body.measures = m; bodyChanged = true; }
+    }
+    if (bodyChanged) saveBody();
+    try {
+      var t = JSON.parse(localStorage.getItem(TIMER_KEY) || 'null');
+      if (t && new Date(t.endAt).toISOString().slice(0, 10) <= D) { localStorage.removeItem(TIMER_KEY); timer = null; }
+    } catch (e) {}
+    loadPhotos().then(function(all) {
+      all.filter(function(p) { return p.date === D; }).forEach(function(p) { deletePhoto(p.id); });
+    });
+    prefs.wipe1103 = true;
+    savePrefs();
+  })();
   activeDay = pickStartDay();
   // a workout started today and not finished reopens straight into the active-workout screen
   (function() {
