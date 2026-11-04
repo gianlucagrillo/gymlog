@@ -3633,8 +3633,7 @@
           (ex.note ? '<div class="xnote">' + NOTE_ICO + '<span>' + esc(ex.note) + '</span></div>' : '') +
           (eqOf(ex.name) === 'bb' && !m.exComplete ? '<div class="plates" id="plates-' + m.key + '">' + plates + '</div>' : '') +
           '<div id="hist-' + m.key + '">' + m.setInputs + '</div>' +
-          '<div class="xfoot"><button class="ghost" data-log="' + m.key + '" data-setcount="' + ex.sets + '">' + (m.exComplete ? 'Update session' : 'Log all sets') + '</button></div>' +
-          '<div class="draft-note" id="draft-' + m.key + '"' + (m.draft && !m.todaySess ? '' : ' hidden') + '>Not saved yet — tap ✓ or Log all sets</div>' +
+          '<div class="draft-note" id="draft-' + m.key + '"' + (m.draft && !m.todaySess ? '' : ' hidden') + '>Not saved yet — tap ✓ to save the set</div>' +
           '</div>' +
           '<div class="xnav">' +
             (prevM ? '<button class="ghost" data-jump="' + prevM.key + '">' + CHEV_L + '<span>' + esc(prevM.ex.name) + '</span></button>' : '<i></i>') +

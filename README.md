@@ -199,6 +199,9 @@ v44: the PR badge is a single accent colour instead of the gradient.
 
 v45: no "swipe sideways…" hint under the exercise.
 
+v46: no "Log all sets" / "Update session" button — sets are logged one by one with ✓ (unticking the
+last one undoes it).
+
 The details below describe the features, which are unchanged.
 
 ## What it does
