@@ -1789,6 +1789,12 @@
     if (!APP || typeof APP[fn] !== 'function') return;
     try { APP[fn].apply(APP, Array.prototype.slice.call(arguments, 1)); } catch (e) {}
   }
+  // Chrome → app: the link hands over the GitHub connection and the look-and-feel settings
+  function appConnectUrl() {
+    var p = {};
+    ['theme', 'photos', 'sound', 'rir', 'protein', 'swiped', 'fixCableRow1102', 'wipe1103'].forEach(function(k) { if (k in prefs) p[k] = prefs[k]; });
+    return 'gymlog://connect#connect=' + encodeURIComponent(sync.token || '') + '&prefs=' + encodeURIComponent(JSON.stringify(p));
+  }
   // ---------- GitHub sync ----------
   // sync = { repo: 'owner/name', token, lastAt, lastErr, dirty }. Never part of a backup.
   var SYNC_KEY = 'gymlog-sync-v1';
@@ -5125,7 +5131,7 @@
           (syncOn()
             ? '<p class="hint" id="sync-state" style="margin:0 0 10px;"></p><div style="display:flex;gap:8px;"><button id="sync-now" style="flex:1;">Sync now</button><button class="ghost" id="sync-off" style="flex:1;">Disconnect</button></div>' +
               (APP ? '' : '<p class="hint" style="margin:14px 0 8px;">Android app: install it, then open it from here — it receives this connection and loads all your data.</p>' +
-                '<div style="display:flex;gap:8px;"><a class="btn-link" href="' + APK_URL + '" style="flex:1;"><button class="ghost" style="width:100%;">Download app</button></a><button class="ghost" id="to-app" style="flex:1;">Open in the app</button></div>')
+                '<div style="display:flex;gap:8px;"><a class="btn-link" href="' + APK_URL + '" style="flex:1;"><button class="ghost" style="width:100%;">Download app</button></a><a id="to-app" class="btn-link" href="' + appConnectUrl() + '" style="flex:1;"><button class="ghost" style="width:100%;pointer-events:none;">Open in the app</button></a></div>')
             : '<p class="hint" style="margin:0 0 10px;">Saves everything to a private repo after each workout and whenever you leave the app with unsaved changes.</p>' +
               '<input id="sync-repo" placeholder="owner/repo" value="gianlucagrillo/gymlog-data" autocapitalize="off" autocorrect="off" spellcheck="false">' +
               '<input id="sync-token" type="password" placeholder="Fine-grained token (github_pat_…)" autocapitalize="off" autocorrect="off" spellcheck="false" style="margin-top:8px;">' +
@@ -5179,14 +5185,12 @@
     paintSyncState();
     if (syncOpen && syncOn()) {
       var toApp = document.getElementById('to-app');
-      if (toApp) toApp.addEventListener('click', function() {
-        // send the latest data to GitHub first: the app loads it from there
-        pushSync(true).then(function(ok) {
-          if (!ok) return;
-          var p = {};
-          ['theme', 'photos', 'sound', 'rir', 'protein', 'swiped', 'fixCableRow1102'].forEach(function(k) { if (k in prefs) p[k] = prefs[k]; });
-          location.href = 'gymlog://connect#connect=' + encodeURIComponent(sync.token) + '&prefs=' + encodeURIComponent(JSON.stringify(p));
-        });
+      // a real link: Chrome opens other apps only straight from a tap
+      if (toApp) toApp.addEventListener('click', function(e) {
+        if (!sync.dirty) return;
+        // changes not on GitHub yet: send them first (the app loads from there), then tap again
+        e.preventDefault();
+        pushSync(true).then(function(ok) { if (ok) { renderData(); alert('Saved to GitHub. Tap "Open in the app" again.'); } });
       });
       document.getElementById('sync-now').addEventListener('click', function() {
         pushSync(true).then(function(ok) { if (ok) renderData(); });
@@ -5204,13 +5208,10 @@
         var token = document.getElementById('sync-token').value.trim();
         if (!/^[\w.-]+\/[\w.-]+$/.test(repo)) { alert('Repo must look like owner/name.'); return; }
         if (!token) { alert('Paste the token first.'); return; }
-        sync = { repo: repo, token: token, dirty: true };
+        // existing data on GitHub is loaded onto this phone; only an empty repo gets this phone's data
+        sync = { repo: repo, token: token };
         saveSync();
-        pushSync(false).then(function(ok) {
-          if (!ok) { var keep = sync.lastErr || 'you seem to be offline'; sync = {}; saveSync(); alert('Not connected: ' + keep + '.'); }
-          paintBackupNote();
-          renderData();
-        });
+        pullFromSync({ pushIfEmpty: true });
       });
     }
 
@@ -5443,17 +5444,29 @@
     inSession = false;
     view = 'log';
   }
-  function pullFromSync() {
+  function pullFromSync(opts) {
+    opts = opts || {};
     var hadData = Object.keys(entries).some(function(k) { return entries[k] && entries[k].length; });
+    var disconnect = function(msg) { sync = {}; saveSync(); paintBackupNote(); render(); if (msg) alert(msg); };
     return fetch('https://api.github.com/repos/' + sync.repo + '/contents/' + SYNC_PATH, {
       cache: 'no-store',
       headers: { 'Authorization': 'Bearer ' + sync.token, 'Accept': 'application/vnd.github.raw' }
     }).then(function(r) {
+      // nothing on GitHub yet: this phone's data becomes the first copy
+      if (r.status === 404 && opts.pushIfEmpty) return null;
       if (!r.ok) throw r.status;
       return r.text();
     }).then(function(txt) {
+      if (txt === null) {
+        sync.dirty = true; saveSync();
+        return pushSync(false).then(function(ok) {
+          if (!ok) disconnect('Not connected: ' + (sync.lastErr || 'you seem to be offline') + '.');
+          else { paintBackupNote(); render(); }
+        });
+      }
       var data = JSON.parse(txt);
-      if (hadData && !confirm('Load your data from GitHub? What is on this phone now will be replaced.')) return;
+      // keeping this phone's data would mean overwriting GitHub at the next sync: stay disconnected instead
+      if (hadData && !confirm('Load your data from GitHub? What is on this phone now will be replaced.')) { disconnect('Not connected — nothing was changed.'); return; }
       loadPayload(data);
       var n = 0;
       for (var k in entries) n += entries[k].length;
@@ -5470,7 +5483,7 @@
       sync = {};
       saveSync();
       render();
-      alert('Could not load your data from GitHub (' + why + '). Open the link from Chrome again to retry.');
+      alert('Could not load your data from GitHub (' + why + '). ' + (opts.pushIfEmpty ? 'Check the token and try again.' : 'Open the link from Chrome again to retry.'));
     });
   }
   // gymlog://connect#connect=TOKEN&prefs=… opens the app with the page at …/#connect=…
@@ -5481,7 +5494,7 @@
     if (m[2]) {
       try {
         var p = JSON.parse(decodeURIComponent(m[2]));
-        ['theme', 'photos', 'sound', 'rir', 'protein', 'swiped', 'fixCableRow1102'].forEach(function(k) { if (k in p) prefs[k] = p[k]; });
+        ['theme', 'photos', 'sound', 'rir', 'protein', 'swiped', 'fixCableRow1102', 'wipe1103'].forEach(function(k) { if (k in p) prefs[k] = p[k]; });
         savePrefs();
         applyTheme();
       } catch (e) {}

@@ -209,6 +209,10 @@ v48: warm-up sets are rows of the sets table (W1, W2…) above set 1, with their
 (kept on the phone for today only — warm-ups are still never logged). They follow the set 1
 weight and disappear once set 1 is logged.
 
+v49: connecting with repo + token (e.g. inside the Android app) first loads the data already on
+GitHub instead of overwriting it with the phone's; only an empty repo receives the phone's data.
+"Open in the app" in Chrome is a real link (Chrome opens other apps only straight from a tap).
+
 The details below describe the features, which are unchanged.
 
 ## What it does
