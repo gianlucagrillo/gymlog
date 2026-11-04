@@ -968,6 +968,20 @@
   #gymlog.landing #backup-note { display: none; }
   #gymlog.landing .hero2.solo { flex: 1; min-height: 0; display: flex; flex-direction: column; }
   #gymlog .hero2.solo .cta { margin-top: auto; }
+  /* open exercise: fixed to the screen like Today — the photo header shrinks first, then the sets scroll inside the card */
+  html.is-session, html.is-session body { height: 100%; overflow: hidden; }
+  html.is-session body { box-sizing: border-box; min-height: 0; }
+  html.is-session #gymlog { box-sizing: border-box; height: calc(100vh - max(8px, var(--sat))); height: calc(100dvh - max(8px, var(--sat)));
+    display: flex; flex-direction: column; overflow: hidden; padding-bottom: calc(96px + env(safe-area-inset-bottom)); }
+  html.is-session #gymlog.timer-on { padding-bottom: calc(172px + env(safe-area-inset-bottom)); }
+  html.is-session #gymlog #view { flex: 1; min-height: 0; display: flex; flex-direction: column; }
+  html.is-session #gymlog .xstage { flex: 1; min-height: 0; display: flex; flex-direction: column; padding-bottom: 0; }
+  html.is-session #gymlog .exc.xfull { flex: 1; min-height: 0; overflow: hidden; }
+  html.is-session #gymlog .exc.xfull > .xhero { flex: 0 50 200px; min-height: auto; }
+  html.is-session #gymlog .exc.xfull:not(.xph) > .xhero { flex: 0 0 auto; }
+  html.is-session #gymlog .exc.xfull > .xbody { flex: 0 1 auto; min-height: 0; overflow-y: auto; overscroll-behavior: contain; position: relative; scrollbar-width: none; }
+  html.is-session #gymlog .exc.xfull > .xbody::-webkit-scrollbar { display: none; }
+  html.is-session #gymlog .exc.xfull > .xnav { flex-shrink: 0; padding-top: 14px; }
   #gymlog .hero2.solo .hero-day { align-self: flex-start; }
   #gymlog .hero2.solo .ttl { margin-top: 2px; }
   /* the tall card shows the whole photo: darker only behind the title (top) and the button (bottom) */
@@ -3172,6 +3186,7 @@
     var app = document.getElementById('gymlog');
     app.setAttribute('data-view', view);
     app.classList.toggle('in-session', view === 'log' && inSession);
+    document.documentElement.classList.toggle('is-session', view === 'log' && inSession);
     if (view === 'log') renderLog();
     else if (view === 'strength') renderProgress();
     else if (view === 'edit') renderEdit();
@@ -3181,6 +3196,8 @@
     var landing = view === 'log' && !inSession && !SHOW_TODAY_LIST;
     app.classList.toggle('landing', landing);
     document.documentElement.classList.toggle('is-landing', landing);
+    // the open exercise is one screen too: the page never scrolls, only the sets list inside if it must
+    document.documentElement.classList.toggle('is-session', view === 'log' && inSession);
     // a new screen (tab, or today ↔ active workout) fades in; re-renders of the same screen don't
     var screen = view + (view === 'log' ? (inSession ? ':s' : ':t') : '');
     if (screen !== lastScreen) {
@@ -3988,6 +4005,11 @@
     }
     lastFocus = inSession ? focusKey : null;
     swipeDir = null;
+    // small screens: the sets scroll inside the card — keep the set to do next in view
+    if (inSession) {
+      var xbv = root.querySelector('.exc.xfull > .xbody'), nx = xbv && xbv.querySelector('.set-row.next, .rir-row');
+      if (nx && xbv.scrollHeight > xbv.clientHeight) xbv.scrollTop = Math.max(0, nx.offsetTop - xbv.clientHeight / 2 + nx.offsetHeight / 2);
+    }
 
     // Today ↔ exercise: the tapped card's photo and name grow into the full-screen exercise (and back)
     var enter = function(key) {

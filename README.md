@@ -218,6 +218,10 @@ shaded from dim to full accent by sets done vs plan; muscles with the plan done 
 Shapes from react-body-highlighter by GV79 — MIT licence, © 2020 GV79
 (https://github.com/giavinh79/react-body-highlighter).
 
+v51: the open exercise is a fixed screen, like Today — the page doesn't scroll. On shorter phones
+the photo header shrinks first; if the sets still don't fit they scroll inside the card, with the
+set to do next kept in view.
+
 The details below describe the features, which are unchanged.
 
 ## What it does
