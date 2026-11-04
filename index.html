@@ -4,13 +4,13 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Gym log</title>
-<meta name="theme-color" content="#0B0605">
+<meta name="theme-color" content="#16100D">
 <script>
   (function() {
     try {
       var t = (JSON.parse(localStorage.getItem('gymlog-prefs-v1') || '{}').theme) || '';
       if (t) document.documentElement.setAttribute('data-theme', t);
-      if (t.indexOf('petrol') === 0) document.querySelector('meta[name="theme-color"]').setAttribute('content', '#020F12');
+      if (t.indexOf('petrol') === 0) document.querySelector('meta[name="theme-color"]').setAttribute('content', '#08191D');
     } catch (e) {}
   })();
 </script>
@@ -509,7 +509,7 @@
   #gymlog button.rd.on { background: rgba(var(--acc0-rgb),.12); color: var(--acc0); border-color: var(--acc0); }
   /* ======================= v15 design system: Satoshi + Brace, glass ======================= */
   :root {
-    --bg: #0B0605; --bg-rgb: 11,6,5; --t-rgb: 248,241,236; --t1: rgb(var(--t-rgb)); --t2: rgba(var(--t-rgb),.60); --t3: rgba(var(--t-rgb),.36);
+    --bg: #16100D; --bg-rgb: 22,16,13; --t-rgb: 248,241,236; --t1: rgb(var(--t-rgb)); --t2: rgba(var(--t-rgb),.60); --t3: rgba(var(--t-rgb),.36);
     --line: rgba(255,255,255,.08); --line2: rgba(255,255,255,.18);
     --glass: rgba(255,255,255,.055); --glass2: rgba(28,16,12,.78); --edge: rgba(255,255,255,.14); --hi: rgba(255,255,255,.18);
     --g1: #FFD59A; --g2: #FFA162; --g3: #FF6A3D; --acc-rgb: 255,161,98; --acc0: #E8A33D; --acc0-rgb: 232,163,61;
@@ -520,7 +520,7 @@
   }
   /* petrol blue themes: same dark teal base, different accent */
   :root[data-theme^="petrol"] {
-    --bg: #020F12; --bg-rgb: 2,15,18; --t-rgb: 234,244,244;
+    --bg: #08191D; --bg-rgb: 8,25,29; --t-rgb: 234,244,244;
     --glass2: rgba(6,32,38,.80); --panel: #062730; --bad: #FF8A80;
     --m1: rgba(15,90,104,.95); --m2: rgba(11,70,82,.9); --m3: rgba(6,39,48,.95); --m4: rgba(22,115,127,.7);
     --acc0: var(--g2); --acc0-rgb: var(--acc-rgb);
@@ -966,7 +966,7 @@
   #gymlog .hero2.solo.hph { --ov: linear-gradient(180deg, rgba(var(--bg-rgb),.82) 0%, rgba(var(--bg-rgb),.45) 22%, rgba(var(--bg-rgb),.08) 45%, rgba(var(--bg-rgb),.12) 70%, rgba(var(--bg-rgb),.78) 100%); }
   #gymlog .hero2.solo.hph .pglow { opacity: .55; }
   /* a photo that starts lower (y in px): the band above it is the card's own dark colour, on the same layer */
-  #gymlog .hero2.solo.hph .pbg { background-color: #141110;
+  #gymlog .hero2.solo.hph .pbg { background-color: #1C1512;
     background-image: var(--ovx, linear-gradient(transparent, transparent)), var(--ov, none), var(--ph);
     background-size: 100% 100%, 100% 100%, cover; background-position: 0 0, 0 0, var(--pp); }
   #gymlog .hero2.hph .ring b { color: var(--t1); }
@@ -1486,7 +1486,7 @@
     var py = p[2] == null ? (y || 45) + '%' : typeof p[2] === 'string' ? p[2] : p[2] + '%';
     var st = '--ph:url(img/' + p[0] + '.jpg);--pp:' + p[1] + '% ' + py;
     // a photo pushed down by px: fade its top edge into the dark band above it
-    if (typeof p[2] === 'string') st += ';--ovx:linear-gradient(180deg,#141110 ' + p[2] + ',rgba(20,17,16,0) calc(' + p[2] + ' + 90px))';
+    if (typeof p[2] === 'string') st += ';--ovx:linear-gradient(180deg,#1C1512 ' + p[2] + ',rgba(28,21,18,0) calc(' + p[2] + ' + 90px))';
     return '<i class="pglow" style="' + st + '"></i><i class="pbg" style="' + st + '"></i>';
   }
   function exPhoto(ex) { return PHOTO_BY_MUSCLE[String(ex.muscle || 'other').toLowerCase()] || PHOTO_BY_MUSCLE.other; }
@@ -5046,7 +5046,7 @@
     var t = prefs.theme || '';
     if (t) document.documentElement.setAttribute('data-theme', t); else document.documentElement.removeAttribute('data-theme');
     var m = document.querySelector('meta[name="theme-color"]');
-    if (m) m.setAttribute('content', t.indexOf('petrol') === 0 ? '#020F12' : '#0B0605');
+    if (m) m.setAttribute('content', t.indexOf('petrol') === 0 ? '#08191D' : '#16100D');
   }
   var syncOpen = false, restoreOpen = false;
   var IC_S = {

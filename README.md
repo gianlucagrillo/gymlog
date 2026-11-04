@@ -193,6 +193,8 @@ Goggins at Badwater, Jon Jones, Kobe, Ali vs London. The tall card darkens only 
 v42: one-off cleanup (`prefs.wipe1103`): everything dated 3 Nov 2026 — Android app tests — is removed
 on the next start (sets, warm-up/cool-down, protein, measurements, progress photos, rest timer).
 
+v43: slightly lighter background — Ember #0B0605 → #16100D, Petrol #020F12 → #08191D.
+
 The details below describe the features, which are unchanged.
 
 ## What it does
