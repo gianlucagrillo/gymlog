@@ -197,6 +197,8 @@ v43: slightly lighter background — Ember #0B0605 → #16100D, Petrol #020F12 �
 
 v44: the PR badge is a single accent colour instead of the gradient.
 
+v45: no "swipe sideways…" hint under the exercise.
+
 The details below describe the features, which are unchanged.
 
 ## What it does

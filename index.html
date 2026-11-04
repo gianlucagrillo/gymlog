@@ -3639,8 +3639,7 @@
           '<div class="xnav">' +
             (prevM ? '<button class="ghost" data-jump="' + prevM.key + '">' + CHEV_L + '<span>' + esc(prevM.ex.name) + '</span></button>' : '<i></i>') +
             (nextM ? '<button class="ghost" data-jump="' + nextM.key + '"><span>' + esc(nextM.ex.name) + '</span>' + CHEV_R + '</button>' : '<i></i>') +
-          '</div>' +
-          (!prefs.swiped && models.length > 1 ? '<p class="hint xhint">swipe sideways for the previous / next exercise</p>' : '');
+          '</div>';
       }
       h += '</div>';
     });
