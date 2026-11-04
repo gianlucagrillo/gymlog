@@ -205,6 +205,10 @@ last one undoes it).
 v47: the −/+ weight and reps buttons under the next set are hidden (`SHOW_STEP_BUTTONS = false`)
 while a better control is designed.
 
+v48: warm-up sets are rows of the sets table (W1, W2…) above set 1, with their own tick
+(kept on the phone for today only — warm-ups are still never logged). They follow the set 1
+weight and disappear once set 1 is logged.
+
 The details below describe the features, which are unchanged.
 
 ## What it does

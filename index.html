@@ -706,6 +706,14 @@
   #gymlog .sheet .ex-name { font-size: 22px !important; font-weight: 700; letter-spacing: -.03em; }
   #gymlog .tpl-opt { border-radius: 20px; padding: 12px 14px; color: var(--t1); box-shadow: none; background: rgba(255,255,255,.035); border: .5px solid transparent; backdrop-filter: none; -webkit-backdrop-filter: none; margin-bottom: 6px; }
   #gymlog .exc .set-check:disabled { opacity: .5; }
+  /* warm-up rows: lighter, values are fixed (they follow the set 1 weight) */
+  #gymlog .exc .wu-row .set-label, #gymlog .exc .wu-row .prevc { color: var(--t3); font-size: 11.5px; }
+  #gymlog .exc .wu-row .prevc { font-style: italic; }
+  #gymlog .exc .wu-v { text-align: center; font-size: 15px; color: var(--t2); }
+  #gymlog .exc .wu-row.done .wu-v { color: var(--t3); }
+  #gymlog .exc .wu-row .set-check { border-style: dashed; }
+  #gymlog .exc .wu-row.done .set-check { border-style: solid; }
+  #gymlog .exc .wu-rows:not(:empty) { margin-bottom: 4px; padding-bottom: 4px; border-bottom: .5px dashed var(--line2); }
   #gymlog .timer-bar .timer-name { min-width: 0; } #gymlog .timer-bar .timer-name small { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; display: block; }
   #gymlog .tpl-opt span { color: var(--t2); } #gymlog .tpl-opt small { color: var(--t3); }
   #gymlog .tpl-opt b { font-weight: 500; }
@@ -1564,6 +1572,29 @@
     return '<b>Warm-up sets</b>for ' + work + ' kg' +
       '<div class="wu-sets">' + ws.map(function(s) { return '<span class="set-chip">' + s.weight + ' kg × ' + s.reps + '</span>'; }).join('') + '</div>' +
       '<small>Easy reps, ~1 min rest between them. Not logged — they don’t count in charts or PRs.</small>';
+  }
+  // Warm-up sets as rows of the sets table, above set 1 (W1, W2…). Ticks stay on this phone for
+  // today only: warm-ups are never logged and don't count in charts or PRs.
+  var WU_KEY = 'gymlog-warmup-v1';
+  function wuTicks() {
+    var t = readJSON(WU_KEY, null);
+    if (!t || t.date !== todayStr()) t = { date: todayStr(), done: {} };
+    return t;
+  }
+  function wuRowsHtml(day, ex, work, key) {
+    var ws = warmupSets(day, ex, work);
+    if (!ws) return '';
+    var done = wuTicks().done[key] || [];
+    return ws.map(function(s, j) {
+      var on = done.indexOf(j) >= 0;
+      return '<div class="set-row wu-row' + (on ? ' done' : '') + '">' +
+        '<div class="set-label">W' + (j + 1) + '</div>' +
+        '<div class="prevc">warm-up</div>' +
+        '<div class="wu-v">' + s.weight + '</div>' +
+        '<div class="wu-v">' + s.reps + '</div>' +
+        '<button class="set-check" data-wu="' + key + '" data-j="' + j + '" aria-label="Warm-up set ' + (j + 1) + ' done">' + CHECK + '</button>' +
+      '</div>';
+    }).join('');
   }
 
   // ---------- routines: several saved plans, one active; `routine` is the active plan's days ----------
@@ -3827,12 +3858,12 @@
       var plan = coach(ex, hist, (mvMap[movementKey(ex.name)] || {}).sessions);
       var setInputs = '';
       if (!nDone) setInputs += '<div class="set-hint">Tap ✓ after each set — the rest timer starts on its own.' + (strengths ? ' ≈ = reps your recent sessions predict at that weight.' : '') + '</div>';
+      setInputs += '<div class="set-head"><span>Set</span><span>Previous</span><span>kg</span><span>Reps <small style="opacity:.7;">' + ex.repMin + '–' + ex.repMax + '</small></span><span></span></div>';
+      // warm-up sets sit in the table above set 1, until the first working set is logged
       if (!nDone && warmupEligible(day, ex)) {
         var w1 = draft && draft.w[0] !== undefined ? parseFloat(draft.w[0]) : (plan.weight != null ? plan.weight : prevSess && prevSess.sets[0] ? prevSess.sets[0].weight : NaN);
-        var wuIn = warmupInner(day, ex, w1);
-        setInputs += '<div class="wu" id="wu-' + key + '"' + (wuIn ? '' : ' hidden') + '>' + wuIn + '</div>';
+        setInputs += '<div class="wu-rows" id="wu-' + key + '">' + wuRowsHtml(day, ex, w1, key) + '</div>';
       }
-      setInputs += '<div class="set-head"><span>Set</span><span>Previous</span><span>kg</span><span>Reps <small style="opacity:.7;">' + ex.repMin + '–' + ex.repMax + '</small></span><span></span></div>';
       for (var i = 1; i <= ex.sets; i++) {
         var isDone = i <= nDone;
         var isNext = i === nDone + 1;
@@ -4150,9 +4181,7 @@
           var wu = document.getElementById('wu-' + key);
           if (wu && inp.id === 'w-' + key + '-1') {
             var wex = day.exercises.find(function(e) { return e.id === key; });
-            var inner = warmupInner(day, wex, parseFloat(inp.value));
-            wu.innerHTML = inner;
-            wu.hidden = !inner;
+            wu.innerHTML = wuRowsHtml(day, wex, parseFloat(inp.value), key);
           }
         }
         var ts = todaySession(key);
@@ -5382,6 +5411,19 @@
   window.addEventListener('scroll', paintSticky, { passive: true });
   setInterval(paintSessClock, 15000);
   window.addEventListener('online', function() { if (sync.dirty) pushSync(); });
+  // warm-up ticks (rows are re-drawn when the set 1 weight changes, so the listener lives on the document)
+  document.addEventListener('click', function(e) {
+    var b = e.target.closest && e.target.closest('[data-wu]');
+    if (!b) return;
+    e.stopPropagation();
+    var key = b.getAttribute('data-wu'), j = parseInt(b.getAttribute('data-j'), 10);
+    var t = wuTicks(), list = t.done[key] || [], at = list.indexOf(j);
+    if (at >= 0) list.splice(at, 1); else list.push(j);
+    t.done[key] = list;
+    try { localStorage.setItem(WU_KEY, JSON.stringify(t)); } catch (err) {}
+    b.closest('.wu-row').classList.toggle('done', at < 0);
+    if (at < 0) vib(10);
+  });
 
   // ---------- Android app: first connection, back button, coming back to the app ----------
   // Replaces everything on this phone with what's in the synced file (the app starts empty).
