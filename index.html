@@ -644,7 +644,6 @@
   #gymlog .tip { margin: 0 6px 10px; font-size: 12px; color: var(--t2); display: flex; gap: 7px; align-items: flex-start; line-height: 1.4; }
   #gymlog .tip svg { width: 13px; height: 13px; color: var(--acc); flex-shrink: 0; margin-top: 2px; }
   #gymlog .tip b { color: var(--t1); font-weight: 500; }
-  #gymlog .tip .tip-src { display: block; margin-top: 3px; font-size: 10.5px; color: var(--t3); }
   #gymlog .rir-row { display: flex; align-items: center; gap: 5px; padding: 2px 6px 8px 38px; animation: gl-xin .25s ease; }
   #gymlog .rir-row span { flex: 1; font-size: 11.5px; color: var(--t2); line-height: 1.25; } #gymlog .rir-row span small { display: block; color: var(--t3); font-size: 10.5px; }
   #gymlog .rir-row button { width: 38px; height: 32px; padding: 0; border-radius: 99px; background: var(--tile); border: .5px solid var(--edge); color: var(--t1); font-size: 13px; font-weight: 500; box-shadow: none; }
@@ -658,7 +657,7 @@
   #gymlog .banner .row2 { display: flex; gap: 8px; } #gymlog .banner .row2 button { flex: 1; padding: 9px 12px; font-size: 12.5px; }
   #gymlog .tip.coach-deload svg { color: var(--g1); }
   #gymlog .tip.coach-up svg { color: var(--acc); } #gymlog .tip.coach-down svg, #gymlog .tip.coach-back svg { color: var(--bad); }
-  #gymlog .tip.coach-up, #gymlog .tip.coach-down, #gymlog .tip.coach-back { background: rgba(255,255,255,.04); border-radius: 12px; padding: 8px 10px; margin: 0 2px 10px; }
+  #gymlog .tip[class*="coach-"] { background: rgba(255,255,255,.04); border-radius: 12px; padding: 8px 10px; margin: 0 2px 10px; }
   #gymlog .gli .r .ar { display: inline-flex; vertical-align: middle; margin-right: 4px; } #gymlog .gli .r .ar svg { width: 13px; height: 13px; }
   #gymlog .gli .r .ar.up { color: var(--acc); } #gymlog .gli .r .ar.down { color: var(--bad); }
   #gymlog .exc .wu { background: transparent; padding: 0 6px; margin: 0 0 10px; font-size: 12px; color: var(--t2); }
@@ -3483,7 +3482,6 @@
     var B = function(w) { return '<b>' + (w === 0 ? 'bodyweight' : round1(w) + ' kg') + '</b>'; };
     var aim = Math.max(lo, hi - 2);
     var dayGap = function(a, b) { return Math.round((new Date(b + 'T00:00:00') - new Date(a + 'T00:00:00')) / 86400000); };
-    var srcOf = function(s, extra) { return 'Based on ' + fmtDate(s.date) + (s.label ? ' · ' + esc(s.label) : '') + (extra || ''); };
     if (!pool.length) {
       return { act: 'new', weight: null, reps: fill(aim), msg: 'First time: pick a weight you can do for about <b>' + aim + '</b> clean reps.' };
     }
@@ -3496,15 +3494,13 @@
     if (!near.length) {
       // only done in another rep range so far: carry the strength over through the estimated 1RM
       var E = sessE(latest);
-      if (!E) return { act: 'new', weight: null, reps: fill(aim), src: srcOf(latest), msg: 'First time for ' + lo + '–' + hi + ' reps: pick a weight you can do for about <b>' + aim + '</b> clean reps.' };
+      if (!E) return { act: 'new', weight: null, reps: fill(aim), msg: 'First time for ' + lo + '–' + hi + ' reps: pick a weight you can do for about <b>' + aim + '</b> clean reps.' };
       var cw = round1(Math.max(step, Math.round(E / (1 + (aim + 1) / 30) / step) * step));
-      return { act: 'carry', weight: cw, reps: fill(aim), src: srcOf(latest),
+      return { act: 'carry', weight: cw, reps: fill(aim),
         msg: 'Last done for ' + latest.lo + '–' + latest.hi + ' reps. For ' + lo + '–' + hi + ' here, start at ' + B(cw) + ' for about <b>' + aim + '</b> reps.' };
     }
     var L = near[near.length - 1];
-    var res = coachRules(ex, L, near, trend, gap, fill, B, step);
-    if (!res.src) res.src = srcOf(L, res.srcMore || '');
-    return res;
+    return coachRules(ex, L, near, trend, gap, fill, B, step);
   }
   function coachRules(ex, L, near, trend, gap, fill, B, step) {
     var n = ex.sets, lo = ex.repMin, hi = ex.repMax;
@@ -3556,7 +3552,7 @@
       var prior = trend.filter(function(s) { return s.date < L.date; }).slice(-3).map(sessE).sort(function(a, b) { return a - b; });
       var eL = sessE(L);
       if (eL && prior.length >= 2 && eL < 0.95 * prior[Math.floor(prior.length / 2)]) {
-        return { act: 'hold', weight: topW, reps: fill(lo), srcMore: ' and the ' + prior.length + ' sessions before',
+        return { act: 'hold', weight: topW, reps: fill(lo),
           msg: fell + ' last time, but the sessions before were stronger — likely an off day. Stay at ' + B(topW) + ' and aim for <b>' + lo + '</b>+.' };
       }
       return { act: 'down', weight: down(topW), reps: fill(lo), msg: fell + ' last time — drop to ' + B(down(topW)) + '.' };
@@ -3580,11 +3576,10 @@
       Math.max(sessE(t4[1]), sessE(t4[2]), sessE(t4[3])) <= sessE(t4[0]) * 1.01;
     if (flat3 || flat4) {
       var stuck = flat3 ? 'No progress in 3 sessions at ' + B(topW) : 'No stronger in your last 4 sessions';
-      var more = flat3 ? ' and the 2 sessions before' : ' and the 3 sessions before';
       if (rirAvg != null && rirAvg >= 2) {
-        return { act: 'hold', stall: true, weight: topW, reps: holdReps, srcMore: more, msg: stuck + ', but with reps in reserve — take every set to 0–1 left before dropping the weight.' };
+        return { act: 'hold', stall: true, weight: topW, reps: holdReps, msg: stuck + ', but with reps in reserve — take every set to 0–1 left before dropping the weight.' };
       }
-      return { act: 'down', stall: true, weight: down(topW), reps: fill(hi), srcMore: more, msg: stuck + ' — drop to ' + B(down(topW)) + ', work up to ' + hi + ' reps on every set, then go back up.' };
+      return { act: 'down', stall: true, weight: down(topW), reps: fill(hi), msg: stuck + ' — drop to ' + B(down(topW)) + ', work up to ' + hi + ' reps on every set, then go back up.' };
     }
     if (under === 1) {
       return { act: 'hold', weight: topW, reps: holdReps, msg: 'Last set dipped under ' + lo + ' — normal fatigue. Stay at ' + B(topW) + '.' };
@@ -3766,7 +3761,7 @@
         var nextW = m.coach && m.coach.weight;
         if (m.draft && m.draft.w[m.nDone] !== undefined && m.draft.w[m.nDone] !== '') nextW = parseFloat(m.draft.w[m.nDone]);
         var plates = eqOf(ex.name) === 'bb' && !m.exComplete ? platesText(ex, nextW) : '';
-        h += '<div class="xbody">' + (tip && !m.exComplete ? '<div class="tip coach-' + (c.act || 'hold') + '">' + cIco + '<span>' + tip + (c.src ? '<small class="tip-src">' + c.src + '</small>' : '') + '</span></div>' : '') +
+        h += '<div class="xbody">' + (tip && !m.exComplete ? '<div class="tip coach-' + (c.act || 'hold') + '">' + cIco + '<span>' + tip + '</span></div>' : '') +
           (ex.note ? '<div class="xnote">' + NOTE_ICO + '<span>' + esc(ex.note) + '</span></div>' : '') +
           (eqOf(ex.name) === 'bb' && !m.exComplete ? '<div class="plates" id="plates-' + m.key + '">' + plates + '</div>' : '') +
           '<div id="hist-' + m.key + '">' + m.setInputs + '</div>' +
