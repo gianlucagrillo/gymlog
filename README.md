@@ -213,6 +213,11 @@ v49: connecting with repo + token (e.g. inside the Android app) first loads the 
 GitHub instead of overwriting it with the phone's; only an empty repo receives the phone's data.
 "Open in the app" in Chrome is a real link (Chrome opens other apps only straight from a tap).
 
+v50: the "Muscles this week" map uses real anatomical muscle shapes (front and back), each muscle
+shaded from dim to full accent by sets done vs plan; muscles with the plan done glow.
+Shapes from react-body-highlighter by GV79 — MIT licence, © 2020 GV79
+(https://github.com/giavinh79/react-body-highlighter).
+
 The details below describe the features, which are unchanged.
 
 ## What it does
