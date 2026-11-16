@@ -1603,16 +1603,20 @@
     if (!ws) return '';
     var done = wuTicks().done[key] || [];
     return ws.map(function(s, j) {
-      var on = done.indexOf(j) >= 0;
+      var on = done.indexOf(j) >= 0, last = j === ws.length - 1, nx = ws[j + 1];
       return '<div class="set-row wu-row' + (on ? ' done' : '') + '">' +
         '<div class="set-label">W' + (j + 1) + '</div>' +
-        '<div class="prevc">warm-up</div>' +
+        '<div class="prevc">rest ' + fmtClock(wuRest(last)) + '</div>' +
         '<div class="wu-v">' + s.weight + '</div>' +
         '<div class="wu-v">' + s.reps + '</div>' +
-        '<button class="set-check" data-wu="' + key + '" data-j="' + j + '" aria-label="Warm-up set ' + (j + 1) + ' done">' + CHECK + '</button>' +
+        '<button class="set-check" data-wu="' + key + '" data-j="' + j + '" data-rest="' + wuRest(last) + '"' +
+          (nx ? ' data-next="W' + (j + 2) + '" data-nw="' + nx.weight + '" data-nr="' + nx.reps + '"' : '') +
+          ' aria-label="Warm-up set ' + (j + 1) + ' done">' + CHECK + '</button>' +
       '</div>';
     }).join('');
   }
+  // short rests between the light ramp-up sets, a full one before the first working set
+  function wuRest(last) { return last ? 120 : 60; }
 
   // ---------- routines: several saved plans, one active; `routine` is the active plan's days ----------
   // store = { active: id, list: [{ id, name, days, cycle: { start: 'YYYY-MM-DD', weeks: n } | null, template: 'spec' | 'standard' }] }
@@ -3012,8 +3016,9 @@
     if (!timer) return 0;
     return Math.max(0, Math.ceil((timer.endAt - Date.now()) / 1000));
   }
-  function startTimer(key, restSec, name) {
+  function startTimer(key, restSec, name, wu) {
     timer = { key: key, name: name || '', endAt: Date.now() + restSec * 1000, restSec: restSec, alerted: false };
+    if (wu) timer.wu = wu;
     localStorage.setItem(TIMER_KEY, JSON.stringify(timer));
     acquireWakeLock();
     scheduleRestAlarm();
@@ -3052,6 +3057,7 @@
   function nextUpHtml() {
     var f = timer && findEx(timer.key);
     if (!f) return '';
+    if (timer.wu && timer.wu.next) return '<small>Next · warm-up</small><b>' + esc(timer.wu.next) + '</b><span>' + esc(f.ex.name) + '</span>';
     var group = ssGroup(f.day, f.ex);
     var target = group.length > 1 ? nextInGroup(group) : (setsDone(f.ex) < f.ex.sets ? f.ex : null);
     if (target) {
@@ -3080,6 +3086,7 @@
   function nextUpShort() {
     var f = timer && findEx(timer.key);
     if (!f) return '';
+    if (timer.wu && timer.wu.next) return 'next ' + timer.wu.next;
     var group = ssGroup(f.day, f.ex);
     var target = group.length > 1 ? nextInGroup(group) : (setsDone(f.ex) < f.ex.sets ? f.ex : null);
     if (target) {
@@ -3153,7 +3160,7 @@
     if (showBar) {
       bar.classList.toggle('done', remaining <= 0);
       document.getElementById('timer-clock').textContent = remaining > 0 ? fmtClock(remaining) : '0:00';
-      document.getElementById('timer-name').innerHTML = '<b>' + (remaining > 0 ? 'Resting' : 'Rest done') + '</b>' +
+      document.getElementById('timer-name').innerHTML = '<b>' + (remaining > 0 ? (timer.wu ? 'Warm-up rest' : 'Resting') : 'Rest done') + '</b>' +
         '<small>' + esc(nextUpShort() || timer.name || '') + '</small>';
       document.getElementById('timer-ring-prg').style.strokeDashoffset = (119.38 * pct / 100).toFixed(1);
     }
@@ -3164,7 +3171,7 @@
       tf.classList.toggle('done', remaining <= 0);
       document.getElementById('tfull-name').textContent = timer.name || 'Rest';
       document.getElementById('tfull-clock').textContent = remaining > 0 ? fmtClock(remaining) : 'Go';
-      document.getElementById('tfull-sub').textContent = remaining > 0 ? 'Rest' : 'Rest done';
+      document.getElementById('tfull-sub').textContent = remaining > 0 ? (timer.wu ? 'Warm-up rest' : 'Rest') : 'Rest done';
       document.getElementById('tfull-prg').style.strokeDashoffset = (RING_C * pct / 100).toFixed(1);
       document.getElementById('tfull-next').innerHTML = nextUpHtml();
       document.getElementById('tfull-stop').textContent = remaining > 0 ? 'Skip' : 'Done';
@@ -3593,6 +3600,66 @@
   // how close to failure to train: heavy compounds leave a rep or two, isolation goes to the limit
   function rirAim(ex) { return eqOf(ex.name) === 'bb' || ex.restSec >= 150 ? '1–2' : '0–1'; }
   function deloadOn() { var d = prefs.deload, t = todayStr(); return !!(d && d.from <= t && t <= d.to); }
+  // Grip and position, so every session is done the same way and the weights stay comparable.
+  // Keyed by exercise name; the user's own notes are separate (ex.note).
+  var SETUP = {
+    'lat pulldown': 'Overhand, hands just outside shoulder width · bar to upper chest',
+    'pull-ups / lat pulldown': 'Overhand, hands just outside shoulder width · chest up to the bar',
+    'pull-ups / assisted pull-ups': 'Overhand, hands just outside shoulder width · from a full hang, chin over the bar',
+    'single-arm cable pulldown': 'D-handle, palm facing in · elbow down to your side',
+    'incline dumbbell press': 'Bench at 30° · elbows about 45° from your body',
+    'incline barbell press': 'Bench at 30° · hands about 1.5× shoulder width · bar to upper chest',
+    'incline smith press': 'Bench at 30° · hands about 1.5× shoulder width · bar to upper chest',
+    'incline smith/machine press': 'Bench at 30° · hands about 1.5× shoulder width · bar to upper chest',
+    'incline machine press': 'Seat so the handles line up with your upper chest',
+    'flat dumbbell press': 'Elbows about 45° from your body · dumbbells down to chest level',
+    'barbell bench press': 'Hands about 1.5× shoulder width · bar to lower chest',
+    'machine chest press': 'Seat so the handles line up with your mid chest',
+    'flat machine/chest press': 'Seat so the handles line up with your mid chest',
+    'chest-supported dumbbell row': 'Bench at 30–45°, chest on the pad · palms facing in, elbows close',
+    'chest-supported row (machine)': 'Chest on the pad · neutral grip, elbows close',
+    'chest-supported row': 'Chest on the pad · neutral grip, elbows close',
+    'seated cable row (no chest support)': 'V-handle, palms facing in · sit tall, pull to your belly button',
+    'cable row': 'V-handle, palms facing in · sit tall, pull to your belly button',
+    'low row machine': 'Neutral grip · chest up, pull to your belly button',
+    'one-arm dumbbell row': 'Knee and hand on the bench · pull toward your hip',
+    'dumbbell lateral raise': 'Standing, slight lean forward · lead with the elbows, stop at shoulder height',
+    'seated dumbbell lateral raise': 'Seated upright · lead with the elbows, stop at shoulder height',
+    'cable lateral raise': 'Cable at hand height, behind you · raise to shoulder height',
+    'machine lateral raise': 'Seat so your shoulders line up with the pivot · pads on the outer arms',
+    'seated dumbbell shoulder press': 'Bench upright · elbows slightly in front of your body',
+    'dumbbell shoulder press': 'Bench upright · elbows slightly in front of your body',
+    'seated bent-over rear delt fly': 'Chest down on your thighs · arms out wide, pinkies up',
+    'reverse pec deck': 'Palms facing in · arms out to the sides, shoulders down',
+    'cable rear delt fly': 'Cables crossed at shoulder height, no handles · pull wide',
+    'overhead dumbbell triceps extension': 'One dumbbell in both hands · seated, elbows pointing up',
+    'overhead cable triceps extension': 'Rope, facing away from the cable · elbows next to your head',
+    'cable pushdown': 'Rope · elbows pinned to your sides',
+    'dumbbell skull crusher': 'Flat bench, palms facing in · lower beside your head',
+    'incline dumbbell curl': 'Bench at 45–60° · palms up, elbows stay back',
+    'ez-bar curl': 'Hands on the inner bends, about shoulder width · elbows still',
+    'dumbbell curl': 'Palms up · elbows still',
+    'cable curl': 'Straight bar, palms up · elbows still',
+    'dumbbell hammer curl': 'Palms facing in · elbows still',
+    'cable rope hammer curl': 'Rope, palms facing in · elbows still',
+    'barbell squat': 'Bar on upper traps, feet shoulder width · thighs at least parallel',
+    'squat / hack squat': 'Feet shoulder width · thighs at least parallel',
+    'hack squat': 'Feet mid-platform, shoulder width · go deep',
+    'leg press': 'Feet mid-platform, shoulder width · lower back stays on the pad',
+    'goblet squat': 'Dumbbell held at your chest · elbows inside the knees',
+    'bulgarian split squat': 'Rear foot on the bench, front foot a stride ahead · dumbbells at your sides',
+    'leg curl': 'Seated · knee in line with the pivot, pad just above the heels',
+    'lying leg curl': 'Knees just past the bench edge · pad above the heels, hips down',
+    'leg extension': 'Knee in line with the pivot · pad on the lower shins',
+    'romanian deadlift': 'Overhand, hands just outside the legs · hips back, soft knees, bar along the legs',
+    'dumbbell romanian deadlift': 'Dumbbells along the legs · hips back, soft knees',
+    'standing calf raise': 'Balls of the feet on the edge · full stretch at the bottom, pause 1 s',
+    'seated calf raise': 'Balls of the feet on the edge · full stretch at the bottom, pause 1 s',
+    'leg press calf raise': 'Balls of the feet on the bottom edge of the platform · full stretch',
+    'single-leg dumbbell calf raise': 'Dumbbell in the same-side hand · step edge, full stretch',
+    'cable crunch': 'Rope behind your head, kneeling · curl the elbows to the knees'
+  };
+  function setupOf(ex) { return SETUP[movementKey(ex.name)] || ''; }
   // Per-side plates for a barbell weight (20 kg bar, 10 kg for the EZ bar).
   function platesText(ex, w) {
     var bar = /ez/i.test(ex.name) ? 10 : 20;
@@ -3740,6 +3807,7 @@
         '<div class="pk">' + (m.exComplete ? '<span class="xok">' + CHECK + '</span>' : '') + (m.ssLabel ? '<span class="ss-tag">' + m.ssLabel + '</span>' : '') + esc(ex.muscle || 'Other') + '</div>' +
         '<h2 class="xname">' + esc(ex.name) + (peek ? '' : m.prHtml) + '</h2>' +
         (ex.main ? '<em>Alternative to ' + esc(ex.main.name) + '</em>' : '') +
+        (!peek && setupOf(ex) ? '<small class="xsetup">' + esc(setupOf(ex)) + '</small>' : '') +
       '</div>';
     };
     var prevM = models[fi - 1], nextM = models[fi + 1];
@@ -3958,7 +4026,7 @@
       var plan = coach(ex);
       var setInputs = '';
       if (!nDone) setInputs += '<div class="set-hint">Tap ✓ after each set — the rest timer starts on its own.' + (strengths ? ' ≈ = reps your recent sessions predict at that weight.' : '') + '</div>';
-      setInputs += '<div class="set-head"><span>Set</span><span>Previous</span><span>kg</span><span>Reps <small style="opacity:.7;">' + ex.repMin + '–' + ex.repMax + '</small></span><span></span></div>';
+      setInputs += '<div class="set-head"><span>Set</span><span>Previous</span><span>kg' + (eqOf(ex.name) === 'bb' ? ' <small style="opacity:.7;">incl. bar</small>' : '') + '</span><span>Reps <small style="opacity:.7;">' + ex.repMin + '–' + ex.repMax + '</small></span><span></span></div>';
       // warm-up sets sit in the table above set 1, until the first working set is logged
       if (!nDone && warmupEligible(day, ex)) {
         var w1 = draft && draft.w[0] !== undefined ? parseFloat(draft.w[0]) : (plan.weight != null ? plan.weight : prevSess && prevSess.sets[0] ? prevSess.sets[0].weight : NaN);
@@ -5477,6 +5545,19 @@
     prefs.wipe1103 = true;
     savePrefs();
   })();
+  // One-off fix (16 Nov 2026): the barbell bench sessions of 2 and 16 Nov were logged as plates only;
+  // the weight is the total, so add the 20 kg bar.
+  (function() {
+    if (prefs.fixBenchBar1116) return;
+    var changed = false;
+    (entries.ua_barbell_bench_press || []).forEach(function(s) {
+      if (s.date !== '2026-11-02' && s.date !== '2026-11-16') return;
+      (s.sets || []).forEach(function(x) { if (x.weight > 0 && x.weight < 50) { x.weight = round1(x.weight + 20); changed = true; } });
+    });
+    if (changed) saveEntries();
+    prefs.fixBenchBar1116 = true;
+    savePrefs();
+  })();
   activeDay = pickStartDay();
   // a workout started today and not finished reopens straight into the active-workout screen
   (function() {
@@ -5522,7 +5603,13 @@
     t.done[key] = list;
     try { localStorage.setItem(WU_KEY, JSON.stringify(t)); } catch (err) {}
     b.closest('.wu-row').classList.toggle('done', at < 0);
-    if (at < 0) vib(10);
+    if (at < 0) {
+      vib(10);
+      var f = findEx(key);
+      var nx = b.getAttribute('data-next');
+      startTimer(key, parseInt(b.getAttribute('data-rest'), 10) || 60, f ? f.ex.name : '',
+        { next: nx ? nx + ' · ' + b.getAttribute('data-nw') + ' kg × ' + b.getAttribute('data-nr') : '' });
+    }
   });
 
   // ---------- Android app: first connection, back button, coming back to the app ----------
