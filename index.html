@@ -1573,13 +1573,15 @@
   // Dumbbells go up in 2 kg steps, bars and machines in 2.5.
   function weightStep(ex) { return /dumbbell/i.test(ex.name) ? 2 : 2.5; }
   function warmupSets(day, ex, work) {
-    if (!(work > 0) || !warmupEligible(day, ex)) return null;
-    var step = weightStep(ex);
+    if (!(work >= 0) || !warmupEligible(day, ex)) return null;
+    var step = weightStep(ex), bar = barOf(ex.name);
+    if (!bar && !(work > 0)) return null;
+    // percentages of the real load; barbell lifts are shown as plates (0 = the empty bar)
     var scheme = ex.restSec >= 150 ? [[0.4, 10], [0.6, 5], [0.8, 3]] : [[0.5, 10], [0.75, 5]];
-    var out = [], prevW = 0;
+    var out = [], prevW = -1;
     scheme.forEach(function(s) {
-      var w = Math.round(work * s[0] / step) * step;
-      if (w >= step && w < work && w > prevW) { out.push({ weight: w, reps: s[1] }); prevW = w; }
+      var w = Math.max(0, Math.round(((work + bar) * s[0] - bar) / step) * step);
+      if (w >= (bar ? 0 : step) && w < work && w > prevW) { out.push({ weight: w, reps: s[1] }); prevW = w; }
     });
     return out.length ? out : null;
   }
@@ -1602,15 +1604,16 @@
     var ws = warmupSets(day, ex, work);
     if (!ws) return '';
     var done = wuTicks().done[key] || [];
+    var wl = function(w) { return w === 0 && barOf(ex.name) ? 'bar' : w + ' kg'; };
     return ws.map(function(s, j) {
       var on = done.indexOf(j) >= 0, last = j === ws.length - 1, nx = ws[j + 1];
       return '<div class="set-row wu-row' + (on ? ' done' : '') + '">' +
         '<div class="set-label">W' + (j + 1) + '</div>' +
         '<div class="prevc">rest ' + fmtClock(wuRest(last)) + '</div>' +
-        '<div class="wu-v">' + s.weight + '</div>' +
+        '<div class="wu-v">' + (s.weight === 0 && barOf(ex.name) ? 'bar' : s.weight) + '</div>' +
         '<div class="wu-v">' + s.reps + '</div>' +
         '<button class="set-check" data-wu="' + key + '" data-j="' + j + '" data-rest="' + wuRest(last) + '"' +
-          (nx ? ' data-next="W' + (j + 2) + '" data-nw="' + nx.weight + '" data-nr="' + nx.reps + '"' : '') +
+          (nx ? ' data-next="W' + (j + 2) + ' · ' + wl(nx.weight) + ' × ' + nx.reps + '"' : '') +
           ' aria-label="Warm-up set ' + (j + 1) + ' done">' + CHECK + '</button>' +
       '</div>';
     }).join('');
@@ -1989,26 +1992,27 @@
   function sortedHist(key) {
     return (entries[key] || []).slice().sort(function(a, b) { return a.date.localeCompare(b.date); });
   }
-  // Estimated 1RM, Epley formula. Not computable without reps.
-  function e1rm(set) {
+  // Estimated 1RM, Epley formula. Not computable without reps. bar: the bar's weight for barbell lifts,
+  // which are logged as plates only.
+  function e1rm(set, bar) {
     if (!set.reps || set.reps < 1) return null;
-    return set.weight * (1 + set.reps / 30);
+    return ((set.weight || 0) + (bar || 0)) * (1 + set.reps / 30);
   }
-  function bestOf(hist) {
+  function bestOf(hist, bar) {
     var best = { weight: 0, e1rm: 0, e1rmDate: null, weightDate: null };
     hist.forEach(function(s) {
       s.sets.forEach(function(set) {
         if (set.weight > best.weight) { best.weight = set.weight; best.weightDate = s.date; }
-        var e = e1rm(set);
+        var e = e1rm(set, bar);
         if (e && e > best.e1rm) { best.e1rm = e; best.e1rmDate = s.date; }
       });
     });
     return best;
   }
-  function volumeOf(session) {
+  function volumeOf(session, bar) {
     var v = 0, any = false;
     session.sets.forEach(function(s) {
-      if (s.reps && s.reps > 0) { v += s.weight * s.reps; any = true; }
+      if (s.reps && s.reps > 0) { v += ((s.weight || 0) + (bar || 0)) * s.reps; any = true; }
     });
     return any ? v : null;
   }
@@ -2124,8 +2128,8 @@
     var f = findEx(key);
     var ts = todaySession(key);
     return {
-      prevBest: bestOf(sortedHist(key).filter(function(s) { return s.date < t; })),
-      todayBest: bestOf(ts ? [ts] : []),
+      prevBest: bestOf(sortedHist(key).filter(function(s) { return s.date < t; }), f ? barOf(f.ex.name) : 0),
+      todayBest: bestOf(ts ? [ts] : [], f ? barOf(f.ex.name) : 0),
       exDone: f ? exDone(f.ex) : false,
       dayDone: f ? dayProgress(f.day).done === f.day.exercises.length : false
     };
@@ -2241,7 +2245,7 @@
     if (!ts) return;
     var prev = snap.prevBest;
     if (!prev.weight && !prev.e1rm) return; // first time ever: nothing to beat
-    var now = bestOf([ts]);
+    var now = bestOf([ts], barOf(name));
     var was = snap.todayBest;
     var lines = [];
     if (prev.e1rm && now.e1rm > Math.max(prev.e1rm, was.e1rm) + 0.05) {
@@ -2329,11 +2333,11 @@
       var h = sortedHist(ex.id);
       var ts = h.find(function(s) { return s.date === t; });
       if (!ts) return;
-      var before = bestOf(h.filter(function(s) { return s.date < t; }));
-      var nb = bestOf([ts]);
+      var before = bestOf(h.filter(function(s) { return s.date < t; }), barOf(ex.name));
+      var nb = bestOf([ts], barOf(ex.name));
       var isPr = (before.e1rm > 0 && nb.e1rm > before.e1rm + 0.05) || (before.weight > 0 && nb.weight > before.weight);
       sets += ts.sets.length;
-      vol += volumeOf(ts) || 0;
+      vol += volumeOf(ts, barOf(ex.name)) || 0;
       ts.sets.forEach(function(s) { if (s.at) ats.push(s.at); });
       if (isPr) prs.push(ex.name);
       rows += '<div class="sum-ex"><div class="sum-ex-name">' + esc(ex.name) + (isPr ? ' <span class="pr-badge">PR</span>' : '') + '</div>' +
@@ -2348,7 +2352,7 @@
     var pVol = 0, pSets = 0;
     if (prevDate) flat.forEach(function(ex) {
       var s = (entries[ex.id] || []).find(function(x) { return x.date === prevDate; });
-      if (s) { pSets += s.sets.length; pVol += volumeOf(s) || 0; }
+      if (s) { pSets += s.sets.length; pVol += volumeOf(s, barOf(ex.name)) || 0; }
     });
 
     ats.sort();
@@ -2471,14 +2475,15 @@
   }
 
   // ---------- per-exercise chart ----------
-  function chartHtml(key, hist) {
+  function chartHtml(key, hist, bar) {
     // A session still in progress today would drag the line down mid-workout.
     var f = findEx(key);
+    if (bar == null) bar = f ? barOf(f.ex.name) : 0;
     if (f && !exDone(f.ex)) hist = hist.filter(function(h) { return h.date !== todayStr(); });
     if (hist.length < 2) return '';
     var allBW = hist.every(function(h) { return h.sets.every(function(s) { return s.weight === 0; }); });
     var pts = hist.map(function(h) {
-      return { date: h.date, e: bestOf([h]).e1rm || 0, w: avg(h.sets.map(function(s) { return s.weight; })), r: totalReps(h) };
+      return { date: h.date, e: bestOf([h], bar).e1rm || 0, w: avg(h.sets.map(function(s) { return s.weight; })), r: totalReps(h) };
     });
     var mode = allBW ? 'r' : pts.filter(function(p) { return p.e; }).length >= 2 ? 'e' : 'w';
     var label = mode === 'e' ? 'Est. 1RM' : mode === 'r' ? 'Total reps' : 'Avg weight';
@@ -2625,8 +2630,9 @@
       });
       m.sessions = Object.keys(byDate).sort().map(function(d) {
         var x = byDate[d];
-        x.e = bestOf([x]).e1rm;
-        x.top = x.sets.reduce(function(b, s) { return (e1rm(s) || 0) > (b ? e1rm(b) || 0 : -1) ? s : b; }, null);
+        var bar = barOf(m.name);
+        x.e = bestOf([x], bar).e1rm;
+        x.top = x.sets.reduce(function(b, s) { return (e1rm(s, bar) || 0) > (b ? e1rm(b, bar) || 0 : -1) ? s : b; }, null);
         return x;
       });
       m.withE = m.sessions.filter(function(s) { return s.e > 0; });
@@ -2647,7 +2653,7 @@
     var out = [];
     for (var i = 0; i < n; i++) {
       var best = 0;
-      past.forEach(function(s) { var e = s.sets[i] ? e1rm(s.sets[i]) : 0; if (e > best) best = e; });
+      past.forEach(function(s) { var e = s.sets[i] ? e1rm(s.sets[i], barOf(m.name)) : 0; if (e > best) best = e; });
       out.push(best || fallback);
     }
     return out;
@@ -2787,9 +2793,9 @@
     }
     var cA = currentE(mA), cB = currentE(mB);
     var ratio = cB / cA;
-    var eA = wa * (1 + ra / 30);
+    var eA = (wa + barOf(mA.name)) * (1 + ra / 30);
     var eB = eA * ratio;
-    var reps = predReps(eB, wb);
+    var reps = predReps(eB, wb + barOf(mB.name));
 
     var cutoff = addDays(todayStr(), -42);
     var recent = function(m) { return m.withE.filter(function(s) { return s.date >= cutoff; }).length; };
@@ -2894,7 +2900,7 @@
         '<div class="m"><b>' + esc(m.name) + '</b><small>' + sub + '</small></div>' + sparkSvg(vals) + '</div>';
     }).join('') + '</div>';
     var sel = mv[liftSel];
-    var chart = chartHtml(sel.ids[0], sel.sessions);
+    var chart = chartHtml(sel.ids[0], sel.sessions, barOf(sel.name));
     h += '<div class="sech2"><span>' + esc(sel.name) + '</span></div>' +
       '<div class="chartbox glass">' + (chart || '<p class="hint" style="margin:0;">Needs at least two sessions for a chart.</p>') + '</div>';
     return h;
@@ -3472,9 +3478,9 @@
     return out.sort(function(a, b) { return a.date.localeCompare(b.date) || (a.own ? 1 : 0) - (b.own ? 1 : 0); });
   }
   // A session's strength: best estimated 1RM, counting the reps that were left in the tank.
-  function sessE(s) {
+  function sessE(s, bar) {
     var b = 0;
-    s.sets.forEach(function(x) { if (x.weight > 0 && x.reps > 0) b = Math.max(b, x.weight * (1 + (x.reps + (x.rir != null ? Math.min(3, x.rir) : 0)) / 30)); });
+    s.sets.forEach(function(x) { var w = (x.weight || 0) + (bar || 0); if (w > 0 && x.reps > 0) b = Math.max(b, w * (1 + (x.reps + (x.rir != null ? Math.min(3, x.rir) : 0)) / 30)); });
     return b;
   }
   // Double progression on the last session in this rep range, wherever it was done: every working
@@ -3484,9 +3490,9 @@
   function coach(ex) {
     var today = todayStr();
     var pool = coachPool(ex);
-    var n = ex.sets, lo = ex.repMin, hi = ex.repMax, step = weightStep(ex);
+    var n = ex.sets, lo = ex.repMin, hi = ex.repMax, step = weightStep(ex), bar = barOf(ex.name);
     var fill = function(r) { var a = []; for (var i = 0; i < n; i++) a.push(r); return a; };
-    var B = function(w) { return '<b>' + (w === 0 ? 'bodyweight' : round1(w) + ' kg') + '</b>'; };
+    var B = function(w) { return '<b>' + (w === 0 ? (bar ? 'the empty bar' : 'bodyweight') : round1(w) + ' kg') + '</b>'; };
     var aim = Math.max(lo, hi - 2);
     var dayGap = function(a, b) { return Math.round((new Date(b + 'T00:00:00') - new Date(a + 'T00:00:00')) / 86400000); };
     if (!pool.length) {
@@ -3496,13 +3502,13 @@
     var gap = dayGap(latest.date, today);
     // strength trend in any rep range, leaving out the lighter deload week
     var dl = prefs.deload;
-    var trend = pool.filter(function(s) { return sessE(s) > 0 && !(dl && dl.from <= s.date && s.date <= dl.to); });
+    var trend = pool.filter(function(s) { return sessE(s, bar) > 0 && !(dl && dl.from <= s.date && s.date <= dl.to); });
     var near = pool.filter(function(s) { return Math.abs((s.lo + s.hi) / 2 - (lo + hi) / 2) <= 2; });
     if (!near.length) {
       // only done in another rep range so far: carry the strength over through the estimated 1RM
-      var E = sessE(latest);
+      var E = sessE(latest, bar);
       if (!E) return { act: 'new', weight: null, reps: fill(aim), msg: 'First time for ' + lo + '–' + hi + ' reps: pick a weight you can do for about <b>' + aim + '</b> clean reps.' };
-      var cw = round1(Math.max(step, Math.round(E / (1 + (aim + 1) / 30) / step) * step));
+      var cw = round1(Math.max(bar ? 0 : step, Math.round((E / (1 + (aim + 1) / 30) - bar) / step) * step));
       return { act: 'carry', weight: cw, reps: fill(aim),
         msg: 'Last done for ' + latest.lo + '–' + latest.hi + ' reps. For ' + lo + '–' + hi + ' here, start at ' + B(cw) + ' for about <b>' + aim + '</b> reps.' };
     }
@@ -3510,7 +3516,7 @@
     return coachRules(ex, L, near, trend, gap, fill, B, step);
   }
   function coachRules(ex, L, near, trend, gap, fill, B, step) {
-    var n = ex.sets, lo = ex.repMin, hi = ex.repMax;
+    var n = ex.sets, lo = ex.repMin, hi = ex.repMax, bar = barOf(ex.name);
     var topW = Math.max.apply(null, L.sets.map(function(s) { return s.weight || 0; }));
     var work = L.sets.filter(function(s) { return (s.weight || 0) === topW; });
     var reps = work.map(function(s) { return s.reps || 0; });
@@ -3546,8 +3552,8 @@
       var expect = [];
       for (var u = 0; u < n; u++) {
         var ru = reps[u] != null ? reps[u] : reps[reps.length - 1];
-        var eu = topW * (1 + (ru + (work[u] && work[u].rir != null ? Math.min(3, work[u].rir) : 0)) / 30);
-        expect.push(Math.min(hi, Math.max(lo, Math.round(30 * (eu / upW - 1)))));
+        var eu = (topW + bar) * (1 + (ru + (work[u] && work[u].rir != null ? Math.min(3, work[u].rir) : 0)) / 30);
+        expect.push(Math.min(hi, Math.max(lo, Math.round(30 * (eu / (upW + bar) - 1)))));
       }
       return { act: 'up', weight: upW, reps: expect, msg: 'Every set hit ' + hi + ' reps last time' + (rirAvg != null && rirAvg >= 2.5 ? ' with ~' + Math.round(rirAvg) + ' left in the tank' : jump > 1 ? '+3' : '') + ' — go up to ' + B(upW) + '. Expect about <b>' + expect[0] + '</b> reps; do every clean rep up to <b>' + hi + '</b>.' };
     }
@@ -3556,8 +3562,8 @@
       var fell = (reps[0] < lo ? 'Set 1' : 'Two sets') + ' fell below ' + lo + ' reps';
       if (topW === 0) return { act: 'down', weight: 0, reps: fill(lo), msg: fell + ' — use assistance or an easier variation.' };
       // much weaker than the sessions just before: an off day, not a weight that is too heavy
-      var prior = trend.filter(function(s) { return s.date < L.date; }).slice(-3).map(sessE).sort(function(a, b) { return a - b; });
-      var eL = sessE(L);
+      var prior = trend.filter(function(s) { return s.date < L.date; }).slice(-3).map(function(s) { return sessE(s, bar); }).sort(function(a, b) { return a - b; });
+      var eL = sessE(L, bar);
       if (eL && prior.length >= 2 && eL < 0.95 * prior[Math.floor(prior.length / 2)]) {
         return { act: 'hold', weight: topW, reps: fill(lo),
           msg: fell + ' last time, but the sessions before were stronger — likely an off day. Stay at ' + B(topW) + ' and aim for <b>' + lo + '</b>+.' };
@@ -3580,7 +3586,7 @@
       topW >= Math.max(topOf(t4[0]), topOf(t4[1]), topOf(t4[2])) &&
       t4.filter(function(s) { return near.indexOf(s) >= 0; }).length >= 2 &&
       Math.round((new Date(t4[3].date) - new Date(t4[0].date)) / 86400000) >= 14 &&
-      Math.max(sessE(t4[1]), sessE(t4[2]), sessE(t4[3])) <= sessE(t4[0]) * 1.01;
+      Math.max(sessE(t4[1], bar), sessE(t4[2], bar), sessE(t4[3], bar)) <= sessE(t4[0], bar) * 1.01;
     if (flat3 || flat4) {
       var stuck = flat3 ? 'No progress in 3 sessions at ' + B(topW) : 'No stronger in your last 4 sessions';
       if (rirAvg != null && rirAvg >= 2) {
@@ -3660,15 +3666,18 @@
     'cable crunch': 'Rope behind your head, kneeling · curl the elbows to the knees'
   };
   function setupOf(ex) { return SETUP[movementKey(ex.name)] || ''; }
-  // Per-side plates for a barbell weight (20 kg bar, 10 kg for the EZ bar).
+  // Barbell lifts are logged as plates only (Gianluca, 19 Nov 2026): the weight typed is what's loaded,
+  // and the bar (20 kg, 10 kg for the EZ bar) is added back wherever the maths needs the real load.
+  function barOf(name) { return eqOf(name) === 'bb' ? (/ez/i.test(name) ? 10 : 20) : 0; }
+  // Per-side plates for a barbell weight logged as plates only.
   function platesText(ex, w) {
-    var bar = /ez/i.test(ex.name) ? 10 : 20;
-    if (!(w > 0)) return '';
-    if (w < bar) return 'Lighter than the ' + bar + ' kg bar';
+    var bar = barOf(ex.name) || 20;
+    if (w == null || !(w >= 0)) return '';
+    if (w === 0) return 'Just the ' + bar + ' kg bar';
     var r2 = function(x) { return Math.round(x * 100) / 100; };
-    var side = r2((w - bar) / 2), out = [];
+    var side = r2(w / 2), out = [];
     [25, 20, 15, 10, 5, 2.5, 1.25].forEach(function(p) { while (side >= p - 0.001) { out.push(p); side = r2(side - p); } });
-    return out.length ? 'Per side: <b>' + out.join(' + ') + '</b>' + (side > 0.01 ? ' (+' + side + ' kg off)' : '') + ' · bar ' + bar + ' kg' : 'Just the ' + bar + ' kg bar';
+    return 'Per side: <b>' + out.join(' + ') + '</b>' + (side > 0.01 ? ' (+' + side + ' kg off)' : '') + ' · ' + round1(w + bar) + ' kg with the bar';
   }
   function musclesOf(day) {
     var seen = [];
@@ -3781,7 +3790,7 @@
 
   function sessionHtml(day, models, prog, sp) {
     var vol = 0;
-    models.forEach(function(m) { if (m.todaySess) vol += volumeOf(m.todaySess) || 0; });
+    models.forEach(function(m) { if (m.todaySess) vol += volumeOf(m.todaySess, barOf(m.ex.name)) || 0; });
     var fi = Math.max(0, models.findIndex(function(m) { return m.key === focusKey; }));
     var h = '<div class="wtop">' +
         '<button class="ib" data-back="1" aria-label="Back to today">' + CHEV_D.replace('class="chev"', '') + '</button>' +
@@ -3997,7 +4006,8 @@
       var hint = progressionHint(ex, hintSess);
       var hintHtml = hint ? '<div class="easy-note">' + hint + '</div>' : '';
 
-      var best = bestOf(hist);
+      var bar = barOf(ex.name);
+      var best = bestOf(hist, bar);
       var isPr = !!(last && best.e1rmDate && best.e1rmDate === last.date && hist.length > 1);
       var prHtml = isPr ? ' <span class="pr-badge">PR</span>' : '';
 
@@ -4026,7 +4036,7 @@
       var plan = coach(ex);
       var setInputs = '';
       if (!nDone) setInputs += '<div class="set-hint">Tap ✓ after each set — the rest timer starts on its own.' + (strengths ? ' ≈ = reps your recent sessions predict at that weight.' : '') + '</div>';
-      setInputs += '<div class="set-head"><span>Set</span><span>Previous</span><span>kg' + (eqOf(ex.name) === 'bb' ? ' <small style="opacity:.7;">incl. bar</small>' : '') + '</span><span>Reps <small style="opacity:.7;">' + ex.repMin + '–' + ex.repMax + '</small></span><span></span></div>';
+      setInputs += '<div class="set-head"><span>Set</span><span>Previous</span><span>kg' + (bar ? ' <small style="opacity:.7;">plates</small>' : '') + '</span><span>Reps <small style="opacity:.7;">' + ex.repMin + '–' + ex.repMax + '</small></span><span></span></div>';
       // warm-up sets sit in the table above set 1, until the first working set is logged
       if (!nDone && warmupEligible(day, ex)) {
         var w1 = draft && draft.w[0] !== undefined ? parseFloat(draft.w[0]) : (plan.weight != null ? plan.weight : prevSess && prevSess.sets[0] ? prevSess.sets[0].weight : NaN);
@@ -4048,13 +4058,13 @@
         var E = strengths ? strengths[i - 1] : null;
         var tgt = '';
         if (E && isDone && src && src.reps && src.weight > 0) {
-          var want = predReps(E, src.weight);
+          var want = predReps(E, src.weight + bar);
           if (want != null && want >= 1 && want <= 30) {
             var diffR = src.reps - Math.round(want);
             tgt = '<span class="tgt ' + (diffR > 0 ? 'up' : diffR < 0 ? 'down' : '') + '" title="Target ≈' + Math.round(want) + '">' + (diffR > 0 ? '+' + diffR : diffR < 0 ? '−' + (-diffR) : '=') + '</span>';
           }
         } else if (E && !isDone) {
-          tgt = '<span class="tgt" data-e="' + E.toFixed(2) + '">' + fmtTarget(predReps(E, parseFloat(pw))) + '</span>';
+          tgt = '<span class="tgt" data-e="' + E.toFixed(2) + '" data-bar="' + bar + '">' + fmtTarget(predReps(E, parseFloat(pw) + bar)) + '</span>';
         }
         var ps = prevSess && prevSess.sets[i - 1];
         if (isDone && src && src.rir != null) tgt = '<span class="tgt rirb" title="Reps left">' + (src.rir >= 3 ? '3+' : src.rir) + ' left</span>';
@@ -4062,7 +4072,7 @@
           '<div class="set-row' + (isDone ? ' done' : '') + (isNext ? ' next' : '') + (pop ? ' pop' : '') + '">' +
             '<div class="set-label">' + i + '</div>' +
             '<div class="prevc">' + (ps ? esc(fmtW(ps.weight).replace('kg', '') + (ps.reps ? ' × ' + ps.reps : '')) : '—') + '</div>' +
-            '<input type="number" inputmode="decimal" step="0.5" min="0" placeholder="0 = BW" value="' + esc(pw) + '" id="w-' + key + '-' + i + '" data-draft="' + key + '" data-setcount="' + ex.sets + '"' + doneAttr + '>' +
+            '<input type="number" inputmode="decimal" step="0.5" min="0" placeholder="' + (bar ? '0 = bar' : '0 = BW') + '" value="' + esc(pw) + '" id="w-' + key + '-' + i + '" data-draft="' + key + '" data-setcount="' + ex.sets + '"' + doneAttr + '>' +
             '<div class="rep-cell"><input type="number" inputmode="numeric" step="1" min="0" placeholder="—" value="' + esc(pr) + '" id="r-' + key + '-' + i + '" data-draft="' + key + '" data-setcount="' + ex.sets + '"' + doneAttr + '>' + tgt + '</div>' +
             '<button class="set-check' + (isNext ? ' next' : '') + '" data-check="' + key + '" data-i="' + i + '" aria-label="Set ' + i + ' done"' +
               ((isDone && i !== nDone) || (!isDone && !isNext) ? ' disabled' : '') + '>' + CHECK + '</button>' +
@@ -4083,7 +4093,7 @@
 
       var statsHtml = '';
       if (hist.length) {
-        var lastVol = last ? volumeOf(last) : null;
+        var lastVol = last ? volumeOf(last, bar) : null;
         statsHtml = '<div class="stats">' +
           '<div class="stat">Best weight<b>' + (best.weight ? best.weight + ' kg' : '—') + '</b></div>' +
           '<div class="stat">Est. 1RM<b>' + (best.e1rm ? round1(best.e1rm) + ' kg' : '—') + '</b></div>' +
@@ -4096,7 +4106,7 @@
           var reps = (s.reps && s.reps > 0) ? ' × ' + s.reps : '';
           return '<span class="set-chip">S' + (idx + 1) + ': ' + fmtW(s.weight) + reps + '</span>';
         }).join('');
-        var vol = volumeOf(h);
+        var vol = volumeOf(h, bar);
         var volTxt = vol ? ' · ' + round1(vol) + 'kg vol' : '';
         // logged on the wrong one of main/alternatives: move it across from the exercise menu
         var mv = vars.length > 1
@@ -4350,7 +4360,7 @@
           var lex = lastModels[key] && lastModels[key].ex;
           if (pl && lex && inp.closest('.set-row').classList.contains('next')) pl.innerHTML = platesText(lex, parseFloat(inp.value));
           var t = inp.closest('.set-row').querySelector('.tgt[data-e]');
-          if (t) t.textContent = fmtTarget(predReps(parseFloat(t.getAttribute('data-e')), parseFloat(inp.value)));
+          if (t) t.textContent = fmtTarget(predReps(parseFloat(t.getAttribute('data-e')), parseFloat(inp.value) + (parseFloat(t.getAttribute('data-bar')) || 0)));
           var wu = document.getElementById('wu-' + key);
           if (wu && inp.id === 'w-' + key + '-1') {
             var wex = day.exercises.find(function(e) { return e.id === key; });
@@ -5545,17 +5555,18 @@
     prefs.wipe1103 = true;
     savePrefs();
   })();
-  // One-off fix (16 Nov 2026): the barbell bench sessions of 2 and 16 Nov were logged as plates only;
-  // the weight is the total, so add the 20 kg bar.
+  // One-off fix (16 Nov 2026), undone on 19 Nov: barbell lifts are now logged as plates only, so the
+  // bench sessions of 2 and 16 Nov go back to what was loaded (the 20 kg added on 16 Nov comes off).
   (function() {
-    if (prefs.fixBenchBar1116) return;
+    if (prefs.benchPlates1119) return;
     var changed = false;
     (entries.ua_barbell_bench_press || []).forEach(function(s) {
       if (s.date !== '2026-11-02' && s.date !== '2026-11-16') return;
-      (s.sets || []).forEach(function(x) { if (x.weight > 0 && x.weight < 50) { x.weight = round1(x.weight + 20); changed = true; } });
+      (s.sets || []).forEach(function(x) { if (x.weight >= 55) { x.weight = round1(x.weight - 20); changed = true; } });
     });
     if (changed) saveEntries();
     prefs.fixBenchBar1116 = true;
+    prefs.benchPlates1119 = true;
     savePrefs();
   })();
   activeDay = pickStartDay();
@@ -5606,9 +5617,8 @@
     if (at < 0) {
       vib(10);
       var f = findEx(key);
-      var nx = b.getAttribute('data-next');
       startTimer(key, parseInt(b.getAttribute('data-rest'), 10) || 60, f ? f.ex.name : '',
-        { next: nx ? nx + ' · ' + b.getAttribute('data-nw') + ' kg × ' + b.getAttribute('data-nr') : '' });
+        { next: b.getAttribute('data-next') || '' });
     }
   });
 
